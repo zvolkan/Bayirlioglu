@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+// @ts-ignore: allow side-effect import of global CSS
 import './globals.css'
 import { BRAND, SITE_CONFIG, ACTIVE_BRAND_KEY } from '@/lib/constants'
 import Header from '@/components/layout/Header'

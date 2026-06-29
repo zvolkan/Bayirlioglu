@@ -311,7 +311,7 @@ export default function IletisimPage() {
 
               {/* WhatsApp */}
               <a
-                href={`https://wa.me/${SITE_CONFIG.whatsapp?.replace(/\D/g, '')}`}
+                href={`https://wa.me/${SITE_CONFIG.phone.replace(/\D/g, '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2.5 w-full bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl px-5 py-3.5 text-sm transition-colors shadow-sm"
