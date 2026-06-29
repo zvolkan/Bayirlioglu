@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, Suspense } from 'react'
+import { useState, useMemo } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
@@ -16,7 +16,7 @@ const SORT_OPTIONS = [
   { value: 'newest', label: 'En Yeniler' },
 ]
 
-function UrunlerContent() {
+export default function UrunlerContent() {
   const params = useParams()
   const brandKey = params.brand as BrandKey
   const searchParams = useSearchParams()
@@ -227,10 +227,3 @@ function UrunlerContent() {
   )
 }
 
-export default function UrunlerPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><p className="text-gray-400">Yükleniyor...</p></div>}>
-      <UrunlerContent />
-    </Suspense>
-  )
-}
