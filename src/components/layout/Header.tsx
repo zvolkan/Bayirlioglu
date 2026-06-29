@@ -114,13 +114,9 @@ export default function Header() {
             <div className="flex items-center justify-between h-14 sm:h-16">
 
               {/* LOGO */}
-              <Link href="/" className="flex items-center gap-2 flex-shrink-0" onClick={() => setMenuOpen(false)}>
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center font-black text-white text-base flex-shrink-0">
+              <Link href="/" className="flex items-center flex-shrink-0" onClick={() => setMenuOpen(false)}>
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center font-black text-white text-base">
                   B
-                </div>
-                <div>
-                  <p className="text-white font-bold text-xs sm:text-sm leading-tight">Bayırlıoğlu</p>
-                  <p className="text-white/40 text-[9px] sm:text-[10px] leading-tight">Grup</p>
                 </div>
               </Link>
 
@@ -142,7 +138,7 @@ export default function Header() {
               </div>
 
               {/* SAĞ — Arama, Sepet, Giriş */}
-              <div className="flex items-center gap-0.5 sm:gap-1">
+              <div className="flex items-center gap-1">
                 {/* Arama */}
                 <button
                   onClick={() => setSearchOpen(!searchOpen)}
