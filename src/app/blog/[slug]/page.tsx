@@ -103,7 +103,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           <article className="min-w-0 flex-1">
             {/* Tags */}
             <div className="mb-4 flex flex-wrap gap-2">
-              {post.tags?.map((tag) => (
+              {post.tags.map((tag) => (
                 <Badge key={tag} variant="primary" size="sm">
                   {tag}
                 </Badge>
@@ -164,7 +164,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             <div className={`mt-10 rounded-xl ${primaryLight} border ${primaryBorder} p-4`}>
               <p className="mb-2 text-sm font-semibold text-gray-700">Etiketler</p>
               <div className="flex flex-wrap gap-2">
-                {post.tags?.map((tag) => (
+                {post.tags.map((tag) => (
                   <span
                     key={tag}
                     className={`rounded-full border ${primaryBorder} ${primaryText} px-3 py-1 text-xs font-medium`}

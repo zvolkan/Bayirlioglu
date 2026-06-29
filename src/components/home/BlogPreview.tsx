@@ -73,7 +73,7 @@ export default function BlogPreview() {
                         : 'bg-blue-600 text-white'
                     )}
                   >
-                    {post.tags?.[0] ?? (isTarim ? 'Tarım' : 'Teknoloji')}
+                    {post.category ?? (isTarim ? 'Tarım' : 'Teknoloji')}
                   </span>
                 </div>
               </div>

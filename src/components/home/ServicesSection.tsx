@@ -1,8 +1,16 @@
 import { BRAND, ACTIVE_BRAND_KEY } from '@/lib/constants'
 import { MOCK_SERVICES_TARIM, MOCK_SERVICES_ALBSU } from '@/data/mock'
-import type { Service } from '@/lib/types'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+
+interface Service {
+  id: string
+  title: string
+  description: string
+  icon: string
+  features: string[]
+  price?: string
+}
 
 const isTarim = ACTIVE_BRAND_KEY === 'alb-tarim'
 const services: Service[] = isTarim ? MOCK_SERVICES_TARIM : MOCK_SERVICES_ALBSU
