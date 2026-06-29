@@ -97,7 +97,7 @@ export default function KayitPage() {
               className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 ${BRAND.colors.logoBg}`}
             >
               <span className={`text-2xl font-bold ${BRAND.colors.primaryText}`}>
-                {BRAND.shortName?.charAt(0) ?? 'A'}
+                {BRAND.name.charAt(0)}
               </span>
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Hesap Oluşturun</h1>

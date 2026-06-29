@@ -59,7 +59,7 @@ export default function FavorilerimPage() {
   // Mock: first 3 products are in favorites
   const [favorites, setFavorites] = useState(MOCK_PRODUCTS.slice(0, 3))
 
-  const remove = (id: number) => setFavorites(favorites.filter((p) => p.id !== id))
+  const remove = (id: string) => setFavorites(favorites.filter((p) => p.id !== id))
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

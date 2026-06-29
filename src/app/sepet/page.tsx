@@ -72,14 +72,14 @@ export default function SepetPage() {
               const lineTotal = price * item.quantity
               return (
                 <div
-                  key={item.id}
+                  key={item.product.id}
                   className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex gap-4"
                 >
                   {/* Image placeholder */}
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
                     {item.product.images?.[0] ? (
                       <img
-                        src={item.product.images[0]}
+                        src={item.product.images[0].url}
                         alt={item.product.name}
                         className="w-full h-full object-cover"
                       />
@@ -108,7 +108,7 @@ export default function SepetPage() {
                         </p>
                       </div>
                       <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem(item.product.id)}
                         className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
                         aria-label="Ürünü kaldır"
                       >
@@ -122,8 +122,8 @@ export default function SepetPage() {
                         <button
                           onClick={() =>
                             item.quantity > 1
-                              ? updateQuantity(item.id, item.quantity - 1)
-                              : removeItem(item.id)
+                              ? updateQuantity(item.product.id, item.quantity - 1)
+                              : removeItem(item.product.id)
                           }
                           className="p-2 hover:bg-gray-50 transition-colors"
                           aria-label="Azalt"
@@ -136,7 +136,7 @@ export default function SepetPage() {
                         <button
                           onClick={() =>
                             item.quantity < item.product.stock
-                              ? updateQuantity(item.id, item.quantity + 1)
+                              ? updateQuantity(item.product.id, item.quantity + 1)
                               : undefined
                           }
                           disabled={item.quantity >= item.product.stock}
