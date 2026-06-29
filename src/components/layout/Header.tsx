@@ -114,36 +114,35 @@ export default function Header() {
             <div className="flex items-center justify-between h-14 sm:h-16">
 
               {/* LOGO */}
-              <Link href="/" className="flex items-center gap-2.5 flex-shrink-0" onClick={() => setMenuOpen(false)}>
-                {/* LOGO: /public/images/logo.png veya SVG ekleyin */}
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center font-black text-white text-sm">
+              <Link href="/" className="flex items-center gap-2 flex-shrink-0" onClick={() => setMenuOpen(false)}>
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center font-black text-white text-base flex-shrink-0">
                   B
                 </div>
-                <div className="hidden sm:block">
-                  <p className="text-white font-bold text-sm leading-tight">Bayırlıoğlu</p>
-                  <p className="text-white/40 text-[10px] leading-tight">Grup</p>
+                <div>
+                  <p className="text-white font-bold text-xs sm:text-sm leading-tight">Bayırlıoğlu</p>
+                  <p className="text-white/40 text-[9px] sm:text-[10px] leading-tight">Grup</p>
                 </div>
               </Link>
 
               {/* MARKA SEÇİCİ — orta */}
-              <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
+              <div className="flex items-center gap-0.5 bg-white/5 rounded-xl p-1">
                 {BRAND_TABS.map((tab) => (
                   <button
                     key={tab.key}
                     onClick={() => handleBrandSwitch(tab.key)}
-                    className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                    className={`flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                       activeBrandKey === tab.key ? tab.activeColor : tab.color
                     }`}
                   >
-                    <span>{tab.icon}</span>
+                    <span className="text-sm">{tab.icon}</span>
                     <span className="hidden sm:inline">{tab.label}</span>
-                    <span className="sm:hidden">{tab.key === 'alb-tarim' ? 'Tarım' : 'Teknoloji'}</span>
+                    <span className="sm:hidden">{tab.key === 'alb-tarim' ? 'Tarım' : 'Tekno'}</span>
                   </button>
                 ))}
               </div>
 
               {/* SAĞ — Arama, Sepet, Giriş */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 sm:gap-1">
                 {/* Arama */}
                 <button
                   onClick={() => setSearchOpen(!searchOpen)}
