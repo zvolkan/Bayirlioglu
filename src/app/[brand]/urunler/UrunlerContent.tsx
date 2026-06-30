@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
 import { MOCK_PRODUCTS, MOCK_CATEGORIES_TARIM, MOCK_CATEGORIES_ALBSU } from '@/data/mock'
@@ -172,16 +173,25 @@ export default function UrunlerContent() {
                       className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col"
                     >
                       <Link href={`/${brandKey}/urunler/${product.slug}`}>
-                        {/* GÖRSEL: primaryImg — placeholder gösterim */}
-                        <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-5xl relative">
-                          {product.category.icon || '📦'}
+                        <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-5xl relative overflow-hidden">
+                          {primaryImg ? (
+                            <Image
+                              src={primaryImg}
+                              alt={product.name}
+                              fill
+                              className="object-contain p-4"
+                              sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                            />
+                          ) : (
+                            <span>{product.category.icon || '📦'}</span>
+                          )}
                           {disc && (
-                            <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
                               -%{disc}
                             </span>
                           )}
                           {product.isFeatured && !disc && (
-                            <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${isAlbSu ? 'bg-blue-600' : 'bg-green-600'}`}>
+                            <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full text-white z-10 ${isAlbSu ? 'bg-blue-600' : 'bg-green-600'}`}>
                               Öne Çıkan
                             </span>
                           )}
