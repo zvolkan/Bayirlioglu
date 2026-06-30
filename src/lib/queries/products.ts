@@ -1,11 +1,20 @@
 import { prisma } from '@/lib/db'
+import { Prisma } from '@prisma/client'
 import type { Product, Category, BrandKey } from '@/lib/types'
 
 // ─── Prisma çıktısını uygulama tipine dönüştür ────────────────────────────────
 
-type PrismaProduct = Awaited<ReturnType<typeof fetchOne>>
+const PRODUCT_INCLUDE = {
+  brand: true,
+  category: true,
+  images: { orderBy: [{ isPrimary: 'desc' as const }, { sortOrder: 'asc' as const }] },
+  specs: { orderBy: { sortOrder: 'asc' as const } },
+  tags: { include: { tag: true } },
+} satisfies Prisma.ProductInclude
 
-function toProduct(p: NonNullable<PrismaProduct>): Product {
+type PrismaProduct = Prisma.ProductGetPayload<{ include: typeof PRODUCT_INCLUDE }>
+
+function toProduct(p: PrismaProduct): Product {
   const category: Category = {
     id: p.category.id,
     name: p.category.name,
@@ -50,15 +59,7 @@ function toProduct(p: NonNullable<PrismaProduct>): Product {
   }
 }
 
-// ─── Tek ürün için ortak include ─────────────────────────────────────────────
-
-const PRODUCT_INCLUDE = {
-  brand: true,
-  category: true,
-  images: { orderBy: [{ isPrimary: 'desc' as const }, { sortOrder: 'asc' as const }] },
-  specs: { orderBy: { sortOrder: 'asc' as const } },
-  tags: { include: { tag: true } },
-} as const
+// ─── Tek ürün sorgulama ───────────────────────────────────────────────────────
 
 async function fetchOne(slug: string, brandKey: string) {
   return prisma.product.findFirst({
