@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
+import ProductImage from '@/components/product/ProductImage'
 import { BRANDS } from '@/lib/constants'
-import { MOCK_PRODUCTS } from '@/data/mock'
+import { getProductBySlug, getRelatedProducts } from '@/lib/queries/products'
 import type { BrandKey } from '@/lib/types'
 import AddToCartButton from '@/components/product/AddToCartButton'
 
@@ -11,16 +11,11 @@ interface Props {
   params: Promise<{ brand: string; slug: string }>
 }
 
-export async function generateStaticParams() {
-  return MOCK_PRODUCTS.map((p) => ({
-    brand: p.brand,
-    slug: p.slug,
-  }))
-}
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, brand } = await params
-  const product = MOCK_PRODUCTS.find((p) => p.slug === slug && p.brand === brand)
+  const product = await getProductBySlug(slug, brand)
   if (!product) return {}
   return {
     title: product.name,
@@ -32,7 +27,7 @@ export default async function ProductDetailPage({ params }: Props) {
   const { brand, slug } = await params
   const brandKey = brand as BrandKey
 
-  const product = MOCK_PRODUCTS.find((p) => p.slug === slug && p.brand === brandKey)
+  const product = await getProductBySlug(slug, brandKey)
   if (!product) notFound()
 
   const cfg = BRANDS[brandKey] ?? BRANDS['alb-tarim']
@@ -47,9 +42,7 @@ export default async function ProductDetailPage({ params }: Props) {
     : null
   const primaryImg = product.images?.find((i) => i.isPrimary) ?? product.images?.[0]
 
-  const related = MOCK_PRODUCTS.filter(
-    (p) => p.brand === brandKey && p.category.slug === product.category.slug && p.slug !== slug
-  ).slice(0, 4)
+  const related = await getRelatedProducts(product.category.id, brandKey, slug)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -83,18 +76,15 @@ export default async function ProductDetailPage({ params }: Props) {
           <div className="grid md:grid-cols-2 gap-0">
             {/* Görsel */}
             <div className="bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center min-h-72 md:min-h-[480px] relative overflow-hidden">
-              {primaryImg?.url ? (
-                <Image
-                  src={primaryImg.url}
-                  alt={primaryImg.alt || product.name}
-                  fill
-                  className="object-contain p-6"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
-                />
-              ) : (
-                <span className="text-[120px] opacity-50">{product.category.icon || '📦'}</span>
-              )}
+              <ProductImage
+                src={primaryImg?.url ?? ''}
+                alt={primaryImg?.alt || product.name}
+                fallback={product.category.icon || '📦'}
+                fill
+                className="object-contain p-6"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+              />
               {discount && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full z-10">
                   -%{discount}
@@ -145,7 +135,7 @@ export default async function ProductDetailPage({ params }: Props) {
                 {product.shortDescription}
               </p>
 
-              {/* Teknik Özellikler */}
+              {/* Teknik Özellikler (özet) */}
               {product.specs && product.specs.length > 0 && (
                 <div className="mb-6 space-y-2">
                   {product.specs.slice(0, 4).map((s) => (
@@ -164,7 +154,11 @@ export default async function ProductDetailPage({ params }: Props) {
                 <span className="text-gray-400">SKU: {product.sku}</span>
                 <span className={`flex items-center gap-1.5 font-medium ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-amber-600' : 'text-red-600'}`}>
                   <span className={`w-2 h-2 rounded-full ${product.stock > 10 ? 'bg-green-500' : product.stock > 0 ? 'bg-amber-500' : 'bg-red-500'}`} />
-                  {product.stock > 10 ? `Stokta (${product.stock} ${product.unit})` : product.stock > 0 ? `Son ${product.stock} ${product.unit}!` : 'Stok tükendi'}
+                  {product.stock > 10
+                    ? `Stokta (${product.stock} ${product.unit})`
+                    : product.stock > 0
+                      ? `Son ${product.stock} ${product.unit}!`
+                      : 'Stok tükendi'}
                 </span>
               </div>
 
@@ -252,17 +246,14 @@ export default async function ProductDetailPage({ params }: Props) {
                   className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
                 >
                   <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl relative overflow-hidden">
-                    {p.images?.[0]?.url ? (
-                      <Image
-                        src={p.images[0].url}
-                        alt={p.images[0].alt || p.name}
-                        fill
-                        className="object-contain p-3"
-                        sizes="200px"
-                      />
-                    ) : (
-                      <span>{p.category.icon || '📦'}</span>
-                    )}
+                    <ProductImage
+                      src={p.images?.[0]?.url ?? ''}
+                      alt={p.images?.[0]?.alt || p.name}
+                      fallback={p.category.icon || '📦'}
+                      fill
+                      className="object-contain p-3"
+                      sizes="200px"
+                    />
                   </div>
                   <div className="p-3">
                     <p className="font-semibold text-gray-900 text-xs line-clamp-2 mb-1">{p.name}</p>

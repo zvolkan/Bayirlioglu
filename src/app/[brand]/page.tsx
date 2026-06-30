@@ -2,8 +2,12 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
-import { MOCK_PRODUCTS, MOCK_CATEGORIES_TARIM, MOCK_CATEGORIES_ALBSU, MOCK_BLOG_POSTS } from '@/data/mock'
+import { MOCK_BLOG_POSTS } from '@/data/mock'
+import { getFeaturedProducts } from '@/lib/queries/products'
+import { getCategoriesByBrand } from '@/lib/queries/categories'
 import type { BrandKey } from '@/lib/types'
+
+export const dynamic = 'force-dynamic'
 
 const VALID_BRANDS: BrandKey[] = ['alb-tarim', 'alb-su-aritma']
 
@@ -33,8 +37,10 @@ export default async function BrandHomePage({ params }: Props) {
   const cfg = BRANDS[brandKey]
 
   const isAlbSu = brandKey === 'alb-su-aritma'
-  const brandProducts = MOCK_PRODUCTS.filter((p) => p.brand === brandKey && p.isFeatured).slice(0, 6)
-  const brandCategories = isAlbSu ? MOCK_CATEGORIES_ALBSU : MOCK_CATEGORIES_TARIM
+  const [brandProducts, brandCategories] = await Promise.all([
+    getFeaturedProducts(brandKey, 6),
+    getCategoriesByBrand(brandKey),
+  ])
   const brandPosts = MOCK_BLOG_POSTS.filter((p) => p.brand === brandKey).slice(0, 3)
 
   const heroBg = isAlbSu

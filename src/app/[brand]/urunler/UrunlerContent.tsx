@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
-import Image from 'next/image'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import ProductImage from '@/components/product/ProductImage'
 import { BRANDS } from '@/lib/constants'
-import { MOCK_PRODUCTS, MOCK_CATEGORIES_TARIM, MOCK_CATEGORIES_ALBSU } from '@/data/mock'
 import { useCartStore } from '@/store/cartStore'
-import type { BrandKey } from '@/lib/types'
+import type { BrandKey, Product, Category } from '@/lib/types'
 import { toast } from 'react-hot-toast'
 
 const SORT_OPTIONS = [
@@ -17,16 +16,19 @@ const SORT_OPTIONS = [
   { value: 'newest', label: 'En Yeniler' },
 ]
 
-export default function UrunlerContent() {
-  const params = useParams()
-  const brandKey = params.brand as BrandKey
+interface Props {
+  brandKey: BrandKey
+  initialProducts: Product[]
+  initialCategories: Category[]
+}
+
+export default function UrunlerContent({ brandKey, initialProducts, initialCategories }: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const addItem = useCartStore((s) => s.addItem)
 
   const isAlbSu = brandKey === 'alb-su-aritma'
   const cfg = BRANDS[brandKey] ?? BRANDS['alb-tarim']
-  const categories = isAlbSu ? MOCK_CATEGORIES_ALBSU : MOCK_CATEGORIES_TARIM
 
   const activeCategory = searchParams.get('kategori') ?? ''
   const searchQuery = searchParams.get('arama') ?? ''
@@ -37,7 +39,7 @@ export default function UrunlerContent() {
   const tagText = isAlbSu ? 'text-blue-500' : 'text-green-500'
 
   const filtered = useMemo(() => {
-    let list = MOCK_PRODUCTS.filter((p) => p.brand === brandKey)
+    let list = [...initialProducts]
 
     if (activeCategory) {
       list = list.filter((p) => p.category.slug === activeCategory)
@@ -48,17 +50,17 @@ export default function UrunlerContent() {
         (p) =>
           p.name.toLowerCase().includes(q) ||
           p.description?.toLowerCase().includes(q) ||
-          p.shortDescription?.toLowerCase().includes(q)
+          p.shortDescription?.toLowerCase().includes(q),
       )
     }
 
     switch (sort) {
-      case 'price-asc': return [...list].sort((a, b) => a.price - b.price)
+      case 'price-asc':  return [...list].sort((a, b) => a.price - b.price)
       case 'price-desc': return [...list].sort((a, b) => b.price - a.price)
-      case 'newest': return [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      default: return [...list].sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0))
+      case 'newest':     return [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      default:           return [...list].sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0))
     }
-  }, [brandKey, activeCategory, searchQuery, sort])
+  }, [initialProducts, activeCategory, searchQuery, sort])
 
   const setCategory = (slug: string) => {
     const sp = new URLSearchParams(searchParams.toString())
@@ -67,12 +69,12 @@ export default function UrunlerContent() {
     router.push(`?${sp.toString()}`)
   }
 
-  const handleAddToCart = (product: (typeof MOCK_PRODUCTS)[0]) => {
+  const handleAddToCart = (product: Product) => {
     addItem(product, 1)
     toast.success(`${product.name} sepete eklendi`)
   }
 
-  const discount = (product: (typeof MOCK_PRODUCTS)[0]) =>
+  const discount = (product: Product) =>
     product.salePrice ? Math.round((1 - product.salePrice / product.price) * 100) : null
 
   return (
@@ -108,7 +110,7 @@ export default function UrunlerContent() {
               >
                 Tüm Ürünler
               </button>
-              {categories.map((cat) => (
+              {initialCategories.map((cat) => (
                 <button
                   key={cat.slug}
                   onClick={() => setCategory(cat.slug)}
@@ -137,7 +139,7 @@ export default function UrunlerContent() {
               <p className="text-sm text-gray-500">
                 {activeCategory && (
                   <span className={`font-semibold ${accentText}`}>
-                    {categories.find((c) => c.slug === activeCategory)?.name} •{' '}
+                    {initialCategories.find((c) => c.slug === activeCategory)?.name} •{' '}
                   </span>
                 )}
                 {filtered.length} ürün
@@ -173,18 +175,15 @@ export default function UrunlerContent() {
                       className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col"
                     >
                       <Link href={`/${brandKey}/urunler/${product.slug}`}>
-                        <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-5xl relative overflow-hidden">
-                          {primaryImg ? (
-                            <Image
-                              src={primaryImg}
-                              alt={product.name}
-                              fill
-                              className="object-contain p-4"
-                              sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                            />
-                          ) : (
-                            <span>{product.category.icon || '📦'}</span>
-                          )}
+                        <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden">
+                          <ProductImage
+                            src={primaryImg}
+                            alt={product.name}
+                            fallback={product.category.icon || '📦'}
+                            fill
+                            className="object-contain p-4"
+                            sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                          />
                           {disc && (
                             <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
                               -%{disc}
@@ -236,4 +235,3 @@ export default function UrunlerContent() {
     </div>
   )
 }
-

@@ -1,0 +1,158 @@
+// Bayirlioglu E-Ticaret — Prisma Schema
+// Veritabanı: PostgreSQL (Supabase)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── MARKALAR ────────────────────────────────────────────────────────────────
+
+model Brand {
+  id          Int        @id @default(autoincrement())
+  key         String     @unique @db.VarChar(30)
+  name        String     @db.VarChar(100)
+  description String?
+  logoUrl     String?    @map("logo_url") @db.VarChar(500)
+  isActive    Boolean    @default(true) @map("is_active")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  categories  Category[]
+  products    Product[]
+
+  @@map("brands")
+}
+
+// ─── KATEGORİLER ─────────────────────────────────────────────────────────────
+
+model Category {
+  id          Int        @id @default(autoincrement())
+  brandId     Int        @map("brand_id")
+  parentId    Int?       @map("parent_id")
+  name        String     @db.VarChar(100)
+  slug        String     @unique @db.VarChar(100)
+  description String?
+  imageUrl    String?    @map("image_url") @db.VarChar(500)
+  icon        String?    @db.VarChar(100)
+  sortOrder   Int        @default(0) @map("sort_order")
+  isActive    Boolean    @default(true) @map("is_active")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  brand       Brand      @relation(fields: [brandId], references: [id])
+  parent      Category?  @relation("CategoryParent", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryParent")
+  products    Product[]
+
+  @@map("categories")
+}
+
+// ─── ÜRÜNLER ─────────────────────────────────────────────────────────────────
+
+model Product {
+  id               String   @id @default(cuid())
+  categoryId       Int      @map("category_id")
+  brandId          Int      @map("brand_id")
+  name             String   @db.VarChar(255)
+  slug             String   @unique @db.VarChar(255)
+  description      String?  @db.Text
+  shortDescription String?  @map("short_description") @db.VarChar(1000)
+  sku              String?  @unique @db.VarChar(100)
+  barcode          String?  @db.VarChar(100)
+
+  // Fiyat
+  price            Decimal  @db.Decimal(10, 2)
+  salePrice        Decimal? @map("sale_price") @db.Decimal(10, 2)
+
+  // Stok
+  stockQuantity    Int      @default(0) @map("stock_quantity")
+  minStockLevel    Int      @default(5) @map("min_stock_level")
+  unit             String   @default("adet") @db.VarChar(50)
+  weight           Decimal? @db.Decimal(8, 3)
+
+  // Durum
+  isActive         Boolean  @default(true) @map("is_active")
+  isFeatured       Boolean  @default(false) @map("is_featured")
+
+  // SEO
+  metaTitle        String?  @map("meta_title") @db.VarChar(255)
+  metaDescription  String?  @map("meta_description") @db.Text
+
+  // Değerlendirme (ortalama — review tablosu hazır değil iken burada tutuyoruz)
+  rating           Decimal  @default(0) @map("rating") @db.Decimal(3, 1)
+  reviewCount      Int      @default(0) @map("review_count")
+
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // İlişkiler
+  category  Category       @relation(fields: [categoryId], references: [id])
+  brand     Brand          @relation(fields: [brandId], references: [id])
+  images    ProductImage[]
+  specs     ProductSpec[]
+  tags      ProductTag[]
+
+  @@index([brandId])
+  @@index([categoryId])
+  @@index([slug])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@map("products")
+}
+
+// ─── ÜRÜN GÖRSELLERİ ─────────────────────────────────────────────────────────
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  productId String  @map("product_id")
+  url       String  @db.VarChar(500)
+  altText   String? @map("alt_text") @db.VarChar(255)
+  sortOrder Int     @default(0) @map("sort_order")
+  isPrimary Boolean @default(false) @map("is_primary")
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// ─── TEKNİK ÖZELLİKLER ───────────────────────────────────────────────────────
+
+model ProductSpec {
+  id         Int     @id @default(autoincrement())
+  productId  String  @map("product_id")
+  specName   String  @map("spec_name") @db.VarChar(100)
+  specValue  String  @map("spec_value") @db.VarChar(255)
+  specUnit   String? @map("spec_unit") @db.VarChar(50)
+  sortOrder  Int     @default(0) @map("sort_order")
+
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_specifications")
+}
+
+// ─── ETİKETLER ───────────────────────────────────────────────────────────────
+
+model Tag {
+  id       Int          @id @default(autoincrement())
+  name     String       @unique @db.VarChar(100)
+  slug     String       @unique @db.VarChar(100)
+  products ProductTag[]
+
+  @@map("tags")
+}
+
+model ProductTag {
+  productId String  @map("product_id")
+  tagId     Int     @map("tag_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([productId, tagId])
+  @@map("product_tags")
+}

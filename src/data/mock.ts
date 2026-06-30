@@ -1017,6 +1017,38 @@ export const MOCK_PRODUCTS: Product[] = [
   },
 
   {
+    id: 'albsu-021',
+    name: 'Kärcher K5 Premium Full Control',
+    slug: 'karcher-k5-premium-full-control',
+    shortDescription: 'Kärcher K5 Premium Full Control, 145 bar ve dijital tetik kontrollü profesyonel yıkayıcı.',
+    description:
+      'Kärcher K5 Premium Full Control, 145 bar çalışma basıncı ve dijital basınç göstergeli tetik tabancasıyla profesyonel düzeyde temizlik yapan güçlü yüksek basınçlı yıkayıcıdır. Su soğutmalı motor ve su çekimli deterjan emişiyle yüksek performans sunar.',
+    price: 9800,
+    brand: 'alb-su-aritma',
+    category: MOCK_CATEGORIES_ALBSU[4],
+    sku: 'ALBSU-KARCH-K5',
+    unit: 'adet',
+    stock: 18,
+    isFeatured: false,
+    isActive: true,
+    rating: 4.9,
+    reviewCount: 134,
+    tags: ['Kärcher', 'yüksek basınçlı yıkayıcı', 'K5', 'profesyonel'],
+    images: [
+      { url: '/images/albsu-karcher-k5.jpg', alt: 'Kärcher K5 Premium Full Control', isPrimary: true },
+    ],
+    specs: [
+      { name: 'Basınç', value: '145', unit: 'bar' },
+      { name: 'Güç', value: '2.100', unit: 'Watt' },
+      { name: 'Debi', value: '500', unit: 'L/saat' },
+      { name: 'Kontrol', value: 'Full Control dijital basınç' },
+      { name: 'Garanti', value: '2 yıl' },
+    ],
+    createdAt: '2026-01-10T10:00:00Z',
+    updatedAt: '2026-06-01T08:00:00Z',
+  },
+
+  {
     id: 'albsu-022',
     name: 'Kärcher VC 5 Cordless Elektrikli Süpürge',
     slug: 'karcher-vc5-cordless-elektrikli-supurge',
