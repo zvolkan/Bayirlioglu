@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
 import { MOCK_PRODUCTS } from '@/data/mock'
@@ -81,16 +82,26 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="grid md:grid-cols-2 gap-0">
             {/* Görsel */}
-            <div className="bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center min-h-72 md:min-h-[480px] relative">
-              {/* GÖRSEL: {primaryImg?.url} */}
-              <span className="text-[120px] opacity-50">{product.category.icon || '📦'}</span>
+            <div className="bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center min-h-72 md:min-h-[480px] relative overflow-hidden">
+              {primaryImg?.url ? (
+                <Image
+                  src={primaryImg.url}
+                  alt={primaryImg.alt || product.name}
+                  fill
+                  className="object-contain p-6"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              ) : (
+                <span className="text-[120px] opacity-50">{product.category.icon || '📦'}</span>
+              )}
               {discount && (
-                <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+                <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full z-10">
                   -%{discount}
                 </div>
               )}
               {product.isFeatured && !discount && (
-                <div className={`absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full ${badgeBg}`}>
+                <div className={`absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full z-10 ${badgeBg}`}>
                   Öne Çıkan
                 </div>
               )}
@@ -240,8 +251,18 @@ export default async function ProductDetailPage({ params }: Props) {
                   href={`/${brandKey}/urunler/${p.slug}`}
                   className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
                 >
-                  <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl">
-                    {p.category.icon || '📦'}
+                  <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl relative overflow-hidden">
+                    {p.images?.[0]?.url ? (
+                      <Image
+                        src={p.images[0].url}
+                        alt={p.images[0].alt || p.name}
+                        fill
+                        className="object-contain p-3"
+                        sizes="200px"
+                      />
+                    ) : (
+                      <span>{p.category.icon || '📦'}</span>
+                    )}
                   </div>
                   <div className="p-3">
                     <p className="font-semibold text-gray-900 text-xs line-clamp-2 mb-1">{p.name}</p>
