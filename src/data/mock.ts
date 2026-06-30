@@ -387,7 +387,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 88,
     tags: ['AO Smith', 'su ısıtıcı', 'elektrikli boiler', 'DAISY'],
     images: [
-      { url: 'https://aosmith.com.tr/wp-content/uploads/2016/07/daisy.png', alt: 'AO Smith DAISY', isPrimary: true },
+      { url: '/images/products/albsu-ao-smith-daisy.jpg', alt: 'AO Smith DAISY', isPrimary: true },
     ],
     specs: [
       { name: 'Marka', value: 'AO Smith' },
@@ -419,7 +419,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 64,
     tags: ['AO Smith', 'LOTUS', 'boiler', '75 litre', 'merkezi sistem'],
     images: [
-      { url: 'https://aosmith.com.tr/wp-content/uploads/Lotus75TC.jpg', alt: 'AO Smith LOTUS 75 TC', isPrimary: true },
+      { url: '/images/products/albsu-lotus-75tc.jpg', alt: 'AO Smith LOTUS 75 TC', isPrimary: true },
     ],
     specs: [
       { name: 'Kapasite', value: '75', unit: 'litre' },
@@ -515,7 +515,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 32,
     tags: ['Frezya', 'AO Smith', 'ticari', '300 litre', 'boiler'],
     images: [
-      { url: 'https://aosmith.com.tr/wp-content/uploads/50001-060mk-200.jpg', alt: 'AO Smith Frezya 300 S', isPrimary: true },
+      { url: '/images/products/albsu-frezya-300s.jpg', alt: 'AO Smith Frezya 300 S', isPrimary: true },
     ],
     specs: [
       { name: 'Kapasite', value: '300', unit: 'litre' },
@@ -547,7 +547,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 21,
     tags: ['Frezya', 'AO Smith', '300 litre', 'merkezi sistem', 'güneş enerjisi'],
     images: [
-      { url: 'https://aosmith.com.tr/wp-content/uploads/50007-063mk.jpg', alt: 'AO Smith Frezya 300 TU', isPrimary: true },
+      { url: '/images/products/albsu-frezya-300tu.jpg', alt: 'AO Smith Frezya 300 TU', isPrimary: true },
     ],
     specs: [
       { name: 'Kapasite', value: '300', unit: 'litre' },
@@ -612,7 +612,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 76,
     tags: ['su yumuşatma', 'kireç önleme', 'Maxim', 'iyon değiştirici'],
     images: [
-      { url: 'https://aosmith.com.tr/wp-content/uploads/2016/07/maximtekli.png', alt: 'AO Smith Maxim Su Yumuşatma', isPrimary: true },
+      { url: '/images/products/albsu-maxim.jpg', alt: 'AO Smith Maxim Su Yumuşatma', isPrimary: true },
     ],
     specs: [
       { name: 'Teknoloji', value: 'İyon değiştirici' },
@@ -643,7 +643,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 52,
     tags: ['TRIASOFT', 'su yumuşatma', 'mini', 'kompakt'],
     images: [
-      { url: 'https://aosmith.com.tr/wp-content/uploads/MINI-GORSEL.jpg', alt: 'TRIASOFT Mini', isPrimary: true },
+      { url: '/images/products/albsu-triasoft-mini.jpg', alt: 'TRIASOFT Mini', isPrimary: true },
     ],
     specs: [
       { name: 'Model', value: 'TRIASOFT Mini' },
@@ -675,7 +675,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 38,
     tags: ['TRIASOFT', 'su yumuşatma', 'midi', 'orta kapasite'],
     images: [
-      { url: 'https://aosmith.com.tr/wp-content/uploads/MIDI.jpg', alt: 'TRIASOFT Midi', isPrimary: true },
+      { url: '/images/products/albsu-triasoft-midi.jpg', alt: 'TRIASOFT Midi', isPrimary: true },
     ],
     specs: [
       { name: 'Model', value: 'TRIASOFT Midi' },
@@ -706,7 +706,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 27,
     tags: ['OPAL', 'su yumuşatma', 'çift tank', 'kesintisiz'],
     images: [
-      { url: 'https://aosmith.com.tr/wp-content/uploads/2016/07/2x100.png', alt: 'OPAL NW Su Yumuşatma', isPrimary: true },
+      { url: '/images/products/albsu-opal-nw.jpg', alt: 'OPAL NW Su Yumuşatma', isPrimary: true },
     ],
     specs: [
       { name: 'Seri', value: 'OPAL NW' },
@@ -738,7 +738,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 45,
     tags: ['Merkür', 'Ecostar', 'ısı pompası', 'enerji tasarrufu', 'AO Smith'],
     images: [
-      { url: 'https://aosmith.com.tr/wp-content/uploads/2016/07/merkür.jpg', alt: 'AO Smith Merkür Ecostar', isPrimary: true },
+      { url: '/images/products/albsu-merkur-ecostar.jpg', alt: 'AO Smith Merkür Ecostar', isPrimary: true },
     ],
     specs: [
       { name: 'Teknoloji', value: 'Isı pompası' },
@@ -1042,6 +1042,108 @@ export const MOCK_PRODUCTS: Product[] = [
       { name: 'Güç', value: '2.100', unit: 'Watt' },
       { name: 'Debi', value: '500', unit: 'L/saat' },
       { name: 'Kontrol', value: 'Full Control dijital basınç' },
+      { name: 'Garanti', value: '2 yıl' },
+    ],
+    createdAt: '2026-01-10T10:00:00Z',
+    updatedAt: '2026-06-01T08:00:00Z',
+  },
+
+  {
+    id: 'albsu-022',
+    name: 'Kärcher VC 5 Cordless Elektrikli Süpürge',
+    slug: 'karcher-vc5-cordless-elektrikli-supurge',
+    shortDescription: 'Kärcher VC 5 Cordless, şarjlı dikey elektrikli süpürge, güçlü emişli.',
+    description:
+      'Kärcher VC 5 Cordless, kablo bağımsız 18V şarjlı motoru ve geniş emme başlığıyla sert zemin ve halıda üstün performans sunan dikey elektrikli süpürgedir. Hafif yapısı, esnek başlığı ve uzun pil ömrüyle ev temizliğini kolaylaştırır.',
+    price: 4900,
+    salePrice: 4200,
+    brand: 'alb-su-aritma',
+    category: MOCK_CATEGORIES_ALBSU[4],
+    sku: 'ALBSU-KARCH-VC5',
+    unit: 'adet',
+    stock: 30,
+    isFeatured: true,
+    isActive: true,
+    rating: 4.6,
+    reviewCount: 87,
+    tags: ['Kärcher', 'elektrikli süpürge', 'şarjlı', 'VC 5', 'cordless'],
+    images: [
+      { url: '/images/products/albsu-karcher-vc5.jpg', alt: 'Kärcher VC 5 Cordless', isPrimary: true },
+    ],
+    specs: [
+      { name: 'Model', value: 'VC 5 Cordless' },
+      { name: 'Güç Kaynağı', value: 'Şarjlı (18V Li-ion)' },
+      { name: 'Pil Ömrü', value: '40 dk' },
+      { name: 'Ağırlık', value: '2.6', unit: 'kg' },
+      { name: 'Garanti', value: '2 yıl' },
+    ],
+    createdAt: '2026-01-10T10:00:00Z',
+    updatedAt: '2026-06-01T08:00:00Z',
+  },
+
+  {
+    id: 'albsu-023',
+    name: 'Kärcher RCV 5 Robot Süpürge',
+    slug: 'karcher-rcv5-robot-supurge',
+    shortDescription: 'Kärcher RCV 5 akıllı navigasyonlu robot süpürge, uygulama kontrolü.',
+    description:
+      'Kärcher RCV 5, lazer navigasyon sistemi ve akıllı haritalama özelliğiyle evin tüm köşelerini sistematik biçimde temizleyen robot süpürgedir. Uygulama üzerinden bölge seçimi, zamanlama ve temizlik geçmişi takibi yapılabilir.',
+    price: 8500,
+    salePrice: 7200,
+    brand: 'alb-su-aritma',
+    category: MOCK_CATEGORIES_ALBSU[4],
+    sku: 'ALBSU-KARCH-RCV5',
+    unit: 'adet',
+    stock: 20,
+    isFeatured: true,
+    isActive: true,
+    rating: 4.7,
+    reviewCount: 112,
+    tags: ['Kärcher', 'robot süpürge', 'RCV 5', 'akıllı', 'lazer navigasyon'],
+    images: [
+      { url: '/images/products/albsu-karcher-rcv5.jpg', alt: 'Kärcher RCV 5 Robot Süpürge', isPrimary: true },
+    ],
+    specs: [
+      { name: 'Model', value: 'RCV 5' },
+      { name: 'Navigasyon', value: 'Lazer + akıllı haritalama' },
+      { name: 'Pil Ömrü', value: '120 dk' },
+      { name: 'Uygulama Kontrolü', value: 'Var (iOS / Android)' },
+      { name: 'Garanti', value: '2 yıl' },
+    ],
+    createdAt: '2026-01-10T10:00:00Z',
+    updatedAt: '2026-06-01T08:00:00Z',
+  },
+
+  {
+    id: 'albsu-024',
+    name: 'Kärcher RCW 2 Extra+ Pencere Temizleme Robotu',
+    slug: 'karcher-rcw2-extra-pencere-temizleme-robotu',
+    shortDescription: 'RCW 2 Extra+ büyük ve ulaşılması zor pencereleri zahmetsizce temizler, iz bırakmaz.',
+    description:
+      'Kärcher RCW 2 Extra+, güçlü vakum teknolojisiyle cam yüzeye yapışarak sistematik navigasyon ve nesne algılama sensörleriyle otomatik temizlik yapan pencere temizleme robotudur. Mikrofiber silme bezleri ve iki püskürtme başlığıyla her seferinde pırıl pırıl, iz bırakmayan sonuçlar sunar. Manuel cam temizliğinin yerini alarak büyük pencereler ve yüksek noktalar için ideal çözümdür.',
+    price: 6800,
+    salePrice: 5900,
+    brand: 'alb-su-aritma',
+    category: MOCK_CATEGORIES_ALBSU[4],
+    sku: 'ALBSU-KARCH-RCW2',
+    unit: 'adet',
+    stock: 15,
+    isFeatured: false,
+    isActive: true,
+    rating: 4.5,
+    reviewCount: 54,
+    tags: ['Kärcher', 'cam temizleme robotu', 'RCW 2', 'pencere', 'robot'],
+    images: [
+      { url: '/images/products/albsu-karcher-rcw2.jpg', alt: 'Kärcher RCW 2 Extra+ Pencere Temizleme Robotu', isPrimary: true },
+    ],
+    specs: [
+      { name: 'Model', value: 'RCW 2 Extra+' },
+      { name: 'Emiş Gücü', value: '3.300 Pa (maks. 5.000 Pa)' },
+      { name: 'Deterjan Tankı', value: '70', unit: 'ml' },
+      { name: 'Kablo Uzunluğu', value: '5', unit: 'm' },
+      { name: 'Ses Seviyesi', value: '62', unit: 'dB(A)' },
+      { name: 'Ağırlık', value: '1,1', unit: 'kg' },
+      { name: 'Voltaj', value: '100-240', unit: 'V' },
       { name: 'Garanti', value: '2 yıl' },
     ],
     createdAt: '2026-01-10T10:00:00Z',
