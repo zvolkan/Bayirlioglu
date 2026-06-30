@@ -107,7 +107,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 42,
     tags: ['gübre', 'yaprak', 'bitki gelişimi'],
     images: [
-      { url: '/images/products/tarim-baroute.jpg', alt: 'Baroute', isPrimary: true },
+      { url: '/images/tarim-baroute.jpg', alt: 'Baroute', isPrimary: true },
     ],
     specs: [
       { name: 'Uygulama Yöntemi', value: 'Yapraktan / Damla sulama' },
@@ -136,7 +136,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 28,
     tags: ['yayıcı', 'yapıştırıcı', 'ilaçlama'],
     images: [
-      { url: '/images/products/tarim-cloud.jpg', alt: 'Cloud', isPrimary: true },
+      { url: '/images/tarim-cloud.jpg', alt: 'Cloud', isPrimary: true },
     ],
     specs: [
       { name: 'Ürün Tipi', value: 'Yayıcı yapıştırıcı' },
@@ -166,7 +166,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 95,
     tags: ['gübre', 'NPK', 'fosfor', 'potasyum'],
     images: [
-      { url: '/images/products/tarim-phoska.jpg', alt: 'Phoska', isPrimary: true },
+      { url: '/images/tarim-phoska.jpg', alt: 'Phoska', isPrimary: true },
     ],
     specs: [
       { name: 'İçerik', value: 'N-P-K bileşik gübre' },
@@ -196,7 +196,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 35,
     tags: ['biyostimülant', 'stres dayanıklılığı', 'amino asit'],
     images: [
-      { url: '/images/products/tarim-stamin.jpg', alt: 'Stamin', isPrimary: true },
+      { url: '/images/tarim-stamin.jpg', alt: 'Stamin', isPrimary: true },
     ],
     specs: [
       { name: 'Uygulama Yöntemi', value: 'Yapraktan / topraktan' },
@@ -226,7 +226,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 67,
     tags: ['kalsiyum', 'magnezyum', 'gübre', 'Ca+Mg'],
     images: [
-      { url: '/images/products/tarim-calm.jpg', alt: 'CalM', isPrimary: true },
+      { url: '/images/tarim-calm.jpg', alt: 'CalM', isPrimary: true },
     ],
     specs: [
       { name: 'Kalsiyum (Ca)', value: '%15' },
@@ -256,7 +256,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 58,
     tags: ['insektisit', 'spinosad', 'organik', 'zararlı kontrolü'],
     images: [
-      { url: '/images/products/tarim-tracer.jpg', alt: 'Tracer', isPrimary: true },
+      { url: '/images/tarim-tracer.jpg', alt: 'Tracer', isPrimary: true },
     ],
     specs: [
       { name: 'Aktif Madde', value: 'Spinosad' },
@@ -287,7 +287,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 112,
     tags: ['NPK', 'azot', 'gübre', 'vejetatif gelişim'],
     images: [
-      { url: '/images/products/tarim-25-5-5.jpg', alt: '25-5-5 NPK Gübre', isPrimary: true },
+      { url: '/images/tarim-25-5-5.jpg', alt: '25-5-5 NPK Gübre', isPrimary: true },
     ],
     specs: [
       { name: 'N-P-K Oranı', value: '25-5-5' },
@@ -319,7 +319,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 44,
     tags: ['potasyum', 'gübre', 'meyve kalitesi'],
     images: [
-      { url: '/images/products/tarim-potassio.jpg', alt: 'Potassio', isPrimary: true },
+      { url: '/images/tarim-potassio.jpg', alt: 'Potassio', isPrimary: true },
     ],
     specs: [
       { name: 'Potasyum (K₂O)', value: '%50' },
@@ -350,7 +350,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 73,
     tags: ['başlangıç gübresi', 'ekim öncesi', 'kök gelişimi', 'toprak hazırlığı'],
     images: [
-      { url: '/images/products/tarim-pre-feed.jpg', alt: 'Pre Feed', isPrimary: true },
+      { url: '/images/tarim-pre-feed.jpg', alt: 'Pre Feed', isPrimary: true },
     ],
     specs: [
       { name: 'Uygulama Zamanı', value: 'Ekim / dikim öncesi' },
@@ -387,7 +387,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 88,
     tags: ['AO Smith', 'su ısıtıcı', 'elektrikli boiler', 'DAISY'],
     images: [
-      { url: '/images/products/albsu-ao-smith-daisy.jpg', alt: 'AO Smith DAISY', isPrimary: true },
+      { url: '/images/albsu-ao-smith-daisy.jpg', alt: 'AO Smith DAISY', isPrimary: true },
     ],
     specs: [
       { name: 'Marka', value: 'AO Smith' },
@@ -419,7 +419,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 64,
     tags: ['AO Smith', 'LOTUS', 'boiler', '75 litre', 'merkezi sistem'],
     images: [
-      { url: '/images/products/albsu-lotus-75tc.jpg', alt: 'AO Smith LOTUS 75 TC', isPrimary: true },
+      { url: '/images/albsu-lotus-75tc.jpg', alt: 'AO Smith LOTUS 75 TC', isPrimary: true },
     ],
     specs: [
       { name: 'Kapasite', value: '75', unit: 'litre' },
@@ -450,7 +450,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 41,
     tags: ['AO Smith', 'LTS', 'premium', 'boiler', '75 litre'],
     images: [
-      { url: '/images/products/albsu-lts75lx.jpg', alt: 'AO Smith LTS 75 LX', isPrimary: true },
+      { url: '/images/albsu-lts75lx.jpg', alt: 'AO Smith LTS 75 LX', isPrimary: true },
     ],
     specs: [
       { name: 'Kapasite', value: '75', unit: 'litre' },
@@ -482,7 +482,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 53,
     tags: ['AO Smith', 'LTS', 'boiler', '75 litre'],
     images: [
-      { url: '/images/products/albsu-lts75sx.jpg', alt: 'AO Smith LTS 75 SX', isPrimary: true },
+      { url: '/images/albsu-lts75sx.jpg', alt: 'AO Smith LTS 75 SX', isPrimary: true },
     ],
     specs: [
       { name: 'Kapasite', value: '75', unit: 'litre' },
@@ -515,7 +515,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 32,
     tags: ['Frezya', 'AO Smith', 'ticari', '300 litre', 'boiler'],
     images: [
-      { url: '/images/products/albsu-frezya-300s.jpg', alt: 'AO Smith Frezya 300 S', isPrimary: true },
+      { url: '/images/albsu-frezya-300s.jpg', alt: 'AO Smith Frezya 300 S', isPrimary: true },
     ],
     specs: [
       { name: 'Kapasite', value: '300', unit: 'litre' },
@@ -547,7 +547,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 21,
     tags: ['Frezya', 'AO Smith', '300 litre', 'merkezi sistem', 'güneş enerjisi'],
     images: [
-      { url: '/images/products/albsu-frezya-300tu.jpg', alt: 'AO Smith Frezya 300 TU', isPrimary: true },
+      { url: '/images/albsu-frezya-300tu.jpg', alt: 'AO Smith Frezya 300 TU', isPrimary: true },
     ],
     specs: [
       { name: 'Kapasite', value: '300', unit: 'litre' },
@@ -578,7 +578,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 9,
     tags: ['Frezya', 'AO Smith', '600 litre', 'endüstriyel', 'otel'],
     images: [
-      { url: '/images/products/albsu-frezya-600s.jpg', alt: 'AO Smith Frezya 600 S', isPrimary: true },
+      { url: '/images/albsu-frezya-600s.jpg', alt: 'AO Smith Frezya 600 S', isPrimary: true },
     ],
     specs: [
       { name: 'Kapasite', value: '600', unit: 'litre' },
@@ -612,7 +612,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 76,
     tags: ['su yumuşatma', 'kireç önleme', 'Maxim', 'iyon değiştirici'],
     images: [
-      { url: '/images/products/albsu-maxim.jpg', alt: 'AO Smith Maxim Su Yumuşatma', isPrimary: true },
+      { url: '/images/albsu-maxim.jpg', alt: 'AO Smith Maxim Su Yumuşatma', isPrimary: true },
     ],
     specs: [
       { name: 'Teknoloji', value: 'İyon değiştirici' },
@@ -643,7 +643,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 52,
     tags: ['TRIASOFT', 'su yumuşatma', 'mini', 'kompakt'],
     images: [
-      { url: '/images/products/albsu-triasoft-mini.jpg', alt: 'TRIASOFT Mini', isPrimary: true },
+      { url: '/images/albsu-triasoft-mini.jpg', alt: 'TRIASOFT Mini', isPrimary: true },
     ],
     specs: [
       { name: 'Model', value: 'TRIASOFT Mini' },
@@ -675,7 +675,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 38,
     tags: ['TRIASOFT', 'su yumuşatma', 'midi', 'orta kapasite'],
     images: [
-      { url: '/images/products/albsu-triasoft-midi.jpg', alt: 'TRIASOFT Midi', isPrimary: true },
+      { url: '/images/albsu-triasoft-midi.jpg', alt: 'TRIASOFT Midi', isPrimary: true },
     ],
     specs: [
       { name: 'Model', value: 'TRIASOFT Midi' },
@@ -706,7 +706,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 27,
     tags: ['OPAL', 'su yumuşatma', 'çift tank', 'kesintisiz'],
     images: [
-      { url: '/images/products/albsu-opal-nw.jpg', alt: 'OPAL NW Su Yumuşatma', isPrimary: true },
+      { url: '/images/albsu-opal-nw.jpg', alt: 'OPAL NW Su Yumuşatma', isPrimary: true },
     ],
     specs: [
       { name: 'Seri', value: 'OPAL NW' },
@@ -738,7 +738,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 45,
     tags: ['Merkür', 'Ecostar', 'ısı pompası', 'enerji tasarrufu', 'AO Smith'],
     images: [
-      { url: '/images/products/albsu-merkur-ecostar.jpg', alt: 'AO Smith Merkür Ecostar', isPrimary: true },
+      { url: '/images/albsu-merkur-ecostar.jpg', alt: 'AO Smith Merkür Ecostar', isPrimary: true },
     ],
     specs: [
       { name: 'Teknoloji', value: 'Isı pompası' },
@@ -772,7 +772,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 118,
     tags: ['sebil', 'arıtmalı', 'Ortimax', 'içme suyu', 'siyah'],
     images: [
-      { url: '/images/products/albsu-ortimax-siyah.jpg', alt: 'Ortimax Arıtmalı Sebil Siyah', isPrimary: true },
+      { url: '/images/albsu-ortimax-siyah.jpg', alt: 'Ortimax Arıtmalı Sebil Siyah', isPrimary: true },
     ],
     specs: [
       { name: 'Renk', value: 'Siyah' },
@@ -803,7 +803,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 84,
     tags: ['sebil', 'arıtmalı', 'Ortimax', 'kompakt', 'tezgah üstü'],
     images: [
-      { url: '/images/products/albsu-ortimax-kisa.jpg', alt: 'Ortimax Arıtmalı Sebil Kısa', isPrimary: true },
+      { url: '/images/albsu-ortimax-kisa.jpg', alt: 'Ortimax Arıtmalı Sebil Kısa', isPrimary: true },
     ],
     specs: [
       { name: 'Boyut', value: 'Kompakt / kısa' },
@@ -837,7 +837,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 95,
     tags: ['İhlas', 'Aura', 'klima', '18000 BTU', 'inverter', 'A++'],
     images: [
-      { url: '/images/products/albsu-ihlas-aura-18.jpg', alt: 'İhlas Aura 18000 BTU', isPrimary: true },
+      { url: '/images/albsu-ihlas-aura-18.jpg', alt: 'İhlas Aura 18000 BTU', isPrimary: true },
     ],
     specs: [
       { name: 'Soğutma Kapasitesi', value: '18.000', unit: 'BTU' },
@@ -870,7 +870,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 142,
     tags: ['İhlas', 'Aura', 'klima', '12000 BTU', 'inverter', 'A++'],
     images: [
-      { url: '/images/products/albsu-ihlas-aura-12.jpg', alt: 'İhlas Aura 12000 BTU', isPrimary: true },
+      { url: '/images/albsu-ihlas-aura-12.jpg', alt: 'İhlas Aura 12000 BTU', isPrimary: true },
     ],
     specs: [
       { name: 'Soğutma Kapasitesi', value: '12.000', unit: 'BTU' },
@@ -901,7 +901,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 67,
     tags: ['İhlas', 'Aura', 'klima', '24000 BTU', 'salon tipi'],
     images: [
-      { url: '/images/products/albsu-ihlas-aura-24.jpg', alt: 'İhlas Aura 24000 BTU Salon', isPrimary: true },
+      { url: '/images/albsu-ihlas-aura-24.jpg', alt: 'İhlas Aura 24000 BTU Salon', isPrimary: true },
     ],
     specs: [
       { name: 'Soğutma Kapasitesi', value: '24.000', unit: 'BTU' },
@@ -936,7 +936,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 78,
     tags: ['şofben', 'İhlas', 'doğalgaz', 'LPG', 'anlık su ısıtıcı'],
     images: [
-      { url: '/images/products/albsu-ihlas-sofben.jpg', alt: 'İhlas Şofben', isPrimary: true },
+      { url: '/images/albsu-ihlas-sofben.jpg', alt: 'İhlas Şofben', isPrimary: true },
     ],
     specs: [
       { name: 'Yakıt Tipi', value: 'Doğalgaz / LPG' },
@@ -968,7 +968,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 63,
     tags: ['vantilatör', 'İhlas', 'AU3502', 'kule tipi', 'uzaktan kumanda'],
     images: [
-      { url: '/images/products/albsu-ihlas-au3502.jpg', alt: 'İhlas AU3502 Vantilatör', isPrimary: true },
+      { url: '/images/albsu-ihlas-au3502.jpg', alt: 'İhlas AU3502 Vantilatör', isPrimary: true },
     ],
     specs: [
       { name: 'Model', value: 'AU3502 New' },
@@ -1004,44 +1004,12 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 201,
     tags: ['Kärcher', 'yüksek basınçlı yıkayıcı', 'temizlik', 'K2'],
     images: [
-      { url: '/images/products/albsu-karcher-k2.jpg', alt: 'Kärcher K2 Compact', isPrimary: true },
+      { url: '/images/albsu-karcher-k2.jpg', alt: 'Kärcher K2 Compact', isPrimary: true },
     ],
     specs: [
       { name: 'Basınç', value: '110', unit: 'bar' },
       { name: 'Güç', value: '1.400', unit: 'Watt' },
       { name: 'Debi', value: '360', unit: 'L/saat' },
-      { name: 'Garanti', value: '2 yıl' },
-    ],
-    createdAt: '2026-01-10T10:00:00Z',
-    updatedAt: '2026-06-01T08:00:00Z',
-  },
-
-  {
-    id: 'albsu-021',
-    name: 'Kärcher K5 Premium Full Control',
-    slug: 'karcher-k5-premium-full-control',
-    shortDescription: 'Kärcher K5 Premium Full Control, 145 bar ve dijital tetik kontrollü profesyonel yıkayıcı.',
-    description:
-      'Kärcher K5 Premium Full Control, 145 bar çalışma basıncı ve dijital basınç göstergeli tetik tabancasıyla profesyonel düzeyde temizlik yapan güçlü yüksek basınçlı yıkayıcıdır. Su soğutmalı motor ve su çekimli deterjan emişiyle yüksek performans sunar.',
-    price: 9800,
-    brand: 'alb-su-aritma',
-    category: MOCK_CATEGORIES_ALBSU[4],
-    sku: 'ALBSU-KARCH-K5',
-    unit: 'adet',
-    stock: 18,
-    isFeatured: false,
-    isActive: true,
-    rating: 4.9,
-    reviewCount: 134,
-    tags: ['Kärcher', 'yüksek basınçlı yıkayıcı', 'K5', 'profesyonel'],
-    images: [
-      { url: '/images/products/albsu-karcher-k5.jpg', alt: 'Kärcher K5 Premium Full Control', isPrimary: true },
-    ],
-    specs: [
-      { name: 'Basınç', value: '145', unit: 'bar' },
-      { name: 'Güç', value: '2.100', unit: 'Watt' },
-      { name: 'Debi', value: '500', unit: 'L/saat' },
-      { name: 'Kontrol', value: 'Full Control dijital basınç' },
       { name: 'Garanti', value: '2 yıl' },
     ],
     createdAt: '2026-01-10T10:00:00Z',
@@ -1068,7 +1036,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 87,
     tags: ['Kärcher', 'elektrikli süpürge', 'şarjlı', 'VC 5', 'cordless'],
     images: [
-      { url: '/images/products/albsu-karcher-vc5.jpg', alt: 'Kärcher VC 5 Cordless', isPrimary: true },
+      { url: '/images/albsu-karcher-vc5.jpg', alt: 'Kärcher VC 5 Cordless', isPrimary: true },
     ],
     specs: [
       { name: 'Model', value: 'VC 5 Cordless' },
@@ -1101,7 +1069,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 112,
     tags: ['Kärcher', 'robot süpürge', 'RCV 5', 'akıllı', 'lazer navigasyon'],
     images: [
-      { url: '/images/products/albsu-karcher-rcv5.jpg', alt: 'Kärcher RCV 5 Robot Süpürge', isPrimary: true },
+      { url: '/images/albsu-karcher-rcv5.jpg', alt: 'Kärcher RCV 5 Robot Süpürge', isPrimary: true },
     ],
     specs: [
       { name: 'Model', value: 'RCV 5' },
@@ -1134,7 +1102,7 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewCount: 54,
     tags: ['Kärcher', 'cam temizleme robotu', 'RCW 2', 'pencere', 'robot'],
     images: [
-      { url: '/images/products/albsu-karcher-rcw2.jpg', alt: 'Kärcher RCW 2 Extra+ Pencere Temizleme Robotu', isPrimary: true },
+      { url: '/images/albsu-karcher-rcw2.jpg', alt: 'Kärcher RCW 2 Extra+ Pencere Temizleme Robotu', isPrimary: true },
     ],
     specs: [
       { name: 'Model', value: 'RCW 2 Extra+' },
