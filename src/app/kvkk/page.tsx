@@ -24,7 +24,7 @@ const sections = [
   {
     title: '4. Hukuki Sebepler',
     content:
-      'Kişisel verileriniz; sözleşmenin kurulması ve ifası, kanuni yükümlülüklerin yerine getirilmesi ve meşru menfaat kapsamında KVKK'nın 5. maddesi uyarınca işlenmektedir.',
+      "Kişisel verileriniz; sözleşmenin kurulması ve ifası, kanuni yükümlülüklerin yerine getirilmesi ve meşru menfaat kapsamında KVKK'nın 5. maddesi uyarınca işlenmektedir.",
   },
   {
     title: '5. Verilerin Aktarılması',
@@ -39,7 +39,7 @@ const sections = [
   {
     title: '7. Haklarınız',
     content:
-      'KVKK'nın 11. maddesi uyarınca; kişisel verilerinizin işlenip işlenmediğini öğrenme, düzeltme talep etme, silinmesini isteme, işlemeye itiraz etme ve zararın giderilmesini talep etme haklarına sahipsiniz. Taleplerinizi kvkk@bayirlioglugrup.com.tr adresine iletebilirsiniz.',
+      "KVKK'nın 11. maddesi uyarınca; kişisel verilerinizin işlenip işlenmediğini öğrenme, düzeltme talep etme, silinmesini isteme, işlemeye itiraz etme ve zararın giderilmesini talep etme haklarına sahipsiniz. Taleplerinizi kvkk@bayirlioglugrup.com.tr adresine iletebilirsiniz.",
   },
 ]
 
