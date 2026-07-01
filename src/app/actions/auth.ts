@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db'
 import { headers } from 'next/headers'
 
 // ─── E-posta / Şifre ile Kayıt ───────────────────────────────────────────────
