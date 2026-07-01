@@ -1,18 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { useCart } from '@/hooks/useCart'
+import { useCartStore } from '@/store/cartStore'
 import toast from 'react-hot-toast'
 import { getRepeatOrderItems } from '@/app/actions/orders'
+import type { BrandKey } from '@/lib/types'
 
 type Props = {
   orderId: string
-  brandKey: string
+  brandKey: BrandKey
 }
 
 export default function RepeatOrderButton({ orderId, brandKey }: Props) {
   const [loading, setLoading] = useState(false)
-  const { addItem } = useCart()
+  const addItem = useCartStore((s) => s.addItem)
 
   const handleRepeat = async () => {
     setLoading(true)
@@ -23,18 +24,37 @@ export default function RepeatOrderButton({ orderId, brandKey }: Props) {
         return
       }
 
-      // Mevcut ürünleri sepete ekle
       result.available.forEach((item) => {
         const price = Number(item.product.salePrice ?? item.product.price)
-        addItem({
-          id: item.product.id,
-          name: item.product.name,
-          price,
-          image: item.product.images[0]?.url ?? null,
-          unit: item.product.unit,
-          brandKey,
-          quantity: item.quantity,
-        })
+        addItem(
+          {
+            id: item.product.id,
+            name: item.product.name,
+            slug: item.product.slug,
+            description: '',
+            shortDescription: '',
+            price,
+            salePrice: item.product.salePrice ? Number(item.product.salePrice) : undefined,
+            images: item.product.images.map((img) => ({
+              url: img.url,
+              alt: item.product.name,
+              isPrimary: true,
+            })),
+            category: { id: 0, name: '', slug: '' },
+            brand: brandKey,
+            specs: [],
+            stock: item.product.stockQuantity,
+            unit: item.product.unit,
+            isFeatured: false,
+            isActive: item.product.isActive,
+            rating: 0,
+            reviewCount: 0,
+            sku: '',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          item.quantity
+        )
       })
 
       if (result.unavailable.length > 0) {
@@ -68,9 +88,7 @@ export default function RepeatOrderButton({ orderId, brandKey }: Props) {
           Ekleniyor...
         </>
       ) : (
-        <>
-          🔄 Siparişi Tekrarla
-        </>
+        <>🔄 Siparişi Tekrarla</>
       )}
     </button>
   )
