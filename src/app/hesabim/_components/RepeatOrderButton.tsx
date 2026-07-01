@@ -40,7 +40,7 @@ export default function RepeatOrderButton({ orderId, brandKey }: Props) {
               alt: item.product.name,
               isPrimary: true,
             })),
-            category: { id: 0, name: '', slug: '' },
+            category: { id: 0, name: '', slug: '', brand: brandKey, sortOrder: 0 },
             brand: brandKey,
             specs: [],
             stock: item.product.stockQuantity,
