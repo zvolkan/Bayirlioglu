@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { getProductsForAdmin, deleteProduct, toggleProductActive, toggleProductFeatured } from '@/app/actions/admin'
+import { getProductsForAdmin, toggleProductActive, toggleProductFeatured } from '@/app/actions/admin'
+import DeleteButton from './_components/DeleteButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -174,30 +175,5 @@ export default async function AdminUrunlerPage() {
         </div>
       </div>
     </div>
-  )
-}
-
-function DeleteButton({ id, name }: { id: string; name: string }) {
-  async function handleDelete() {
-    'use server'
-    await deleteProduct(id)
-  }
-
-  return (
-    <form
-      action={handleDelete}
-      onSubmit={(e) => {
-        if (!confirm(`"${name}" ürününü silmek istediğinize emin misiniz?`)) {
-          e.preventDefault()
-        }
-      }}
-    >
-      <button
-        type="submit"
-        className="px-3 py-1 text-xs font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-      >
-        Sil
-      </button>
-    </form>
   )
 }
