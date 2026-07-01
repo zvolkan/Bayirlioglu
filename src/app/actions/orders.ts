@@ -229,7 +229,38 @@ export async function addAddress(formData: FormData) {
   })
 
   revalidatePath('/hesabim')
-  redirect('/hesabim')
+}
+
+// ─── Adres güncelle ──────────────────────────────────────────────────────────
+
+export async function updateAddress(addressId: string, formData: FormData) {
+  const user = await getAuthUser()
+
+  const isDefault = formData.get('isDefault') === 'on'
+
+  if (isDefault) {
+    await prisma.address.updateMany({
+      where: { userId: user.id },
+      data: { isDefault: false },
+    })
+  }
+
+  await prisma.address.updateMany({
+    where: { id: addressId, userId: user.id },
+    data: {
+      label: (formData.get('label') as string) || 'Adresim',
+      fullName: formData.get('fullName') as string,
+      phone: formData.get('phone') as string,
+      line1: formData.get('line1') as string,
+      line2: (formData.get('line2') as string) || null,
+      district: formData.get('district') as string,
+      city: formData.get('city') as string,
+      postalCode: (formData.get('postalCode') as string) || null,
+      isDefault,
+    },
+  })
+
+  revalidatePath('/hesabim')
 }
 
 // ─── Adres sil ────────────────────────────────────────────────────────────────

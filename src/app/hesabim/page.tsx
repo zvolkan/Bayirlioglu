@@ -146,6 +146,23 @@ export default async function HesabimPage() {
                       <p className="text-gray-600">{addr.fullName}</p>
                       <p className="text-gray-500">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}</p>
                       <p className="text-gray-500">{addr.district} / {addr.city}</p>
+                      <div className="flex gap-2 mt-2 pt-2 border-t border-gray-200">
+                        <Link
+                          href={`/hesabim/adres-duzenle/${addr.id}`}
+                          className="text-xs text-gray-600 hover:text-gray-900 font-medium border border-gray-300 rounded-lg px-3 py-1.5 transition-colors"
+                        >
+                          Düzenle
+                        </Link>
+                        <form action={async () => {
+                          'use server'
+                          const { deleteAddress } = await import('@/app/actions/orders')
+                          await deleteAddress(addr.id)
+                        }}>
+                          <button type="submit" className="text-xs text-red-600 hover:text-red-700 font-medium border border-red-200 rounded-lg px-3 py-1.5 transition-colors">
+                            Sil
+                          </button>
+                        </form>
+                      </div>
                     </div>
                   ))}
                 </div>

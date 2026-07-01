@@ -1,13 +1,27 @@
-import { redirect } from 'next/navigation'
+'use client'
+
+import { useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
 import { addAddress } from '@/app/actions/orders'
 import { TURKISH_CITIES } from '@/lib/constants'
+import toast from 'react-hot-toast'
 
-export default async function AdresEklePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/giris')
+export default function AdresEklePage() {
+  const [isPending, startTransition] = useTransition()
+  const router = useRouter()
+
+  const handleSubmit = (formData: FormData) => {
+    startTransition(async () => {
+      try {
+        await addAddress(formData)
+        toast.success('Adres kaydedildi!')
+        router.push('/hesabim')
+      } catch {
+        toast.error('Bir hata oluştu, lütfen tekrar deneyin.')
+      }
+    })
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 py-10">
@@ -21,7 +35,7 @@ export default async function AdresEklePage() {
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h1 className="text-xl font-bold text-gray-900 mb-6">Yeni Adres Ekle</h1>
 
-          <form action={addAddress} className="space-y-4">
+          <form action={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Adres Etiketi
@@ -142,9 +156,10 @@ export default async function AdresEklePage() {
               </Link>
               <button
                 type="submit"
-                className="flex-1 py-3 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition-colors"
+                disabled={isPending}
+                className="flex-1 py-3 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Adresi Kaydet
+                {isPending ? 'Kaydediliyor...' : 'Adresi Kaydet'}
               </button>
             </div>
           </form>
