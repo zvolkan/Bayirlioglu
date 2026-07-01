@@ -111,14 +111,14 @@ export default async function AdminUrunlerPage() {
                       <form action={toggleProductActive.bind(null, product.id, product.isActive)}>
                         <button
                           type="submit"
-                          className={`w-10 h-5 rounded-full transition-colors relative ${
+                          className={`w-10 h-5 rounded-full transition-colors duration-200 relative ${
                             product.isActive ? 'bg-green-500' : 'bg-gray-300'
                           }`}
                           title={product.isActive ? 'Pasif yap' : 'Aktif yap'}
                         >
                           <span
-                            className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                              product.isActive ? 'translate-x-5' : 'translate-x-0.5'
+                            className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
+                              product.isActive ? 'translate-x-5' : 'translate-x-0'
                             }`}
                           />
                         </button>
@@ -130,14 +130,14 @@ export default async function AdminUrunlerPage() {
                       <form action={toggleProductFeatured.bind(null, product.id, product.isFeatured)}>
                         <button
                           type="submit"
-                          className={`w-10 h-5 rounded-full transition-colors relative ${
+                          className={`w-10 h-5 rounded-full transition-colors duration-200 relative ${
                             product.isFeatured ? 'bg-yellow-400' : 'bg-gray-300'
                           }`}
                           title={product.isFeatured ? 'Öne çıkarmayı kaldır' : 'Öne çıkar'}
                         >
                           <span
-                            className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                              product.isFeatured ? 'translate-x-5' : 'translate-x-0.5'
+                            className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
+                              product.isFeatured ? 'translate-x-5' : 'translate-x-0'
                             }`}
                           />
                         </button>

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
 import { MOCK_BLOG_POSTS } from '@/data/mock'
@@ -169,9 +170,20 @@ export default async function BrandHomePage({ params }: Props) {
                     href={`/${brandKey}/urunler/${product.slug}`}
                     className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
                   >
-                    {/* GÖRSEL: /public/images/products/${product.slug}.jpg */}
-                    <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl relative">
-                      {product.category.icon || '📦'}
+                    <div className="aspect-square bg-gray-100 relative overflow-hidden">
+                      {product.images[0] ? (
+                        <Image
+                          src={product.images[0].url}
+                          alt={product.images[0].alt || product.name}
+                          fill
+                          sizes="(max-width: 768px) 50vw, 17vw"
+                          className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-4xl">
+                          {product.category.icon || '📦'}
+                        </div>
+                      )}
                       {product.salePrice && (
                         <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                           İndirim
