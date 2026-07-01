@@ -16,7 +16,7 @@ export async function adminLogin(formData: FormData) {
   const redirectTo = (formData.get('redirect') as string) || '/admin/urunler'
 
   if (!password || password !== process.env.ADMIN_PASSWORD) {
-    return { error: 'Şifre yanlış.' }
+    redirect('/admin/giris?error=1')
   }
 
   const cookieStore = await cookies()
