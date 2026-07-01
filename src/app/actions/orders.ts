@@ -229,6 +229,7 @@ export async function addAddress(formData: FormData) {
   })
 
   revalidatePath('/hesabim')
+  redirect('/hesabim')
 }
 
 // ─── Adres sil ────────────────────────────────────────────────────────────────
