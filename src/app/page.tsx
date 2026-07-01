@@ -2,10 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Bayırlıoğlu Grup — ALB Tarım & Albsu Teknolojileri',
+  title: 'Bayırlıoğlu Grup — ALB Tarım & Alb Su Teknolojileri',
   description:
-    "Bayırlıoğlu Grup bünyesindeki ALB Tarım ve Albsu Teknolojileri markaları ile tarım, su arıtma ve teknoloji alanlarında Türkiye'ye hizmet veriyoruz.",
-  keywords: ['Bayırlıoğlu', 'ALB Tarım', 'Albsu Teknolojileri', 'su arıtma', 'tarım ürünleri'],
+    "Bayırlıoğlu Grup bünyesindeki ALB Tarım ve Alb Su Teknolojileri markaları ile tarım, su arıtma ve teknoloji alanlarında Türkiye'ye hizmet veriyoruz.",
+  keywords: ['Bayırlıoğlu', 'ALB Tarım', 'Alb Su Teknolojileri', 'su arıtma', 'tarım ürünleri'],
 }
 
 // ─── İstatistikler ───────────────────────────────────────────────────────────
@@ -100,7 +100,7 @@ export default function HomePage() {
               >
                 <span className="text-4xl">💧</span>
                 <div>
-                  <p className="font-black text-xl">Albsu Teknolojileri</p>
+                  <p className="font-black text-xl">Alb Su Teknolojileri</p>
                   <p className="text-blue-100/80 text-sm mt-1">Su Arıtma · Klima · Elektronik</p>
                 </div>
                 <span className="mt-2 text-sm font-semibold flex items-center gap-1 text-blue-100 group-hover:gap-2 transition-all">
@@ -150,7 +150,7 @@ export default function HomePage() {
                   <strong className="text-gray-800">ALB Tarım</strong> markamız altında organik
                   gübre, damla sulama sistemleri ve tarım ilaçlarıyla çiftçilerimize üretimlerini
                   artırma desteği verirken;{' '}
-                  <strong className="text-gray-800">Albsu Teknolojileri</strong> markamızla
+                  <strong className="text-gray-800">Alb Su Teknolojileri</strong> markamızla
                   su arıtma, klima ve akıllı ev elektroniği alanlarında binlerce haneye hizmet
                   sunuyoruz.
                 </p>
@@ -170,7 +170,7 @@ export default function HomePage() {
                   href="/alb-su-aritma/hakkimizda"
                   className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors"
                 >
-                  💧 Albsu Hakkında
+                  💧 Alb Su Hakkında
                 </Link>
               </div>
             </div>
@@ -232,12 +232,12 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Albsu Teknolojileri */}
+            {/* Alb Su Teknolojileri */}
             <div className="group rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-cyan-50 p-8 hover:shadow-xl hover:shadow-blue-100 transition-all duration-300">
               <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
                 💧
               </div>
-              <h3 className="text-2xl font-black text-gray-900 mb-3">Albsu Teknolojileri</h3>
+              <h3 className="text-2xl font-black text-gray-900 mb-3">Alb Su Teknolojileri</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
                 İleri teknoloji su arıtma cihazları, enerji tasarruflu klima sistemleri ve akıllı
                 ev elektroniğiyle yaşam kalitenizi artırıyoruz. 1.000&apos;den fazla başarılı
@@ -255,7 +255,7 @@ export default function HomePage() {
                 href="/alb-su-aritma"
                 className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
               >
-                Albsu&apos;yu Keşfet →
+                Alb Su&apos;yu Keşfet →
               </Link>
             </div>
           </div>
@@ -307,7 +307,7 @@ export default function HomePage() {
               href="/alb-su-aritma/iletisim"
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
             >
-              💧 Albsu İletişim
+              💧 Alb Su İletişim
             </Link>
           </div>
         </div>

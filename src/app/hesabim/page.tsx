@@ -1,240 +1,286 @@
-'use client'
-
-import { useState } from 'react'
+import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { BRAND, ACTIVE_BRAND_KEY, ORDER_STATUS_LABELS } from '@/lib/constants'
-import { cn, formatPrice, formatDate, getOrderStatusColor } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma'
+import { signOut } from '@/app/actions/auth'
+import ProfileForm from './_components/ProfileForm'
+import RepeatOrderButton from './_components/RepeatOrderButton'
 
-// ─── MOCK DATA ────────────────────────────────────────────────────────────────
-
-const MOCK_USER = {
-  firstName: 'Ahmet',
-  lastName: 'Yılmaz',
-  email: 'ahmet.yilmaz@email.com',
-  phone: '0532 123 45 67',
-  totalOrders: 3,
-  totalSpent: 2450,
-  points: 245,
+export const metadata: Metadata = {
+  title: 'Hesabım | Bayırlıoğlu Grup',
 }
 
-const MOCK_RECENT_ORDERS = [
-  { id: 'ORD-123456-001', date: '2024-06-15', items: 3, total: 1250, status: 'delivered' as const },
-  { id: 'ORD-123456-002', date: '2024-06-01', items: 1, total: 459, status: 'shipped' as const },
-  { id: 'ORD-123456-003', date: '2024-05-20', items: 2, total: 741, status: 'processing' as const },
-]
-
-// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
-
-const primaryColor = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'text-green-600' : 'text-blue-600'
-const primaryBg = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'bg-green-600' : 'bg-blue-600'
-const primaryLight = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
-
-function AccountSidebar({ active }: { active: string }) {
-  const router = useRouter()
-  const links = [
-    { href: '/hesabim', label: 'Hesabım', icon: '👤' },
-    { href: '/hesabim/siparislerim', label: 'Siparişlerim', icon: '📦' },
-    { href: '/hesabim/adreslerim', label: 'Adreslerim', icon: '📍' },
-    { href: '/hesabim/favorilerim', label: 'Favorilerim', icon: '❤️' },
-  ]
-  return (
-    <aside className="w-full md:w-64 flex-shrink-0">
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className={cn('p-6', primaryBg)}>
-          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl font-bold mb-3">
-            {MOCK_USER.firstName[0]}{MOCK_USER.lastName[0]}
-          </div>
-          <p className="text-white font-semibold">{MOCK_USER.firstName} {MOCK_USER.lastName}</p>
-          <p className="text-white/70 text-sm">{MOCK_USER.email}</p>
-        </div>
-        <nav className="p-2">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors',
-                active === link.href ? primaryLight : 'text-gray-600 hover:bg-gray-50'
-              )}
-            >
-              <span>{link.icon}</span>
-              {link.label}
-            </Link>
-          ))}
-          <button
-            onClick={() => router.push('/giris')}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors mt-1"
-          >
-            <span>🚪</span>
-            Çıkış Yap
-          </button>
-        </nav>
-      </div>
-    </aside>
-  )
+const ORDER_STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  PENDING:    { label: 'Beklemede',       color: 'bg-yellow-100 text-yellow-700' },
+  CONFIRMED:  { label: 'Onaylandı',       color: 'bg-blue-100 text-blue-700' },
+  PROCESSING: { label: 'Hazırlanıyor',    color: 'bg-purple-100 text-purple-700' },
+  SHIPPED:    { label: 'Kargoya Verildi', color: 'bg-indigo-100 text-indigo-700' },
+  DELIVERED:  { label: 'Teslim Edildi',   color: 'bg-green-100 text-green-700' },
+  CANCELLED:  { label: 'İptal Edildi',    color: 'bg-red-100 text-red-700' },
+  REFUNDED:   { label: 'İade Edildi',     color: 'bg-gray-100 text-gray-700' },
 }
 
-// ─── PROFILE FORM ─────────────────────────────────────────────────────────────
+function formatPrice(value: unknown): string {
+  return Number(value).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })
+}
 
-function ProfileForm() {
-  const [saved, setSaved] = useState(false)
-  const [form, setForm] = useState({
-    firstName: MOCK_USER.firstName,
-    lastName: MOCK_USER.lastName,
-    email: MOCK_USER.email,
-    phone: MOCK_USER.phone,
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat('tr-TR', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  }).format(new Date(date))
+}
+
+export default async function HesabimPage() {
+  const supabase = await createClient()
+  const { data: { user: authUser } } = await supabase.auth.getUser()
+  if (!authUser) redirect('/giris')
+
+  // DB'deki profil + siparişler
+  let dbUser = await prisma.user.findUnique({
+    where: { id: authUser.id },
+    include: {
+      addresses: { orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }] },
+      orders: {
+        include: {
+          brand: { select: { name: true, key: true } },
+          items: {
+            include: {
+              product: {
+                select: {
+                  name: true, unit: true,
+                  images: { where: { isPrimary: true }, take: 1, select: { url: true } },
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      },
+    },
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+  // İlk girişte DB kaydı henüz yoksa oluştur
+  if (!dbUser) {
+    dbUser = await prisma.user.upsert({
+      where: { id: authUser.id },
+      update: {},
+      create: {
+        id: authUser.id,
+        email: authUser.email!,
+        name: authUser.user_metadata?.full_name ?? null,
+      },
+      include: {
+        addresses: true,
+        orders: { include: { brand: { select: { name: true, key: true } }, items: { include: { product: { select: { name: true, unit: true, images: { where: { isPrimary: true }, take: 1, select: { url: true } } } } } } }, orderBy: { createdAt: 'desc' }, take: 20 },
+      },
+    })
   }
 
+  const user = dbUser!
+  const albTarimOrders = user.orders.filter((o) => o.brand.key === 'alb-tarim')
+  const albSuOrders = user.orders.filter((o) => o.brand.key === 'alb-su-aritma')
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Ad</label>
-          <input
-            className="form-input"
-            value={form.firstName}
-            onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-          />
+    <main className="min-h-screen bg-gray-50 py-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+
+        {/* Başlık */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Merhaba{user.name ? `, ${user.name.split(' ')[0]}` : ''}!
+            </h1>
+            <p className="text-gray-500 text-sm mt-0.5">{authUser.email}</p>
+          </div>
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="text-sm text-gray-500 hover:text-gray-900 border border-gray-300 px-4 py-2 rounded-xl transition-colors"
+            >
+              Çıkış Yap
+            </button>
+          </form>
         </div>
-        <div>
-          <label className="form-label">Soyad</label>
-          <input
-            className="form-input"
-            value={form.lastName}
-            onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-          />
+
+        {/* Özet kartlar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          {[
+            { label: 'ALB Tarım Sipariş',    value: albTarimOrders.length,  icon: '🌾' },
+            { label: 'Alb Su Sipariş',        value: albSuOrders.length,     icon: '💧' },
+            { label: 'Kayıtlı Adres',         value: user.addresses.length,  icon: '📍' },
+            { label: 'Toplam Sipariş',         value: user.orders.length,    icon: '📦' },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
+              <div className="text-2xl mb-1">{stat.icon}</div>
+              <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+              <div className="text-xs text-gray-400 mt-0.5">{stat.label}</div>
+            </div>
+          ))}
         </div>
-      </div>
-      <div>
-        <label className="form-label">E-posta</label>
-        <input
-          type="email"
-          className="form-input"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
-      </div>
-      <div>
-        <label className="form-label">Telefon</label>
-        <input
-          type="tel"
-          className="form-input"
-          value={form.phone}
-          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-        />
-      </div>
-      <div className="flex items-center gap-3">
-        <button
-          type="submit"
-          className={cn('px-6 py-2.5 rounded-xl text-white text-sm font-semibold transition-colors', primaryBg,
-            ACTIVE_BRAND_KEY === 'alb-tarim' ? 'hover:bg-green-500' : 'hover:bg-blue-500'
-          )}
-        >
-          Değişiklikleri Kaydet
-        </button>
-        {saved && <span className="text-green-600 text-sm font-medium">✓ Kaydedildi!</span>}
-      </div>
-    </form>
-  )
-}
 
-// ─── PAGE ─────────────────────────────────────────────────────────────────────
+        <div className="grid lg:grid-cols-3 gap-6">
 
-export default function HesabimPage() {
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container-main">
-        {/* Breadcrumb */}
-        <nav className="text-sm text-gray-500 mb-6">
-          <Link href="/" className="hover:text-gray-900">Ana Sayfa</Link>
-          <span className="mx-2">/</span>
-          <span className="text-gray-900 font-medium">Hesabım</span>
-        </nav>
-
-        <div className="flex flex-col md:flex-row gap-6">
-          <AccountSidebar active="/hesabim" />
-
-          <div className="flex-1 space-y-6">
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                { label: 'Toplam Sipariş', value: MOCK_USER.totalOrders, icon: '📦' },
-                { label: 'Toplam Harcama', value: formatPrice(MOCK_USER.totalSpent), icon: '💳' },
-                { label: 'Puan Bakiyem', value: MOCK_USER.points, icon: '⭐' },
-              ].map((stat) => (
-                <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
-                  <div className="text-3xl mb-2">{stat.icon}</div>
-                  <div className="text-xl font-bold text-gray-900">{stat.value}</div>
-                  <div className="text-xs text-gray-500 mt-1">{stat.label}</div>
-                </div>
-              ))}
+          {/* SOL — Profil + Adresler */}
+          <div className="space-y-5">
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <h2 className="font-semibold text-gray-900 mb-4">Profil Bilgileri</h2>
+              <ProfileForm name={user.name} phone={user.phone} email={authUser.email!} />
             </div>
 
-            {/* Recent Orders */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-semibold text-gray-900">Son Siparişler</h2>
-                <Link href="/hesabim/siparislerim" className={cn('text-sm font-medium', primaryColor)}>
-                  Tümünü Gör →
-                </Link>
-              </div>
-              <div className="space-y-3">
-                {MOCK_RECENT_ORDERS.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{order.id}</p>
-                      <p className="text-xs text-gray-500">{formatDate(order.date)} · {order.items} ürün</p>
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <h2 className="font-semibold text-gray-900 mb-4">Kayıtlı Adresler</h2>
+              {user.addresses.length === 0 ? (
+                <p className="text-gray-400 text-sm">Henüz kayıtlı adres yok.</p>
+              ) : (
+                <div className="space-y-3">
+                  {user.addresses.map((addr) => (
+                    <div key={addr.id} className="p-3 rounded-xl border border-gray-100 bg-gray-50 text-sm">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-gray-800">{addr.label}</span>
+                        {addr.isDefault && (
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Varsayılan</span>
+                        )}
+                      </div>
+                      <p className="text-gray-600">{addr.fullName}</p>
+                      <p className="text-gray-500">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}</p>
+                      <p className="text-gray-500">{addr.district} / {addr.city}</p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-semibold text-gray-900">{formatPrice(order.total)}</span>
-                      <span className={cn('text-xs px-2.5 py-1 rounded-full border font-medium', getOrderStatusColor(order.status as any))}>
-                        {ORDER_STATUS_LABELS[order.status]}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Profile Edit */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-5">Profil Bilgileri</h2>
-              <ProfileForm />
-            </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-4">
-              <Link
-                href="/hesabim/siparislerim"
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4 hover:shadow-md transition-shadow"
-              >
-                <span className="text-3xl">📦</span>
-                <div>
-                  <p className="font-semibold text-gray-900">Siparişlerim</p>
-                  <p className="text-sm text-gray-500">{MOCK_USER.totalOrders} sipariş</p>
+                  ))}
                 </div>
-              </Link>
+              )}
               <Link
-                href="/hesabim/adreslerim"
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4 hover:shadow-md transition-shadow"
+                href="/hesabim/adres-ekle"
+                className="mt-4 inline-block text-sm text-gray-600 hover:text-gray-900 font-medium border border-gray-300 rounded-xl px-4 py-2 transition-colors"
               >
-                <span className="text-3xl">📍</span>
-                <div>
-                  <p className="font-semibold text-gray-900">Adreslerim</p>
-                  <p className="text-sm text-gray-500">2 kayıtlı adres</p>
-                </div>
+                + Adres Ekle
               </Link>
             </div>
           </div>
+
+          {/* SAĞ — Siparişler */}
+          <div className="lg:col-span-2 space-y-6">
+
+            {/* ALB Tarım Siparişleri */}
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              <div className="flex items-center justify-between p-5 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-sm">🌾</div>
+                  <h2 className="font-semibold text-gray-900">ALB Tarım Siparişleri</h2>
+                </div>
+                <Link href="/alb-tarim/urunler" className="text-xs text-green-600 font-semibold hover:underline">
+                  Yeni Sipariş →
+                </Link>
+              </div>
+
+              {albTarimOrders.length === 0 ? (
+                <div className="p-8 text-center">
+                  <p className="text-gray-400 text-sm mb-3">Henüz sipariş vermediniz.</p>
+                  <Link
+                    href="/alb-tarim/urunler"
+                    className="inline-block px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-500 text-white text-sm font-semibold transition-colors"
+                  >
+                    Ürünleri İncele
+                  </Link>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-50">
+                  {albTarimOrders.map((order) => {
+                    const status = ORDER_STATUS_LABELS[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700' }
+                    return (
+                      <div key={order.id} className="p-5">
+                        <div className="flex items-start justify-between gap-4 mb-3">
+                          <div>
+                            <p className="text-xs text-gray-400 font-mono mb-0.5">#{order.id.slice(-8).toUpperCase()}</p>
+                            <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status.color}`}>
+                              {status.label}
+                            </span>
+                            <span className="text-sm font-bold text-gray-900">{formatPrice(order.totalAmount)}</span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5 mb-4">
+                          {order.items.map((item) => (
+                            <div key={item.id} className="flex items-center gap-2 text-sm text-gray-600">
+                              <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
+                              <span className="flex-1 truncate">{item.product.name}</span>
+                              <span className="text-gray-400 flex-shrink-0">{item.quantity} {item.product.unit}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Çiftçi için "Aynı siparişi tekrarla" */}
+                        <RepeatOrderButton orderId={order.id} brandKey="alb-tarim" />
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Alb Su Siparişleri */}
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              <div className="flex items-center justify-between p-5 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-sm">💧</div>
+                  <h2 className="font-semibold text-gray-900">Alb Su Teknolojileri Siparişleri</h2>
+                </div>
+                <Link href="/alb-su-aritma/urunler" className="text-xs text-blue-600 font-semibold hover:underline">
+                  Yeni Sipariş →
+                </Link>
+              </div>
+
+              {albSuOrders.length === 0 ? (
+                <div className="p-8 text-center">
+                  <p className="text-gray-400 text-sm mb-3">Henüz sipariş vermediniz.</p>
+                  <Link
+                    href="/alb-su-aritma/urunler"
+                    className="inline-block px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+                  >
+                    Ürünleri İncele
+                  </Link>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-50">
+                  {albSuOrders.map((order) => {
+                    const status = ORDER_STATUS_LABELS[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700' }
+                    return (
+                      <div key={order.id} className="p-5">
+                        <div className="flex items-start justify-between gap-4 mb-3">
+                          <div>
+                            <p className="text-xs text-gray-400 font-mono mb-0.5">#{order.id.slice(-8).toUpperCase()}</p>
+                            <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status.color}`}>
+                              {status.label}
+                            </span>
+                            <span className="text-sm font-bold text-gray-900">{formatPrice(order.totalAmount)}</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          {order.items.map((item) => (
+                            <div key={item.id} className="flex items-center gap-2 text-sm text-gray-600">
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                              <span className="flex-1 truncate">{item.product.name}</span>
+                              <span className="text-gray-400 flex-shrink-0">{item.quantity} {item.product.unit}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+          </div>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

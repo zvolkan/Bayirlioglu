@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { BRANDS } from '@/lib/constants'
 import { useCart } from '@/hooks/useCart'
 import type { BrandKey } from '@/lib/types'
+import UserMenuButton from '@/components/layout/UserMenuButton'
 
 // ─── BRAND SWITCHER ───────────────────────────────────────────────────────────
 
@@ -19,7 +20,7 @@ const BRAND_TABS: { key: BrandKey; label: string; icon: string; color: string; a
   },
   {
     key: 'alb-su-aritma',
-    label: 'Albsu Teknolojileri',
+    label: 'Alb Su Teknolojileri',
     icon: '💧',
     color: 'text-white/70 hover:text-white hover:bg-white/10',
     activeColor: 'bg-blue-600 text-white shadow-blue-700/30 shadow-lg',
@@ -163,12 +164,7 @@ export default function Header() {
                 </Link>
 
                 {/* Giriş — desktop */}
-                <Link
-                  href="/giris"
-                  className={`hidden sm:flex items-center text-white text-sm px-4 py-2 rounded-xl font-semibold transition-colors ml-1 ${accentColor}`}
-                >
-                  Giriş Yap
-                </Link>
+                <UserMenuButton accentColor={accentColor} />
 
                 {/* Hamburger — mobile */}
                 <button
@@ -267,7 +263,7 @@ export default function Header() {
                     }`}
                   >
                     <span>{tab.icon}</span>
-                    <span>{tab.key === 'alb-tarim' ? 'ALB Tarım' : 'Albsu'}</span>
+                    <span>{tab.key === 'alb-tarim' ? 'ALB Tarım' : 'Alb Su'}</span>
                   </button>
                 ))}
               </div>
