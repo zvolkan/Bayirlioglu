@@ -70,7 +70,7 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
 
   'alb-su-aritma': {
     key: 'alb-su-aritma',
-    name: 'Albsu Teknolojileri',
+    name: 'Alb Su Teknolojileri',
     shortCode: 'AS',
     tagline: 'Temiz Su,\nSağlıklı Yaşam',
     subtitle: 'İleri teknoloji arıtma sistemleriyle',
@@ -81,8 +81,8 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     ctaSecondary: { label: 'Servis Talebi Oluştur', href: '/hizmetler' },
     whatsapp: {
       phone: process.env.NEXT_PUBLIC_WHATSAPP_ALBSU ?? '905007654321',
-      message: 'Merhaba! Albsu su arıtma sistemleri hakkında bilgi almak istiyorum.',
-      tooltip: "Albsu'ya WhatsApp'tan yazın!",
+      message: 'Merhaba! Alb Su Teknolojileri su arıtma sistemleri hakkında bilgi almak istiyorum.',
+      tooltip: "Alb Su Teknolojileri'ne WhatsApp'tan yazın!",
     },
     stats: [
       { value: '1.000+', label: 'Kurulum' },
