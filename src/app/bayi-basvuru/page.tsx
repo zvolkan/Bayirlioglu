@@ -6,20 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
-import { BRAND, ACTIVE_BRAND_KEY, TURKISH_CITIES, SITE_CONFIG } from '@/lib/constants'
+import { TURKISH_CITIES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
-
-// ─── CONSTANTS ────────────────────────────────────────────────────────────────
-
-const isTargi = ACTIVE_BRAND_KEY === 'alb-tarim'
-const primaryBg = isTargi ? 'bg-green-600' : 'bg-blue-600'
-const primaryHover = isTargi ? 'hover:bg-green-500' : 'hover:bg-blue-500'
-const primaryText = isTargi ? 'text-green-600' : 'text-blue-600'
-const primaryLight = isTargi ? 'bg-green-50' : 'bg-blue-50'
-const primaryBorder = isTargi ? 'border-green-200' : 'border-blue-200'
-const gradientBg = isTargi
-  ? 'bg-gradient-to-br from-green-900 via-emerald-800 to-teal-900'
-  : 'bg-gradient-to-br from-blue-900 via-cyan-800 to-sky-900'
 
 // ─── SCHEMA ───────────────────────────────────────────────────────────────────
 
@@ -31,6 +19,7 @@ const schema = z.object({
   phone:          z.string().min(10, 'Geçerli telefon giriniz'),
   city:           z.string().min(1, 'İl seçiniz'),
   district:       z.string().min(2, 'İlçe giriniz'),
+  brand:          z.string().min(1, 'Marka seçiniz'),
   businessType:   z.string().min(1, 'İşletme türü seçiniz'),
   annualRevenue:  z.string().min(1, 'Ciro aralığı seçiniz'),
   message:        z.string().optional(),
@@ -39,15 +28,13 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-// ─── BENEFITS ─────────────────────────────────────────────────────────────────
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
 const BENEFITS = [
   {
     icon: '💰',
     title: 'Cazip Komisyon',
-    description: isTargi
-      ? 'Ürün satışlarından %15 – %25 aralığında komisyon kazanın.'
-      : 'Ürün satışlarından %12 – %20 aralığında komisyon kazanın.',
+    description: 'Ürün satışlarından %12 – %25 aralığında komisyon kazanın.',
   },
   {
     icon: '🎓',
@@ -66,9 +53,23 @@ const BENEFITS = [
   },
 ]
 
-const BUSINESS_TYPES = isTargi
-  ? ['Tarım Bayisi', 'Ziraat Mühendisi', 'Kooperatif', 'Çiftçi Market', 'Diğer']
-  : ['Su Arıtma Servisi', 'Elektrik-Elektronik', 'Beyaz Eşya', 'Hırdavat', 'Diğer']
+const BRAND_OPTIONS = [
+  { value: 'alb-tarim', label: 'ALB Tarım' },
+  { value: 'alb-su-aritma', label: 'Alb Su Teknolojileri' },
+  { value: 'her-ikisi', label: 'Her İkisi' },
+]
+
+const BUSINESS_TYPES = [
+  'Tarım Bayisi',
+  'Ziraat Mühendisi',
+  'Kooperatif',
+  'Çiftçi Market',
+  'Su Arıtma Servisi',
+  'Elektrik-Elektronik',
+  'Beyaz Eşya',
+  'Hırdavat',
+  'Diğer',
+]
 
 const REVENUE_RANGES = [
   '500.000 TL altı',
@@ -87,7 +88,6 @@ export default function BayiBasvuruPage() {
   })
 
   const onSubmit = async (data: FormData) => {
-    // Simulate API call
     await new Promise((r) => setTimeout(r, 1500))
     console.log('Bayi başvurusu:', data)
     toast.success('Başvurunuz alındı! En kısa sürede size dönüş yapacağız.')
@@ -98,31 +98,32 @@ export default function BayiBasvuruPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Page Header */}
-      <div className={cn('py-16 md:py-20', gradientBg)}>
-        <div className="container-main text-center">
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-16 md:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl text-center">
           <nav className="text-sm text-white/60 mb-4 flex items-center justify-center gap-2">
             <Link href="/" className="hover:text-white transition-colors">Ana Sayfa</Link>
             <span>/</span>
             <span className="text-white">Bayi Başvurusu</span>
           </nav>
+          <p className="text-gray-400 text-sm font-semibold uppercase tracking-widest mb-3">
+            Bayırlıoğlu Grup
+          </p>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            {BRAND.name} Bayisi Olun
+            Bayimiz Olun
           </h1>
-          <p className="text-white/80 text-lg max-w-xl mx-auto">
-            {isTargi
-              ? 'Türkiye\'nin güvenilir tarım ürünleri markasının bayisi olarak işletmenizi büyütün.'
-              : 'Su arıtma ve yaşam kalitesi çözümleri alanında güçlü bir iş ortağı edinin.'}
+          <p className="text-white/75 text-lg max-w-xl mx-auto">
+            ALB Tarım ve Alb Su Teknolojileri markalarımızın bayisi olarak işletmenizi büyütün.
           </p>
         </div>
       </div>
 
-      <div className="container-main py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-12">
         {/* Benefits */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {BENEFITS.map((b) => (
-            <div key={b.title} className={cn('rounded-2xl p-5 border', primaryLight, primaryBorder)}>
+            <div key={b.title} className="rounded-2xl p-5 border border-gray-200 bg-white">
               <div className="text-3xl mb-3">{b.icon}</div>
-              <h3 className={cn('font-semibold mb-1', primaryText)}>{b.title}</h3>
+              <h3 className="font-semibold text-gray-900 mb-1">{b.title}</h3>
               <p className="text-sm text-gray-600">{b.description}</p>
             </div>
           ))}
@@ -143,7 +144,7 @@ export default function BayiBasvuruPage() {
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}
-                    className={cn('px-6 py-3 rounded-xl text-white font-semibold transition-colors', primaryBg, primaryHover)}
+                    className="px-6 py-3 rounded-xl text-white font-semibold transition-colors bg-gray-900 hover:bg-gray-700"
                   >
                     Yeni Başvuru Yap
                   </button>
@@ -153,7 +154,7 @@ export default function BayiBasvuruPage() {
                   {/* Company */}
                   <div>
                     <label className="form-label">Firma / İşletme Adı *</label>
-                    <input {...register('companyName')} className="form-input" placeholder="Yılmaz Tarım Ticaret Ltd. Şti." />
+                    <input {...register('companyName')} className="form-input" placeholder="Yılmaz Ticaret Ltd. Şti." />
                     {errors.companyName && <p className="form-error">{errors.companyName.message}</p>}
                   </div>
 
@@ -202,6 +203,16 @@ export default function BayiBasvuruPage() {
                     </div>
                   </div>
 
+                  {/* Marka Seçimi */}
+                  <div>
+                    <label className="form-label">Hangi Marka İçin Başvuruyorsunuz? *</label>
+                    <select {...register('brand')} className="form-input">
+                      <option value="">Seçin</option>
+                      {BRAND_OPTIONS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
+                    </select>
+                    {errors.brand && <p className="form-error">{errors.brand.message}</p>}
+                  </div>
+
                   {/* Business */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -243,8 +254,8 @@ export default function BayiBasvuruPage() {
                         className="mt-0.5 rounded"
                       />
                       <label htmlFor="terms" className="text-sm text-gray-600 cursor-pointer">
-                        <Link href="/gizlilik" className={cn('underline', primaryText)}>Gizlilik Politikası</Link> ve{' '}
-                        <Link href="/kullanim-kosullari" className={cn('underline', primaryText)}>Kullanım Koşulları</Link>'nı
+                        <Link href="/gizlilik" className="underline text-gray-800">Gizlilik Politikası</Link> ve{' '}
+                        <Link href="/kullanim-kosullari" className="underline text-gray-800">Kullanım Koşulları</Link>'nı
                         okudum ve kabul ediyorum.
                       </label>
                     </div>
@@ -255,8 +266,7 @@ export default function BayiBasvuruPage() {
                     type="submit"
                     disabled={isSubmitting}
                     className={cn(
-                      'w-full py-4 rounded-xl text-white font-semibold text-lg transition-colors flex items-center justify-center gap-2',
-                      primaryBg, primaryHover,
+                      'w-full py-4 rounded-xl text-white font-semibold text-lg transition-colors flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700',
                       isSubmitting && 'opacity-70 cursor-not-allowed'
                     )}
                   >
@@ -277,7 +287,7 @@ export default function BayiBasvuruPage() {
             </div>
           </div>
 
-          {/* Sidebar info */}
+          {/* Sidebar */}
           <div className="space-y-4">
             {/* Contact */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -287,21 +297,21 @@ export default function BayiBasvuruPage() {
                   <span className="text-lg">📞</span>
                   <div>
                     <p className="font-medium text-gray-800">Bayi Destek Hattı</p>
-                    <p>{SITE_CONFIG.phone}</p>
+                    <p>+90 500 123 45 67</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="text-lg">✉️</span>
                   <div>
                     <p className="font-medium text-gray-800">E-posta</p>
-                    <p>bayi@{SITE_CONFIG.email.split('@')[1]}</p>
+                    <p>bayi@bayirlioglugrup.com.tr</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="text-lg">🕐</span>
                   <div>
                     <p className="font-medium text-gray-800">Çalışma Saatleri</p>
-                    <p>{SITE_CONFIG.workingHours}</p>
+                    <p>Pazartesi – Cumartesi: 08:00 – 18:00</p>
                   </div>
                 </div>
               </div>
@@ -318,7 +328,7 @@ export default function BayiBasvuruPage() {
                   { step: '4', text: 'Sözleşme imzalanır ve bayilik başlar' },
                 ].map((item) => (
                   <div key={item.step} className="flex items-center gap-3">
-                    <div className={cn('w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0', primaryBg)}>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 bg-gray-900">
                       {item.step}
                     </div>
                     <p className="text-sm text-gray-600">{item.text}</p>
@@ -329,7 +339,7 @@ export default function BayiBasvuruPage() {
 
             {/* WhatsApp CTA */}
             <a
-              href={`https://wa.me/${BRAND.whatsapp.phone}?text=Bayi başvurusu hakkında bilgi almak istiyorum`}
+              href="https://wa.me/905001234567?text=Bayi%20ba%C5%9Fvurusu%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 w-full bg-green-500 hover:bg-green-600 text-white rounded-2xl p-4 transition-colors"
