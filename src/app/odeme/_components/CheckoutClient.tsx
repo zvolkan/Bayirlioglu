@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useCartStore } from '@/store/cartStore'
 
@@ -123,23 +123,25 @@ export default function CheckoutClient({ addresses }: Props) {
   const [contractApproved, setContractApproved] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [iyzicoHtml, setIyzicoHtml] = useState<string | null>(null)
-  const scriptContainerRef = useRef<HTMLDivElement>(null)
 
-  // Inject İyzico script when HTML is ready
-  useEffect(() => {
-    if (!iyzicoHtml || !scriptContainerRef.current) return
-    const container = scriptContainerRef.current
-    container.innerHTML = iyzicoHtml
-    container.querySelectorAll('script').forEach((oldScript: HTMLScriptElement) => {
-      const newScript = document.createElement('script')
-      Array.from(oldScript.attributes).forEach((attr: Attr) =>
-        newScript.setAttribute(attr.name, attr.value)
-      )
-      newScript.textContent = oldScript.textContent
-      oldScript.parentNode?.replaceChild(newScript, oldScript)
+  // Inject İyzico HTML directly into document.body so its overlay renders on top
+  const injectIyzico = (html: string) => {
+    // Remove any previous container
+    document.getElementById('iyzico-root')?.remove()
+
+    const wrapper = document.createElement('div')
+    wrapper.id = 'iyzico-root'
+    wrapper.innerHTML = html
+    document.body.appendChild(wrapper)
+
+    // Scripts inside innerHTML don't execute — re-create them so they run
+    Array.from(wrapper.querySelectorAll('script')).forEach((old) => {
+      const s = document.createElement('script')
+      Array.from(old.attributes).forEach((attr: Attr) => s.setAttribute(attr.name, attr.value))
+      s.textContent = old.textContent
+      old.parentNode?.replaceChild(s, old)
     })
-  }, [iyzicoHtml])
+  }
 
   // Empty cart guard
   if (items.length === 0) {
@@ -208,25 +210,13 @@ export default function CheckoutClient({ addresses }: Props) {
       }
 
       clearCart()
-      setIyzicoHtml(data.checkoutFormContent)
+      // İyzico overlay'i doğrudan body'e inject et
+      injectIyzico(data.checkoutFormContent)
+      setLoading(false)
     } catch {
       setError('Bir hata oluştu, lütfen tekrar deneyin.')
       setLoading(false)
     }
-  }
-
-  // İyzico overlay
-  if (iyzicoHtml) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-        <div className="text-center">
-          <div className="inline-block w-10 h-10 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4" />
-          <p className="text-gray-600 font-medium">Güvenli ödeme penceresi açılıyor…</p>
-          <p className="text-gray-400 text-sm mt-1">Lütfen bekleyin</p>
-        </div>
-        <div ref={scriptContainerRef} />
-      </div>
-    )
   }
 
   return (
