@@ -18,7 +18,7 @@ export function initializeCheckoutForm(request: Record<string, unknown>): Promis
 
 export function retrieveCheckoutForm(token: string, conversationId: string): Promise<any> {
   return new Promise((resolve, reject) => {
-    iyzipay.checkoutFormResult.retrieve(
+    iyzipay.checkoutForm.retrieve(
       { locale: 'tr', conversationId, token },
       (err: unknown, result: unknown) => {
         if (err) reject(err)
