@@ -8,11 +8,11 @@ const HATA_MESAJLARI: Record<string, string> = {
 }
 
 type Props = {
-  searchParams: Promise<{ hata?: string }>
+  searchParams: Promise<{ hata?: string; d?: string }>
 }
 
 export default async function BasarisizPage({ searchParams }: Props) {
-  const { hata } = await searchParams
+  const { hata, d } = await searchParams
   const message = (hata && HATA_MESAJLARI[hata]) ?? 'Ödeme işlemi tamamlanamadı.'
 
   return (
@@ -32,6 +32,13 @@ export default async function BasarisizPage({ searchParams }: Props) {
         <p className="text-gray-500 text-sm mb-6">
           {message}
         </p>
+
+        {/* Geçici debug: hata detayı */}
+        {d && (
+          <div className="bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-xs text-gray-600 mb-4 text-left font-mono break-all">
+            {decodeURIComponent(d)}
+          </div>
+        )}
 
         <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-sm text-amber-700 mb-8 text-left">
           <p className="font-semibold mb-1">Sık karşılaşılan nedenler:</p>

@@ -7,30 +7,57 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bayirlioglu-6rv9.ve
 export async function POST(req: NextRequest) {
   let token: string | null = null
 
+  // ── Token al ──────────────────────────────────────────────────────────────
   try {
-    const formData = await req.formData()
-    token = formData.get('token') as string
-  } catch {
+    const contentType = req.headers.get('content-type') ?? ''
+    if (contentType.includes('application/json')) {
+      const body = await req.json()
+      token = body.token
+    } else {
+      const formData = await req.formData()
+      token = formData.get('token') as string
+    }
+  } catch (e) {
+    console.error('[callback] token parse hatası:', e)
     return NextResponse.redirect(`${siteUrl}/odeme/basarisiz?hata=token`)
   }
+
+  console.log('[callback] token:', token ? token.slice(0, 20) + '...' : 'YOK')
 
   if (!token) {
     return NextResponse.redirect(`${siteUrl}/odeme/basarisiz?hata=token`)
   }
 
-  // Önce siparişi bul — conversationId (order.id) retrieve için gerekli
-  const order = await prisma.order.findFirst({
-    where: { paymentToken: token },
-  })
+  // ── Siparişi bul ──────────────────────────────────────────────────────────
+  let order: { id: string } | null = null
+  try {
+    order = await prisma.order.findFirst({
+      where: { paymentToken: token },
+      select: { id: true },
+    })
+  } catch (e) {
+    console.error('[callback] sipariş DB hatası:', e)
+    return NextResponse.redirect(`${siteUrl}/odeme/basarisiz?hata=sistem`)
+  }
+
+  console.log('[callback] sipariş:', order ? order.id : 'BULUNAMADI')
 
   if (!order) {
     return NextResponse.redirect(`${siteUrl}/odeme/basarisiz?hata=siparis`)
   }
 
+  // ── İyzico doğrulama ──────────────────────────────────────────────────────
   try {
     const result = await retrieveCheckoutForm(token, order.id)
 
-    if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
+    console.log('[callback] iyzico sonuç:', JSON.stringify({
+      status: result?.status,
+      paymentStatus: result?.paymentStatus,
+      errorCode: result?.errorCode,
+      errorMessage: result?.errorMessage,
+    }))
+
+    if (result?.status === 'success' && result?.paymentStatus === 'SUCCESS') {
       await prisma.order.update({
         where: { id: order.id },
         data: { status: 'CONFIRMED', paymentStatus: 'paid' },
@@ -40,12 +67,16 @@ export async function POST(req: NextRequest) {
       await prisma.order.update({
         where: { id: order.id },
         data: { status: 'CANCELLED', paymentStatus: 'failed' },
-      })
+      }).catch(() => {})
+      const errorMsg = result?.errorMessage ?? 'Ödeme reddedildi'
+      console.log('[callback] ödeme başarısız:', errorMsg)
       return NextResponse.redirect(`${siteUrl}/odeme/basarisiz?hata=odeme`)
     }
   } catch (err: unknown) {
     const detail = err instanceof Error ? err.message : String(err)
-    console.error('[callback] retrieveCheckoutForm hatası:', detail)
-    return NextResponse.redirect(`${siteUrl}/odeme/basarisiz?hata=sistem`)
+    console.error('[callback] HATA:', detail)
+    return NextResponse.redirect(
+      `${siteUrl}/odeme/basarisiz?hata=sistem&d=${encodeURIComponent(detail.slice(0, 100))}`
+    )
   }
 }
