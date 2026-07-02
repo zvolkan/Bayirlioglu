@@ -196,9 +196,11 @@ export default async function SiparislerimPage() {
                         ) : (
                           <span />
                         )}
-                        <div className="flex-shrink-0">
-                          <RepeatOrderButton orderId={order.id} brandKey={order.brand.key as BrandKey} />
-                        </div>
+                        {order.brand.key === 'alb-tarim' && (
+                          <div className="flex-shrink-0">
+                            <RepeatOrderButton orderId={order.id} brandKey={order.brand.key as BrandKey} />
+                          </div>
+                        )}
                       </div>
 
                     </div>
