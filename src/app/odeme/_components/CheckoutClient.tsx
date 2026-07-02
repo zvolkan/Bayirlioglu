@@ -209,8 +209,8 @@ export default function CheckoutClient({ addresses }: Props) {
         return
       }
 
-      clearCart()
       // İyzico overlay'i doğrudan body'e inject et
+      // (cart clearCart() burada değil, başarı sayfasında temizlenir)
       injectIyzico(data.checkoutFormContent)
       setLoading(false)
     } catch {

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import ClearCart from './_components/ClearCart'
 
 type Props = {
   searchParams: Promise<{ siparis?: string }>
@@ -9,6 +10,7 @@ export default async function BasariliPage({ searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+      <ClearCart />
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 max-w-md w-full text-center">
 
         {/* Checkmark */}
