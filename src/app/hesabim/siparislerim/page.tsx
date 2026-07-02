@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
 import { signOut } from '@/app/actions/auth'
 import RepeatOrderButton from '../_components/RepeatOrderButton'
+import type { BrandKey } from '@/lib/types'
 
 export const metadata: Metadata = {
   title: 'Siparişlerim | Bayırlıoğlu Grup',
@@ -196,7 +197,7 @@ export default async function SiparislerimPage() {
                           <span />
                         )}
                         <div className="flex-shrink-0">
-                          <RepeatOrderButton orderId={order.id} brandKey={order.brand.key} />
+                          <RepeatOrderButton orderId={order.id} brandKey={order.brand.key as BrandKey} />
                         </div>
                       </div>
 
