@@ -53,7 +53,9 @@ export default function Header() {
 
   const accentColor = activeBrandKey === 'alb-su-aritma'
     ? 'bg-blue-600 hover:bg-blue-500'
-    : 'bg-green-600 hover:bg-green-500'
+    : activeBrandKey === 'alb-tarim'
+    ? 'bg-green-600 hover:bg-green-500'
+    : 'bg-gray-700 hover:bg-gray-600'
 
   const navHover = activeBrandKey === 'alb-su-aritma'
     ? 'hover:text-blue-400'
@@ -122,18 +124,21 @@ export default function Header() {
               </Link>
 
               {/* MARKA SEÇİCİ — orta */}
-              <div className="flex items-center gap-0.5 bg-white/5 rounded-xl p-1">
+              <div className="flex items-center gap-0.5 bg-white/8 rounded-xl p-1">
                 {BRAND_TABS.map((tab) => (
                   <button
                     key={tab.key}
                     onClick={() => handleBrandSwitch(tab.key)}
-                    className={`flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                      activeBrandKey === tab.key ? tab.activeColor : tab.color
+                    className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
+                      activeBrandKey === tab.key
+                        ? tab.activeColor
+                        : 'text-white/60 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     <span className="text-sm">{tab.icon}</span>
-                    <span className="hidden sm:inline">{tab.label}</span>
-                    <span className="sm:hidden">{tab.key === 'alb-tarim' ? 'Tarım' : 'Tekno'}</span>
+                    <span className="hidden xs:inline sm:inline">{
+                      tab.key === 'alb-tarim' ? 'ALB Tarım' : 'Alb Su'
+                    }</span>
                   </button>
                 ))}
               </div>
