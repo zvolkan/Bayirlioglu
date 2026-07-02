@@ -4,7 +4,7 @@ const Iyzipay = require('iyzipay')
 const iyzipay = new Iyzipay({
   apiKey: process.env.IYZICO_API_KEY,
   secretKey: process.env.IYZICO_SECRET_KEY,
-  uri: process.env.IYZICO_BASE_URL ?? 'https://sandbox.iyzipay.com',
+  uri: process.env.IYZICO_BASE_URL ?? 'https://sandbox-api.iyzipay.com',
 })
 
 export function initializeCheckoutForm(request: Record<string, unknown>): Promise<any> {
@@ -16,10 +16,10 @@ export function initializeCheckoutForm(request: Record<string, unknown>): Promis
   })
 }
 
-export function retrieveCheckoutForm(token: string): Promise<any> {
+export function retrieveCheckoutForm(token: string, conversationId: string): Promise<any> {
   return new Promise((resolve, reject) => {
     iyzipay.checkoutFormResult.retrieve(
-      { locale: 'tr', token },
+      { locale: 'tr', conversationId, token },
       (err: unknown, result: unknown) => {
         if (err) reject(err)
         else resolve(result)

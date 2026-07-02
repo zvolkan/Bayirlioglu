@@ -18,16 +18,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.redirect(`${siteUrl}/odeme/basarisiz?hata=token`)
   }
 
+  // Önce siparişi bul — conversationId (order.id) retrieve için gerekli
+  const order = await prisma.order.findFirst({
+    where: { paymentToken: token },
+  })
+
+  if (!order) {
+    return NextResponse.redirect(`${siteUrl}/odeme/basarisiz?hata=siparis`)
+  }
+
   try {
-    const result = await retrieveCheckoutForm(token)
-
-    const order = await prisma.order.findFirst({
-      where: { paymentToken: token },
-    })
-
-    if (!order) {
-      return NextResponse.redirect(`${siteUrl}/odeme/basarisiz?hata=siparis`)
-    }
+    const result = await retrieveCheckoutForm(token, order.id)
 
     if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
       await prisma.order.update({
