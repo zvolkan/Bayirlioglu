@@ -98,7 +98,7 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
 
             {/* Bilgi */}
-            <div className="p-8 flex flex-col">
+            <div className="p-4 sm:p-8 flex flex-col">
               <p className={`text-sm font-semibold uppercase tracking-wide ${accentText} mb-2`}>
                 {product.category.name}
               </p>
@@ -200,7 +200,7 @@ export default async function ProductDetailPage({ params }: Props) {
         </div>
 
         {/* ── Detaylı Açıklama ── */}
-        <div className="mt-8 bg-white rounded-2xl border border-gray-100 p-8">
+        <div className="mt-8 bg-white rounded-2xl border border-gray-100 p-4 sm:p-8">
           <h2 className="text-lg font-black text-gray-900 mb-4">Ürün Detayları</h2>
           <p className="text-gray-600 leading-relaxed mb-6">{product.description}</p>
 

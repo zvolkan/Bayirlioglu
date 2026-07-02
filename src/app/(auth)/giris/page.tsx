@@ -29,7 +29,7 @@ export default async function GirisPage({
           <p className="text-gray-500 text-sm mt-1">Sipariş geçmişinize ve profilinize erişin</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8">
           {/* Hata mesajı */}
           {params.error && (
             <div className="mb-5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">

@@ -182,6 +182,32 @@ export async function getRepeatOrderItems(orderId: string) {
   }
 }
 
+// ─── Sipariş iptal et ────────────────────────────────────────────────────────
+
+export async function cancelOrder(orderId: string) {
+  const user = await getAuthUser()
+
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, userId: user.id },
+    select: { id: true, status: true },
+  })
+
+  if (!order) throw new Error('Sipariş bulunamadı.')
+
+  const cancellable = ['PENDING', 'CONFIRMED']
+  if (!cancellable.includes(order.status)) {
+    throw new Error('Bu sipariş kargoya verildiği için artık iptal edilemiyor.')
+  }
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { status: 'CANCELLED' },
+  })
+
+  revalidatePath('/hesabim/siparislerim')
+  revalidatePath('/hesabim')
+}
+
 // ─── Profil güncelle ─────────────────────────────────────────────────────────
 
 export async function updateProfile(formData: FormData) {

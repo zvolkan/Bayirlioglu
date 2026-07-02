@@ -74,7 +74,7 @@ export default async function BlogPage({ params }: Props) {
                 <div className={`bg-gradient-to-br ${heroBg} flex items-center justify-center min-h-52 md:min-h-64 text-7xl`}>
                   {isAlbSu ? '💧' : '🌱'}
                 </div>
-                <div className="p-8 flex flex-col justify-center">
+                <div className="p-4 sm:p-8 flex flex-col justify-center">
                   {posts[0].tags && posts[0].tags.length > 0 && (
                     <span className={`inline-block text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full mb-4 w-fit ${tagBg}`}>
                       {posts[0].tags[0]}

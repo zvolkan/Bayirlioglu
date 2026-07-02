@@ -147,7 +147,7 @@ export default function HakkimizdaPage() {
             {markalar.map((m) => (
               <div
                 key={m.name}
-                className={`bg-white rounded-2xl border ${m.borderColor} shadow-sm hover:shadow-md transition-shadow p-8`}
+                className={`bg-white rounded-2xl border ${m.borderColor} shadow-sm hover:shadow-md transition-shadow p-4 sm:p-8`}
               >
                 <div className="flex items-center gap-4 mb-5">
                   <div className={`${m.color} w-12 h-12 rounded-xl flex items-center justify-center text-2xl`}>
@@ -183,7 +183,7 @@ export default function HakkimizdaPage() {
             {values.map((item) => (
               <div
                 key={item.title}
-                className="bg-gray-50 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-8 text-center"
+                className="bg-gray-50 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 sm:p-8 text-center"
               >
                 <div className="text-5xl mb-5">{item.icon}</div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>

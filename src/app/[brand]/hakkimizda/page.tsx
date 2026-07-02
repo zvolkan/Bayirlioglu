@@ -77,7 +77,7 @@ export default async function HakkimizdaPage({ params }: Props) {
       {/* Misyon & Vizyon */}
       <section className="py-16 container-main">
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-white rounded-2xl border border-gray-100 p-8">
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-8">
             <div className="text-3xl mb-4">🎯</div>
             <h2 className="text-xl font-black text-gray-900 mb-3">Misyonumuz</h2>
             <p className="text-gray-600 leading-relaxed">
@@ -86,7 +86,7 @@ export default async function HakkimizdaPage({ params }: Props) {
                 : 'Türk çiftçisine en kaliteli tarım girdilerini ve teknolojiyi ulaştırarak üretim verimliliğini artırmak ve sürdürülebilir tarımı yaygınlaştırmak.'}
             </p>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-8">
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-8">
             <div className="text-3xl mb-4">🔭</div>
             <h2 className="text-xl font-black text-gray-900 mb-3">Vizyonumuz</h2>
             <p className="text-gray-600 leading-relaxed">

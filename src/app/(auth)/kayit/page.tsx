@@ -28,7 +28,7 @@ export default async function KayitPage({
           <p className="text-gray-500 text-sm mt-1">Sipariş takibi ve hızlı alışveriş için kayıt olun</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8">
           {params.error && (
             <div className="mb-5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
               {params.error}

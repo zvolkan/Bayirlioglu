@@ -7,6 +7,7 @@ import { BRANDS } from '@/lib/constants'
 import { useCart } from '@/hooks/useCart'
 import type { BrandKey } from '@/lib/types'
 import UserMenuButton from '@/components/layout/UserMenuButton'
+import MobileUserSection from '@/components/layout/MobileUserSection'
 
 // ─── BRAND SWITCHER ───────────────────────────────────────────────────────────
 
@@ -303,22 +304,11 @@ export default function Header() {
               </nav>
             )}
 
-            <div className="p-4 border-t border-white/10">
-              <Link
-                href="/giris"
-                className={`block text-center text-sm px-4 py-3 rounded-xl font-semibold text-white transition-colors ${accentColor}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                Giriş Yap
-              </Link>
-              <Link
-                href="/sepet"
-                className="mt-2 flex items-center justify-center gap-2 text-white/70 py-2 text-sm"
-                onClick={() => setMenuOpen(false)}
-              >
-                🛒 Sepetim {cartCount > 0 && `(${cartCount})`}
-              </Link>
-            </div>
+            <MobileUserSection
+              accentColor={accentColor}
+              cartCount={cartCount}
+              onClose={() => setMenuOpen(false)}
+            />
           </div>
         </>
       )}
