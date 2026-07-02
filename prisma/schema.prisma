@@ -220,6 +220,8 @@ model Order {
   totalAmount   Decimal     @map("total_amount") @db.Decimal(12, 2)
   notes         String?     @db.Text
   paymentMethod String?     @map("payment_method") @db.VarChar(50)
+  paymentToken  String?     @map("payment_token") @db.VarChar(255)
+  paymentStatus String?     @default("pending") @map("payment_status") @db.VarChar(20)
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
 
