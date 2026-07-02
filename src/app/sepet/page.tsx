@@ -37,20 +37,22 @@ export default function SepetPage() {
           <p className="text-gray-500 text-sm mb-8">
             Henüz sepetinize ürün eklemediniz. Alışverişe başlamak için ürünlerimize göz atın.
           </p>
-          <Link
-            href="/alb-tarim/urunler"
-            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
-          >
-            <Package className="w-4 h-4" />
-            ALB Tarım Ürünleri
-          </Link>
-          <Link
-            href="/alb-su-aritma/urunler"
-            className="mt-3 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
-          >
-            <Package className="w-4 h-4" />
-            Alb Su Ürünleri
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/alb-tarim/urunler"
+              className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
+            >
+              <Package className="w-4 h-4" />
+              ALB Tarım Ürünleri
+            </Link>
+            <Link
+              href="/alb-su-aritma/urunler"
+              className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
+            >
+              <Package className="w-4 h-4" />
+              Alb Su Teknolojileri Ürünleri
+            </Link>
+          </div>
         </div>
       </div>
     )
