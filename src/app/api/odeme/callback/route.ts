@@ -43,7 +43,9 @@ export async function POST(req: NextRequest) {
       })
       return NextResponse.redirect(`${siteUrl}/odeme/basarisiz?hata=odeme`)
     }
-  } catch {
+  } catch (err: unknown) {
+    const detail = err instanceof Error ? err.message : String(err)
+    console.error('[callback] retrieveCheckoutForm hatası:', detail)
     return NextResponse.redirect(`${siteUrl}/odeme/basarisiz?hata=sistem`)
   }
 }

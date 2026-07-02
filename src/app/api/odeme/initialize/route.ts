@@ -137,14 +137,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Token'ı siparişe kaydet
+    // Token ve form içeriğini siparişe kaydet
     await prisma.order.update({
       where: { id: order.id },
-      data: { paymentToken: result.token },
+      data: {
+        paymentToken: result.token,
+        formContent: result.checkoutFormContent,
+      },
     })
 
     return NextResponse.json({
-      checkoutFormContent: result.checkoutFormContent,
       token: result.token,
       orderId: order.id,
     })

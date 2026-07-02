@@ -124,24 +124,6 @@ export default function CheckoutClient({ addresses }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Inject İyzico HTML directly into document.body so its overlay renders on top
-  const injectIyzico = (html: string) => {
-    // Remove any previous container
-    document.getElementById('iyzico-root')?.remove()
-
-    const wrapper = document.createElement('div')
-    wrapper.id = 'iyzico-root'
-    wrapper.innerHTML = html
-    document.body.appendChild(wrapper)
-
-    // Scripts inside innerHTML don't execute — re-create them so they run
-    Array.from(wrapper.querySelectorAll('script')).forEach((old) => {
-      const s = document.createElement('script')
-      Array.from(old.attributes).forEach((attr: Attr) => s.setAttribute(attr.name, attr.value))
-      s.textContent = old.textContent
-      old.parentNode?.replaceChild(s, old)
-    })
-  }
 
   // Empty cart guard
   if (items.length === 0) {
@@ -209,10 +191,8 @@ export default function CheckoutClient({ addresses }: Props) {
         return
       }
 
-      // İyzico overlay'i doğrudan body'e inject et
-      // (cart clearCart() burada değil, başarı sayfasında temizlenir)
-      injectIyzico(data.checkoutFormContent)
-      setLoading(false)
+      // Ödeme sayfasına yönlendir (cart başarı sayfasında temizlenir)
+      window.location.href = `/odeme/form?token=${data.token}`
     } catch {
       setError('Bir hata oluştu, lütfen tekrar deneyin.')
       setLoading(false)
