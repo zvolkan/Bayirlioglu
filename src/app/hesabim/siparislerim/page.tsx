@@ -1,110 +1,81 @@
-'use client'
-
+import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { ACTIVE_BRAND_KEY, ORDER_STATUS_LABELS } from '@/lib/constants'
-import { cn, formatPrice, formatDate, getOrderStatusColor } from '@/lib/utils'
-import type { OrderStatus } from '@/lib/types'
+import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/db'
+import { signOut } from '@/app/actions/auth'
+import RepeatOrderButton from '../_components/RepeatOrderButton'
 
-const primaryColor = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'text-green-600' : 'text-blue-600'
-const primaryBg = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'bg-green-600' : 'bg-blue-600'
-const primaryLight = ACTIVE_BRAND_KEY === 'alb-tarim' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
-
-const MOCK_ORDERS = [
-  {
-    id: 'ORD-123456-001',
-    date: '2024-06-15',
-    status: 'delivered' as OrderStatus,
-    items: [
-      { name: 'Organik Gübre 25kg', qty: 2, price: 450 },
-      { name: 'Damla Sulama Başlığı', qty: 10, price: 35 },
-    ],
-    subtotal: 1150,
-    cargo: 0,
-    total: 1250,
-    address: 'Atatürk Mah. Güneş Sok. No:5, Ankara',
-    cargoCode: 'TK123456789',
-  },
-  {
-    id: 'ORD-123456-002',
-    date: '2024-06-01',
-    status: 'shipped' as OrderStatus,
-    items: [
-      { name: 'Akıllı Sulama Kontrol Sistemi', qty: 1, price: 459 },
-    ],
-    subtotal: 459,
-    cargo: 0,
-    total: 459,
-    address: 'Kızılay Cad. No:12, Ankara',
-    cargoCode: 'TK987654321',
-  },
-  {
-    id: 'ORD-123456-003',
-    date: '2024-05-20',
-    status: 'processing' as OrderStatus,
-    items: [
-      { name: 'Tarım İlacı Seti', qty: 1, price: 380 },
-      { name: 'Koruyucu Maske', qty: 3, price: 120 },
-    ],
-    subtotal: 741,
-    cargo: 29.90,
-    total: 741,
-    address: 'Bağlıca Mah. No:8, Ankara',
-    cargoCode: null,
-  },
-]
-
-const MOCK_USER = { firstName: 'Ahmet', lastName: 'Yılmaz', email: 'ahmet.yilmaz@email.com' }
-
-function AccountSidebar({ active }: { active: string }) {
-  const router = useRouter()
-  const links = [
-    { href: '/hesabim', label: 'Hesabım', icon: '👤' },
-    { href: '/hesabim/siparislerim', label: 'Siparişlerim', icon: '📦' },
-    { href: '/hesabim/adreslerim', label: 'Adreslerim', icon: '📍' },
-    { href: '/hesabim/favorilerim', label: 'Favorilerim', icon: '❤️' },
-  ]
-  return (
-    <aside className="w-full md:w-64 flex-shrink-0">
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className={cn('p-6', primaryBg)}>
-          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl font-bold mb-3">
-            {MOCK_USER.firstName[0]}{MOCK_USER.lastName[0]}
-          </div>
-          <p className="text-white font-semibold">{MOCK_USER.firstName} {MOCK_USER.lastName}</p>
-          <p className="text-white/70 text-sm">{MOCK_USER.email}</p>
-        </div>
-        <nav className="p-2">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors',
-                active === link.href ? primaryLight : 'text-gray-600 hover:bg-gray-50'
-              )}
-            >
-              <span>{link.icon}</span>
-              {link.label}
-            </Link>
-          ))}
-          <button
-            onClick={() => router.push('/giris')}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors mt-1"
-          >
-            <span>🚪</span>
-            Çıkış Yap
-          </button>
-        </nav>
-      </div>
-    </aside>
-  )
+export const metadata: Metadata = {
+  title: 'Siparişlerim | Bayırlıoğlu Grup',
 }
 
-export default function SiparislerimPage() {
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  PENDING:    { label: 'Beklemede',       color: 'bg-yellow-100 text-yellow-700' },
+  CONFIRMED:  { label: 'Onaylandı',       color: 'bg-blue-100 text-blue-700' },
+  PROCESSING: { label: 'Hazırlanıyor',    color: 'bg-purple-100 text-purple-700' },
+  SHIPPED:    { label: 'Kargoya Verildi', color: 'bg-indigo-100 text-indigo-700' },
+  DELIVERED:  { label: 'Teslim Edildi',   color: 'bg-green-100 text-green-700' },
+  CANCELLED:  { label: 'İptal Edildi',    color: 'bg-red-100 text-red-700' },
+  REFUNDED:   { label: 'İade Edildi',     color: 'bg-gray-100 text-gray-700' },
+}
+
+function formatPrice(value: unknown): string {
+  return Number(value).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })
+}
+
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat('tr-TR', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  }).format(new Date(date))
+}
+
+export default async function SiparislerimPage() {
+  const supabase = await createClient()
+  const { data: { user: authUser } } = await supabase.auth.getUser()
+  if (!authUser) redirect('/giris')
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: authUser.id },
+    select: { name: true, phone: true },
+  })
+
+  const orders = await prisma.order.findMany({
+    where: { userId: authUser.id },
+    include: {
+      brand: { select: { name: true, key: true } },
+      address: {
+        select: { fullName: true, line1: true, line2: true, district: true, city: true },
+      },
+      items: {
+        include: {
+          product: { select: { name: true, unit: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  const userName = dbUser?.name ?? authUser.email ?? ''
+  const initials = userName
+    .split(' ')
+    .map((w: string) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+
+  const sidebarLinks = [
+    { href: '/hesabim',              label: 'Hesabım',      icon: '👤' },
+    { href: '/hesabim/siparislerim', label: 'Siparişlerim', icon: '📦' },
+    { href: '/hesabim/adreslerim',   label: 'Adreslerim',   icon: '📍' },
+    { href: '/hesabim/favorilerim',  label: 'Favorilerim',  icon: '❤️' },
+  ]
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container-main">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+
+        {/* Breadcrumb */}
         <nav className="text-sm text-gray-500 mb-6">
           <Link href="/" className="hover:text-gray-900">Ana Sayfa</Link>
           <span className="mx-2">/</span>
@@ -114,81 +85,126 @@ export default function SiparislerimPage() {
         </nav>
 
         <div className="flex flex-col md:flex-row gap-6">
-          <AccountSidebar active="/hesabim/siparislerim" />
 
-          <div className="flex-1 space-y-4">
-            <div className="flex items-center justify-between">
+          {/* Sidebar */}
+          <aside className="w-full md:w-64 flex-shrink-0">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="p-6 bg-gray-900">
+                <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-xl font-bold mb-3">
+                  {initials || '?'}
+                </div>
+                <p className="text-white font-semibold truncate">{dbUser?.name ?? '—'}</p>
+                <p className="text-white/70 text-sm truncate">{authUser.email}</p>
+              </div>
+              <nav className="p-2">
+                {sidebarLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                      link.href === '/hesabim/siparislerim'
+                        ? 'bg-gray-100 text-gray-900'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span>{link.icon}</span>
+                    {link.label}
+                  </Link>
+                ))}
+                <form action={signOut}>
+                  <button
+                    type="submit"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors mt-1"
+                  >
+                    <span>🚪</span>
+                    Çıkış Yap
+                  </button>
+                </form>
+              </nav>
+            </div>
+          </aside>
+
+          {/* Orders */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-4">
               <h1 className="text-2xl font-bold text-gray-900">Siparişlerim</h1>
-              <span className="text-sm text-gray-500">{MOCK_ORDERS.length} sipariş</span>
+              <span className="text-sm text-gray-500">{orders.length} sipariş</span>
             </div>
 
-            {MOCK_ORDERS.map((order) => (
-              <div key={order.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                {/* Order header */}
-                <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-gray-100">
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <p className="font-semibold text-gray-900">{order.id}</p>
-                      <p className="text-sm text-gray-500">{formatDate(order.date)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={cn('text-xs px-3 py-1.5 rounded-full border font-medium', getOrderStatusColor(order.status))}>
-                      {ORDER_STATUS_LABELS[order.status]}
-                    </span>
-                    <span className="font-semibold text-gray-900">{formatPrice(order.total)}</span>
-                  </div>
-                </div>
+            {orders.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+                <p className="text-4xl mb-4">📦</p>
+                <p className="text-gray-500 text-sm mb-4">Henüz siparişiniz bulunmuyor.</p>
+                <Link
+                  href="/"
+                  className="inline-block px-6 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold transition-colors"
+                >
+                  Alışverişe Başla
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {orders.map((order) => {
+                  const status = STATUS_MAP[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700' }
+                  const brandColor = order.brand.key === 'alb-tarim' ? 'bg-green-600' : 'bg-blue-600'
+                  const brandDot = order.brand.key === 'alb-tarim' ? 'bg-green-400' : 'bg-blue-400'
+                  const addr = order.address
+                  const addrText = addr
+                    ? `${addr.line1}${addr.line2 ? ' ' + addr.line2 : ''}, ${addr.district} / ${addr.city}`
+                    : null
 
-                {/* Order items */}
-                <div className="px-6 py-4 space-y-3">
-                  {order.items.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-lg">
-                          📦
+                  return (
+                    <div key={order.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+
+                      {/* Header */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-7 h-7 rounded-lg ${brandColor} flex items-center justify-center text-xs`}>
+                            {order.brand.key === 'alb-tarim' ? '🌾' : '💧'}
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-400 font-mono">#{order.id.slice(-8).toUpperCase()}</p>
+                            <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{item.name}</p>
-                          <p className="text-gray-500">Adet: {item.qty}</p>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status.color}`}>
+                            {status.label}
+                          </span>
+                          <span className="font-semibold text-gray-900">{formatPrice(order.totalAmount)}</span>
                         </div>
                       </div>
-                      <span className="font-medium text-gray-900">{formatPrice(item.price * item.qty)}</span>
-                    </div>
-                  ))}
-                </div>
 
-                {/* Order footer */}
-                <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 bg-gray-50 border-t border-gray-100">
-                  <div className="text-sm text-gray-600">
-                    <span className="text-gray-500">Teslimat: </span>
-                    {order.address}
-                  </div>
-                  <div className="flex gap-2">
-                    {order.cargoCode && (
-                      <Link
-                        href={`/siparis-takibi?no=${order.cargoCode}`}
-                        className={cn('text-sm px-4 py-2 rounded-xl font-medium border transition-colors',
-                          ACTIVE_BRAND_KEY === 'alb-tarim'
-                            ? 'border-green-200 text-green-700 hover:bg-green-50'
-                            : 'border-blue-200 text-blue-700 hover:bg-blue-50'
+                      {/* Items */}
+                      <div className="px-5 py-4 space-y-2">
+                        {order.items.map((item) => (
+                          <div key={item.id} className="flex items-center gap-2 text-sm text-gray-600">
+                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${brandDot}`} />
+                            <span className="flex-1 truncate">{item.product.name}</span>
+                            <span className="text-gray-400 flex-shrink-0">{item.quantity} {item.product.unit}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Footer */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 bg-gray-50 border-t border-gray-100">
+                        {addrText ? (
+                          <p className="text-xs text-gray-500 flex-1 min-w-0 truncate">
+                            <span className="text-gray-400">Teslimat: </span>{addrText}
+                          </p>
+                        ) : (
+                          <span />
                         )}
-                      >
-                        📦 Kargo Takip
-                      </Link>
-                    )}
-                    <button className="text-sm px-4 py-2 rounded-xl font-medium border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors">
-                      Fatura İndir
-                    </button>
-                    {order.status === 'delivered' && (
-                      <button className="text-sm px-4 py-2 rounded-xl font-medium border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors">
-                        Tekrar Sipariş Ver
-                      </button>
-                    )}
-                  </div>
-                </div>
+                        <div className="flex-shrink-0">
+                          <RepeatOrderButton orderId={order.id} brandKey={order.brand.key} />
+                        </div>
+                      </div>
+
+                    </div>
+                  )
+                })}
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
