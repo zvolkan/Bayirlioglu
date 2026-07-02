@@ -38,11 +38,18 @@ export default function SepetPage() {
             Henüz sepetinize ürün eklemediniz. Alışverişe başlamak için ürünlerimize göz atın.
           </p>
           <Link
-            href="/urunler"
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
+            href="/alb-tarim/urunler"
+            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
           >
             <Package className="w-4 h-4" />
-            Alışverişe Başla
+            ALB Tarım Ürünleri
+          </Link>
+          <Link
+            href="/alb-su-aritma/urunler"
+            className="mt-3 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
+          >
+            <Package className="w-4 h-4" />
+            Alb Su Ürünleri
           </Link>
         </div>
       </div>
@@ -158,7 +165,7 @@ export default function SepetPage() {
             {/* Continue shopping */}
             <div className="pt-2">
               <Link
-                href="/urunler"
+                href="/"
                 className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
