@@ -126,7 +126,7 @@ export default function IletisimPage() {
 
           {/* ── Form ── */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8">
               <h2 className="text-xl font-black text-gray-900 mb-6">Mesaj Gönderin</h2>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div className="grid sm:grid-cols-2 gap-5">

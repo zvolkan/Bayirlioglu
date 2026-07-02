@@ -114,7 +114,7 @@ export default function BayiBasvuruPage() {
       {/* Başvuru Formu */}
       <section className="py-14 container-main">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8">
             <h2 className="text-xl font-black text-gray-900 mb-6">Başvuru Formu</h2>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="grid sm:grid-cols-2 gap-5">

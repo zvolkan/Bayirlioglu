@@ -99,7 +99,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
       <div className="container-main py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* ── Sidebar: Kategoriler ── */}
-          <aside className="lg:w-56 flex-shrink-0">
+          <aside className="hidden lg:block lg:w-56 flex-shrink-0">
             <div className="bg-white rounded-2xl border border-gray-100 p-4 sticky top-24">
               <h3 className="font-bold text-gray-900 mb-3 text-sm uppercase tracking-wide">Kategoriler</h3>
               <button

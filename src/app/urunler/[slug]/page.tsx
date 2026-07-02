@@ -285,7 +285,7 @@ function ProductTabs({ product }: { product: Product }) {
         <section id="ozellikler" aria-label="Teknik Özellikler">
           <h2 className="text-lg font-bold text-gray-900 mb-4">Teknik Özellikler</h2>
           {product.specs.length > 0 ? (
-            <div className="overflow-hidden rounded-2xl border border-gray-100">
+            <div className="overflow-x-auto overflow-hidden rounded-2xl border border-gray-100">
               <table className="w-full text-sm">
                 <tbody>
                   {product.specs.map((spec, i) => (

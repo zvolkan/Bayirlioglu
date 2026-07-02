@@ -59,10 +59,10 @@ export default function Testimonials() {
                 isTarim
                   ? idx === activeIndex
                     ? 'bg-gray-700 ring-2 ring-green-500 shadow-lg shadow-green-900/20'
-                    : 'bg-gray-800 hover:bg-gray-750'
+                    : 'bg-gray-800 hover:bg-gray-700'
                   : idx === activeIndex
                   ? 'bg-blue-800 ring-2 ring-blue-400 shadow-lg shadow-blue-900/30'
-                  : 'bg-blue-900 hover:bg-blue-850'
+                  : 'bg-blue-900 hover:bg-blue-800'
               )}
             >
               {/* Tırnak İşareti */}

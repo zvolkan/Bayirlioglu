@@ -83,7 +83,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* İçerik */}
       <div className="container-main py-12 max-w-3xl">
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 md:p-12">
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8 md:p-12">
           {/* Kapak görseli placeholder */}
           {/* GÖRSEL: {post.coverImage} */}
           <div className={`aspect-[16/9] bg-gradient-to-br ${heroBg} rounded-2xl flex items-center justify-center text-7xl mb-10`}>

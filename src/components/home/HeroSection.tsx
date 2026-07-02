@@ -51,7 +51,7 @@ export default function HeroSection() {
               {BRAND.subtitle}
             </p>
             {/* Ana Başlık */}
-            <h1 className={`text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[1.02] tracking-tight mb-6 transition-all duration-700 delay-150 ${loaded?'opacity-100 translate-y-0':'opacity-0 translate-y-5'}`}>
+            <h1 className={`text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[1.02] tracking-tight mb-6 transition-all duration-700 delay-150 ${loaded?'opacity-100 translate-y-0':'opacity-0 translate-y-5'}`}>
               {taglineLines.map((line, i) => (
                 <Fragment key={i}>{line}{i < taglineLines.length-1 && <br/>}</Fragment>
               ))}

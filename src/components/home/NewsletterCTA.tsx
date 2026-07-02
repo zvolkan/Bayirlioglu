@@ -185,7 +185,7 @@ export default function NewsletterCTA() {
                 </div>
                 <div>
                   <p className="font-bold text-white text-sm">{badge.label}</p>
-                  <p className="text-white/65 text-xs mt-0.5">{badge.desc}</p>
+                  <p className="text-white/60 text-xs mt-0.5">{badge.desc}</p>
                 </div>
               </div>
             ))}

@@ -265,7 +265,7 @@ export default function IletisimPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {/* Left: Form */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-1">Bize Yazın</h2>
                 <p className="text-sm text-gray-500 mb-6">
                   Aşağıdaki formu doldurun, ekibimiz sizinle iletişime geçsin.

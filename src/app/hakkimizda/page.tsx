@@ -200,8 +200,8 @@ export default function HakkimizdaPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center text-white">
-                <div className="text-5xl sm:text-6xl font-bold mb-2">{stat.value}</div>
-                <div className="text-white/65 text-lg font-medium">{stat.label}</div>
+                <div className="text-3xl sm:text-5xl lg:text-6xl font-bold mb-2">{stat.value}</div>
+                <div className="text-white/60 text-lg font-medium">{stat.label}</div>
               </div>
             ))}
           </div>

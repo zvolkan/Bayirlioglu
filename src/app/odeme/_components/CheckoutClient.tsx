@@ -253,11 +253,11 @@ export default function CheckoutClient({ addresses }: Props) {
                             <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Varsayılan</span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600">{addr.fullName}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-600 break-words">{addr.fullName}</p>
+                        <p className="text-sm text-gray-500 break-words">
                           {addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}, {addr.district} / {addr.city}
                         </p>
-                        <p className="text-sm text-gray-400">{addr.phone}</p>
+                        <p className="text-sm text-gray-400 break-words">{addr.phone}</p>
                       </div>
                     </label>
                   ))}
