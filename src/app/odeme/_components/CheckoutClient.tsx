@@ -192,7 +192,7 @@ export default function CheckoutClient({ addresses }: Props) {
       }
 
       // Ödeme sayfasına yönlendir (cart başarı sayfasında temizlenir)
-      window.location.href = `/odeme/form?token=${data.token}`
+      window.location.href = `/api/odeme/form?token=${data.token}`
     } catch {
       setError('Bir hata oluştu, lütfen tekrar deneyin.')
       setLoading(false)
