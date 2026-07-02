@@ -48,7 +48,7 @@ export default function Header() {
 
   // Header rengi: aktif markaya göre değişir, yoksa koyu gri
   const headerBg = scrolled
-    ? 'bg-gray-900/96 backdrop-blur-md shadow-xl'
+    ? 'bg-gray-900 shadow-xl'
     : 'bg-gray-900'
 
   const accentColor = activeBrandKey === 'alb-su-aritma'
@@ -136,9 +136,7 @@ export default function Header() {
                     }`}
                   >
                     <span className="text-sm">{tab.icon}</span>
-                    <span className="hidden xs:inline sm:inline">{
-                      tab.key === 'alb-tarim' ? 'ALB Tarım' : 'Alb Su'
-                    }</span>
+                    <span className="hidden sm:inline">{tab.label}</span>
                   </button>
                 ))}
               </div>
@@ -268,7 +266,7 @@ export default function Header() {
                     }`}
                   >
                     <span>{tab.icon}</span>
-                    <span>{tab.key === 'alb-tarim' ? 'ALB Tarım' : 'Alb Su'}</span>
+                    <span>{tab.label}</span>
                   </button>
                 ))}
               </div>
