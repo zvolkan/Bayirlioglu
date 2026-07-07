@@ -87,18 +87,37 @@ export default async function BrandHomePage({ params }: Props) {
             </p>
 
             <div className="flex flex-wrap gap-4">
-              <Link
-                href={`/${brandKey}/urunler`}
-                className={`${primaryBtn} text-white px-7 py-3.5 rounded-xl font-semibold transition-colors shadow-lg`}
-              >
-                {cfg.cta.label}
-              </Link>
-              <Link
-                href={`/${brandKey}${cfg.ctaSecondary.href}`}
-                className={`border-2 ${outlineBtn} text-white px-7 py-3.5 rounded-xl font-semibold transition-colors`}
-              >
-                {cfg.ctaSecondary.label}
-              </Link>
+              {isAlbSu ? (
+                <>
+                  <Link
+                    href={`/${brandKey}/urunler?kullanim=ev`}
+                    className="bg-white text-blue-900 px-7 py-3.5 rounded-xl font-semibold transition-colors shadow-lg flex items-center gap-2 hover:bg-blue-50"
+                  >
+                    🏠 Eviniz İçin
+                  </Link>
+                  <Link
+                    href={`/${brandKey}/urunler?kullanim=isyeri`}
+                    className={`border-2 ${outlineBtn} text-white px-7 py-3.5 rounded-xl font-semibold transition-colors flex items-center gap-2`}
+                  >
+                    🏢 İş Yeriniz İçin
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href={`/${brandKey}/urunler`}
+                    className={`${primaryBtn} text-white px-7 py-3.5 rounded-xl font-semibold transition-colors shadow-lg`}
+                  >
+                    {cfg.cta.label}
+                  </Link>
+                  <Link
+                    href={`/${brandKey}${cfg.ctaSecondary.href}`}
+                    className={`border-2 ${outlineBtn} text-white px-7 py-3.5 rounded-xl font-semibold transition-colors`}
+                  >
+                    {cfg.ctaSecondary.label}
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* İstatistikler */}
@@ -113,6 +132,41 @@ export default async function BrandHomePage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* ── GÜVEN ROZETLERİ (Alb Su) ── */}
+      {isAlbSu && (
+        <section className="py-7 bg-white border-b border-gray-100">
+          <div className="container-main">
+            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+              {[
+                {
+                  icon: '💧',
+                  title: 'Dünya Markası Membranlar',
+                  desc: 'A.O. Smith, FAW & NSF onaylı ters osmoz membranlı sistemler',
+                },
+                {
+                  icon: '🏅',
+                  title: 'ISO 9001 Kalite Güvencesi',
+                  desc: 'Uluslararası kalite yönetim sistemi sertifikalı hizmet',
+                },
+                {
+                  icon: '🔧',
+                  title: 'Ücretsiz Profesyonel Montaj',
+                  desc: 'Sertifikalı teknisyenler, aynı gün kurulum imkânı',
+                },
+              ].map((item) => (
+                <div key={item.title} className="flex items-center gap-4 px-6 py-4">
+                  <div className="text-3xl shrink-0">{item.icon}</div>
+                  <div>
+                    <p className="font-bold text-gray-900 text-sm">{item.title}</p>
+                    <p className="text-gray-500 text-xs mt-0.5">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── KATEGORİLER ── */}
       <section className="py-16 bg-white">
@@ -146,6 +200,60 @@ export default async function BrandHomePage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* ── KULLANIM ALANLARI (Alb Su) ── */}
+      {isAlbSu && (
+        <section className="py-16 bg-blue-950">
+          <div className="container-main">
+            <div className="text-center mb-10">
+              <p className="font-bold uppercase text-sm tracking-widest mb-2 text-blue-400">
+                Kullanım Alanları
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-black text-white">
+                Her Yerde Temiz Su
+              </h2>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-5">
+              {[
+                {
+                  icon: '🏠',
+                  title: 'Evinizde',
+                  desc: 'Tezgah altı RO ve alkali su cihazlarıyla aile sağlığınızı koruyun. Çay, kahve ve yemeklerinizde farkı hissedeceksiniz.',
+                  href: `/${brandKey}/urunler?kullanim=ev`,
+                  cta: 'Ev Tipi Ürünler',
+                },
+                {
+                  icon: '☕',
+                  title: 'Cafe & Restoranda',
+                  desc: 'Yoğun su tüketiminde kalite + tasarruf. Cafe, restoran, pastane ve çay ocakları için yüksek kapasiteli çözümler.',
+                  href: `/${brandKey}/urunler?kullanim=isyeri`,
+                  cta: 'İş Yeri Çözümleri',
+                },
+                {
+                  icon: '🏢',
+                  title: 'Ofisinizde',
+                  desc: 'Arıtmalı su sebilleriyle çalışanlarınıza sağlıklı su sunun. Pratik, ekonomik ve her bütçeye uygun çözümler.',
+                  href: `/${brandKey}/urunler?kategori=su-sebili`,
+                  cta: 'Arıtmalı Su Sebilleri',
+                },
+              ].map((item) => (
+                <Link
+                  key={item.title}
+                  href={item.href}
+                  className="group bg-white/5 border border-white/10 rounded-2xl p-7 hover:bg-white/10 transition-all duration-200 flex flex-col"
+                >
+                  <div className="text-4xl mb-4">{item.icon}</div>
+                  <h3 className="text-xl font-black text-white mb-2">{item.title}</h3>
+                  <p className="text-white/60 text-sm leading-relaxed mb-5 flex-1">{item.desc}</p>
+                  <span className="text-blue-400 text-sm font-semibold group-hover:text-blue-300 transition-colors">
+                    {item.cta} →
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── ÖNE ÇIKAN ÜRÜNLER ── */}
       {brandProducts.length > 0 && (
@@ -265,7 +373,7 @@ export default async function BrandHomePage({ params }: Props) {
                 {
                   icon: '🏭',
                   title: 'Endüstriyel RO Sistemleri',
-                  desc: '500 lt/saat'ten 50.000 lt/saate kadar yüksek kapasiteli ters osmoz sistemleri. Üretim hattı, kazan suyu, proses suyu uygulamaları.',
+                  desc: "500 lt/saat'ten 50.000 lt/saate kadar yüksek kapasiteli ters osmoz sistemleri. Üretim hattı, kazan suyu, proses suyu uygulamaları.",
                   tags: ['Fabrika', 'Üretim Tesisi'],
                 },
                 {

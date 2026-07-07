@@ -75,10 +75,10 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     tagline: 'Sağlık için,\nAlkali su için',
     subtitle: 'Alkali & endüstriyel su teknolojileriyle',
     description:
-      'En son teknoloji su arıtma cihazları, enerji tasarruflu klimalar ve akıllı ev elektroniğiyle yaşam kalitenizi artırın. Uzman montaj ve 7/24 teknik servis güvencesiyle yanınızdayız.',
+      'Eviniz için tezgah altı RO ve alkali su cihazları; iş yeriniz için arıtmalı su sebili ve endüstriyel sistemler. Ücretsiz profesyonel montaj, dünya markası membranlar ve 7/24 teknik servis güvencesiyle.',
     badge: '💧 Ücretsiz Montaj & 2 Yıl Garanti',
     cta: { label: 'Ürünlerimizi İnceleyin', href: '/urunler' },
-    ctaSecondary: { label: 'Servis Talebi Oluştur', href: '/hizmetler' },
+    ctaSecondary: { label: 'Ücretsiz Teklif Al', href: '/iletisim' },
     whatsapp: {
       phone: process.env.NEXT_PUBLIC_WHATSAPP_ALBSU ?? '905007654321',
       message: 'Merhaba! Alb Su Teknolojileri su arıtma sistemleri hakkında bilgi almak istiyorum.',
@@ -91,20 +91,22 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     ],
     nav: [
       {
-        label: 'Ürünler',
+        label: 'Tüm Ürünler',
         href: '/urunler',
         children: [
-          { label: 'Su Arıtma Sistemleri', href: '/urunler?kategori=su-aritma' },
-          { label: 'Endüstriyel Su Arıtma', href: '/urunler?kategori=endustriyel' },
-          { label: 'Su Yumuşatma Sistemleri', href: '/urunler?kategori=yumustama' },
-          { label: 'Klima Sistemleri', href: '/urunler?kategori=klima' },
-          { label: 'Ev Elektroniği', href: '/urunler?kategori=elektronik' },
-          { label: 'Yedek Parça & Filtre', href: '/urunler?kategori=yedek-parca' },
+          { label: 'Tüm Ürünler', href: '/urunler' },
+          { label: 'Eviniz İçin', href: '/urunler?kullanim=ev' },
+          { label: 'İş Yeriniz İçin', href: '/urunler?kullanim=isyeri' },
+          { label: 'Arıtmalı Su Sebili', href: '/urunler?kategori=su-sebili' },
+          { label: 'Filtre & Membran', href: '/urunler?kategori=filtre' },
+          { label: 'Endüstriyel Sistemler', href: '/urunler?kategori=endustriyel' },
+          { label: 'Yedek Parça & Aksesuar', href: '/urunler?kategori=yedek-parca' },
         ],
       },
+      { label: 'Eviniz İçin', href: '/urunler?kullanim=ev' },
+      { label: 'İş Yeriniz İçin', href: '/urunler?kullanim=isyeri' },
       { label: 'Servis', href: '/hizmetler' },
       { label: 'Referanslar', href: '/referanslar' },
-      { label: 'Hakkımızda', href: '/hakkimizda' },
       { label: 'İletişim', href: '/iletisim' },
     ],
     // VIDEO: /public/videos/su-aritma-hero.mp4 dosyasını ekleyin
