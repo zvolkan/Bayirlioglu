@@ -244,7 +244,7 @@ export default function HomePage() {
                 kurulum.
               </p>
               <ul className="space-y-2 text-sm text-gray-600 mb-8">
-                {['RO Su Arıtma Sistemleri', 'Inverter Klima Sistemleri', 'Akıllı Ev Elektroniği', '7/24 Teknik Servis'].map((item) => (
+                {['RO Su Arıtma Sistemleri', 'Endüstriyel Su Arıtma & Yumuşatma', 'Inverter Klima Sistemleri', 'Akıllı Ev Elektroniği', '7/24 Teknik Servis'].map((item) => (
                   <li key={item} className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                     {item}

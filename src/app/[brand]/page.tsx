@@ -244,6 +244,125 @@ export default async function BrandHomePage({ params }: Props) {
         </div>
       </section>
 
+      {/* ── ENDÜSTRİYEL ÇÖZÜMLER (sadece Alb Su) ── */}
+      {isAlbSu && (
+        <section className="py-16 bg-gray-50">
+          <div className="container-main">
+            <div className="text-center mb-12">
+              <p className="font-bold uppercase text-sm tracking-widest mb-2 text-blue-600">
+                Endüstriyel & Ticari
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-black text-gray-900">
+                Endüstriyel Su Arıtma Çözümleri
+              </h2>
+              <p className="text-gray-500 mt-3 max-w-2xl mx-auto">
+                Fabrika, hastane, otel, okul ve ticari tesisler için yüksek kapasiteli,
+                kesintisiz ve enerji verimli su arıtma sistemleri tasarlıyoruz.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+              {[
+                {
+                  icon: '🏭',
+                  title: 'Endüstriyel RO Sistemleri',
+                  desc: '500 lt/saat'ten 50.000 lt/saate kadar yüksek kapasiteli ters osmoz sistemleri. Üretim hattı, kazan suyu, proses suyu uygulamaları.',
+                  tags: ['Fabrika', 'Üretim Tesisi'],
+                },
+                {
+                  icon: '💎',
+                  title: 'Su Yumuşatma Sistemleri',
+                  desc: 'İyon değiştirici reçine teknolojisi ile sertliği sıfıra indirin. Kazan ömrünü uzatın, kireç sorunundan kalıcı olarak kurtulun.',
+                  tags: ['Otel', 'Sanayi'],
+                },
+                {
+                  icon: '⚗️',
+                  title: 'Alkali İyonize Su Sistemleri',
+                  desc: 'pH 8-10 aralığında alkali su üretimi. Bireysel ve ticari kullanım için yüksek ORP değerli, antioksidan zengin su.',
+                  tags: ['Sağlık Klinik', 'Cafe & Restoran'],
+                },
+                {
+                  icon: '🔬',
+                  title: 'Demineralizasyon Üniteleri',
+                  desc: 'Tıbbi, laboratuvar ve elektronik üretim için 0 TDS saf su üretimi. GMP sertifikalı tasarım seçenekleri.',
+                  tags: ['Hastane', 'Laboratuvar'],
+                },
+                {
+                  icon: '☀️',
+                  title: 'UV Sterilizasyon Sistemleri',
+                  desc: 'Kimyasal kullanmadan bakteriyolojik arıtma. İçme suyu, yüzme havuzu ve gıda üretim uygulamaları için.',
+                  tags: ['Gıda', 'Havuz'],
+                },
+                {
+                  icon: '🔧',
+                  title: 'Periyodik Bakım Kontratı',
+                  desc: 'Yıllık veya 6 aylık bakım paketleriyle sisteminiz sürekli verimli çalışır. Filtre değişimi, dezenfeksiyon ve teknik kontrol.',
+                  tags: ['Tüm Sektörler'],
+                },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className="bg-white rounded-2xl border border-blue-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-2xl mb-4">
+                    {item.icon}
+                  </div>
+                  <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">{item.desc}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.tags.map((tag) => (
+                      <span key={tag} className="bg-blue-50 text-blue-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="text-center">
+              <Link
+                href="/alb-su-aritma/iletisim"
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-7 py-3.5 rounded-xl font-semibold transition-colors shadow-lg"
+              >
+                Endüstriyel Teklif Al →
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── ÜCRETSİZ SU ANALİZİ (sadece Alb Su) ── */}
+      {isAlbSu && (
+        <section className="py-12 bg-white">
+          <div className="container-main">
+            <div className="bg-gradient-to-br from-blue-600 to-cyan-600 rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
+              <div className="relative">
+                <p className="text-5xl mb-4">🔬</p>
+                <h3 className="text-2xl sm:text-3xl font-black mb-3">Ücretsiz Su Analizi</h3>
+                <p className="text-white/80 text-base mb-6 max-w-xl mx-auto">
+                  Evinizin veya işyerinizin suyunu ücretsiz analiz ediyoruz.
+                  Sertlik, klor, bakteri ve mineral değerlerini ölçüp size özel sistem öneriyoruz.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link
+                    href="/alb-su-aritma/iletisim"
+                    className="bg-white text-blue-700 px-7 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-colors"
+                  >
+                    Analiz Randevusu Al
+                  </Link>
+                  <Link
+                    href="/alb-su-aritma/referanslar"
+                    className="border-2 border-white text-white px-7 py-3 rounded-xl font-semibold hover:bg-white/10 transition-colors"
+                  >
+                    Referanslarımızı Gör
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── BLOG ── */}
       {brandPosts.length > 0 && (
         <section className="py-16 bg-gray-50">
@@ -293,11 +412,11 @@ export default async function BrandHomePage({ params }: Props) {
       <section className={`py-20 bg-gradient-to-br ${heroBg}`}>
         <div className="container-main text-center">
           <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">
-            {isAlbSu ? 'Temiz Suya Kavuşmaya Hazır mısınız?' : 'Veriminizi Artırmaya Hazır mısınız?'}
+            {isAlbSu ? 'Alkali & Sağlıklı Suya Kavuşmaya Hazır mısınız?' : 'Veriminizi Artırmaya Hazır mısınız?'}
           </h2>
           <p className="text-white/70 mb-8 max-w-lg mx-auto">
             {isAlbSu
-              ? 'Ücretsiz keşif ve montaj için hemen iletişime geçin.'
+              ? 'Ücretsiz su analizi, keşif ve montaj için hemen iletişime geçin.'
               : 'Ücretsiz tarım danışmanlığı için hemen iletişime geçin.'}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
