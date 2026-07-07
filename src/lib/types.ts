@@ -104,9 +104,10 @@ export interface Category {
   icon?: string;        // emoji veya icon adı
   image?: string;       // görsel URL — sonradan eklenecek
   brand: BrandKey;
-  parentId?: number;
+  parentId?: number;    // dolu ise alt kategoridır
   sortOrder: number;
   productCount?: number;
+  children?: Category[]; // getCategoriesWithChildren tarafından doldurulur
 }
 
 // ─── YORUM ───────────────────────────────────────────────────────────────────

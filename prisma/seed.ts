@@ -76,61 +76,180 @@ async function main() {
     },
   })
 
-  // ─── Kategoriler — Albsu Teknolojileri ────────────────────────────────────
+  // ─── Eski Alb Su flat kategorilerini deaktive et ──────────────────────────
+  // (su-aritma, klima, su-isitici, su-yumusatma, temizlik)
+  // Bu kategoriler artık hiyerarşik yapıyla değiştirildi.
+  const eskiAlbSuSluglar = ['su-aritma', 'klima', 'su-isitici', 'su-yumusatma', 'temizlik']
+  await prisma.category.updateMany({
+    where: { slug: { in: eskiAlbSuSluglar } },
+    data: { isActive: false },
+  })
+  console.log('🗂️  Eski Alb Su kategorileri deaktive edildi')
 
-  const catSuAritma = await prisma.category.upsert({
-    where: { slug: 'su-aritma' },
-    update: {},
+  // ─── Kategoriler — Alb Su Teknolojileri — PARENT (üst) kategoriler ─────────
+  // Ürünler doğrudan parent'a bağlanmaz; alt kategoriler aracılığıyla bağlanır.
+
+  const catEv = await prisma.category.upsert({
+    where: { slug: 'ev' },
+    update: { name: 'Eviniz İçin', icon: '🏠', sortOrder: 1 },
     create: {
-      brandId: albSu.id, name: 'Su Arıtma & Sebil', slug: 'su-aritma',
-      icon: '🚿', sortOrder: 1,
-      description: 'Ev tipi su arıtma cihazları ve arıtmalı sebipler',
+      brandId: albSu.id, name: 'Eviniz İçin', slug: 'ev',
+      icon: '🏠', sortOrder: 1,
+      description: 'Ev tipi su arıtma, ısıtma ve yumuşatma çözümleri',
     },
   })
 
-  const catKlima = await prisma.category.upsert({
-    where: { slug: 'klima' },
-    update: {},
+  const catIsYeri = await prisma.category.upsert({
+    where: { slug: 'is-yeri' },
+    update: { name: 'İş Yeriniz İçin', icon: '🏢', sortOrder: 2 },
     create: {
-      brandId: albSu.id, name: 'Klima Sistemleri', slug: 'klima',
-      icon: '❄️', sortOrder: 2,
-      description: 'Duvar tipi, salon tipi ve kaset tipi klima sistemleri',
+      brandId: albSu.id, name: 'İş Yeriniz İçin', slug: 'is-yeri',
+      icon: '🏢', sortOrder: 2,
+      description: 'Ticari, endüstriyel ve kurumsal su teknoloji çözümleri',
     },
   })
 
-  const catSuIsitici = await prisma.category.upsert({
-    where: { slug: 'su-isitici' },
-    update: {},
+  const catKucukEvAletleri = await prisma.category.upsert({
+    where: { slug: 'kucuk-ev-aletleri' },
+    update: { name: 'Küçük Ev Aletleri', icon: '🔌', sortOrder: 3 },
     create: {
-      brandId: albSu.id, name: 'Su Isıtıcıları', slug: 'su-isitici',
-      icon: '🔥', sortOrder: 3,
+      brandId: albSu.id, name: 'Küçük Ev Aletleri', slug: 'kucuk-ev-aletleri',
+      icon: '🔌', sortOrder: 3,
+      description: 'Klima, vantilatör, robot süpürge ve temizlik aletleri',
+    },
+  })
+
+  const catYedekParca = await prisma.category.upsert({
+    where: { slug: 'yedek-parca' },
+    update: { name: 'Yedek Parça & Aksesuar', icon: '🔧', sortOrder: 4 },
+    create: {
+      brandId: albSu.id, name: 'Yedek Parça & Aksesuar', slug: 'yedek-parca',
+      icon: '🔧', sortOrder: 4,
+      description: 'Filtre, membran ve tüm yedek parçalar',
+    },
+  })
+
+  // ─── Alt kategoriler — Eviniz İçin ────────────────────────────────────────
+
+  const catEvSuIsitici = await prisma.category.upsert({
+    where: { slug: 'ev-su-isitici' },
+    update: { parentId: catEv.id, name: 'Su Isıtıcıları', icon: '🔥', sortOrder: 1 },
+    create: {
+      brandId: albSu.id, name: 'Su Isıtıcıları', slug: 'ev-su-isitici',
+      icon: '🔥', sortOrder: 1, parentId: catEv.id,
       description: 'Elektrikli boiler, şofben ve ısı pompalı su ısıtıcıları',
     },
   })
 
-  const catSuYumusatma = await prisma.category.upsert({
-    where: { slug: 'su-yumusatma' },
-    update: {},
+  const catEvSuYumusatma = await prisma.category.upsert({
+    where: { slug: 'ev-su-yumusatma' },
+    update: { parentId: catEv.id, name: 'Su Yumuşatma', icon: '💧', sortOrder: 2 },
     create: {
-      brandId: albSu.id, name: 'Su Yumuşatma', slug: 'su-yumusatma',
-      icon: '💧', sortOrder: 4,
-      description: 'Kireç önleyici ve iyon değiştirici su yumuşatma sistemleri',
+      brandId: albSu.id, name: 'Su Yumuşatma', slug: 'ev-su-yumusatma',
+      icon: '💧', sortOrder: 2, parentId: catEv.id,
+      description: 'Ev tipi kireç önleyici ve iyon değiştirici sistemler',
+    },
+  })
+
+  const catEvSuAritma = await prisma.category.upsert({
+    where: { slug: 'ev-su-aritma' },
+    update: { parentId: catEv.id, name: 'Su Arıtma', icon: '⚗️', sortOrder: 3 },
+    create: {
+      brandId: albSu.id, name: 'Su Arıtma', slug: 'ev-su-aritma',
+      icon: '⚗️', sortOrder: 3, parentId: catEv.id,
+      description: 'Tezgah altı RO ve alkali su arıtma sistemleri',
+    },
+  })
+
+  // ─── Alt kategoriler — İş Yeriniz İçin ───────────────────────────────────
+
+  const catSuSebili = await prisma.category.upsert({
+    where: { slug: 'su-sebili' },
+    update: { parentId: catIsYeri.id, name: 'Arıtmalı Su Sebili', icon: '🚿', sortOrder: 1 },
+    create: {
+      brandId: albSu.id, name: 'Arıtmalı Su Sebili', slug: 'su-sebili',
+      icon: '🚿', sortOrder: 1, parentId: catIsYeri.id,
+      description: 'Ofis ve işyeri için entegre filtreli içme suyu sebilleri',
+    },
+  })
+
+  const catEndustriyel = await prisma.category.upsert({
+    where: { slug: 'endustriyel' },
+    update: { parentId: catIsYeri.id, name: 'Endüstriyel Sistemler', icon: '🏭', sortOrder: 2 },
+    create: {
+      brandId: albSu.id, name: 'Endüstriyel Sistemler', slug: 'endustriyel',
+      icon: '🏭', sortOrder: 2, parentId: catIsYeri.id,
+      description: 'Yüksek kapasiteli endüstriyel RO, yumuşatma ve saf su sistemleri',
+    },
+  })
+
+  const catTicariBoiler = await prisma.category.upsert({
+    where: { slug: 'ticari-boiler' },
+    update: { parentId: catIsYeri.id, name: 'Ticari Su Isıtıcıları', icon: '♨️', sortOrder: 3 },
+    create: {
+      brandId: albSu.id, name: 'Ticari Su Isıtıcıları', slug: 'ticari-boiler',
+      icon: '♨️', sortOrder: 3, parentId: catIsYeri.id,
+      description: 'Büyük kapasiteli otel, tesis ve endüstri tipi boilerler',
+    },
+  })
+
+  const catIsYeriYumusatma = await prisma.category.upsert({
+    where: { slug: 'is-yeri-yumusatma' },
+    update: { parentId: catIsYeri.id, name: 'Su Yumuşatma Sistemleri', icon: '💧', sortOrder: 4 },
+    create: {
+      brandId: albSu.id, name: 'Su Yumuşatma Sistemleri', slug: 'is-yeri-yumusatma',
+      icon: '💧', sortOrder: 4, parentId: catIsYeri.id,
+      description: 'Yüksek kapasiteli ticari ve endüstriyel su yumuşatma',
+    },
+  })
+
+  // ─── Alt kategoriler — Küçük Ev Aletleri ─────────────────────────────────
+
+  const catKlima = await prisma.category.upsert({
+    where: { slug: 'klima' },
+    update: { parentId: catKucukEvAletleri.id, name: 'Klima Sistemleri', icon: '❄️', sortOrder: 1 },
+    create: {
+      brandId: albSu.id, name: 'Klima Sistemleri', slug: 'klima',
+      icon: '❄️', sortOrder: 1, parentId: catKucukEvAletleri.id,
+      description: 'Duvar tipi, salon tipi ve kaset tipi inverter klima sistemleri',
+    },
+  })
+
+  const catVantilator = await prisma.category.upsert({
+    where: { slug: 'vantilator' },
+    update: { parentId: catKucukEvAletleri.id, name: 'Vantilatör', icon: '🌬️', sortOrder: 2 },
+    create: {
+      brandId: albSu.id, name: 'Vantilatör', slug: 'vantilator',
+      icon: '🌬️', sortOrder: 2, parentId: catKucukEvAletleri.id,
+      description: 'Kule tipi ve masa tipi vantilatörler',
     },
   })
 
   const catTemizlik = await prisma.category.upsert({
     where: { slug: 'temizlik' },
-    update: {},
+    update: { parentId: catKucukEvAletleri.id, name: 'Temizlik Aletleri', icon: '🧹', sortOrder: 3 },
     create: {
-      brandId: albSu.id, name: 'Temizlik & Aksesuar', slug: 'temizlik',
-      icon: '🧹', sortOrder: 5,
-      description: 'Kärcher yüksek basınçlı yıkayıcılar ve ev elektroniği',
+      brandId: albSu.id, name: 'Temizlik Aletleri', slug: 'temizlik',
+      icon: '🧹', sortOrder: 3, parentId: catKucukEvAletleri.id,
+      description: 'Yüksek basınçlı yıkayıcı, elektrikli süpürge ve temizlik robotları',
+    },
+  })
+
+  // ─── Alt kategoriler — Yedek Parça & Aksesuar ─────────────────────────────
+
+  const catFiltre = await prisma.category.upsert({
+    where: { slug: 'filtre' },
+    update: { parentId: catYedekParca.id, name: 'Filtre & Membran', icon: '🔩', sortOrder: 1 },
+    create: {
+      brandId: albSu.id, name: 'Filtre & Membran', slug: 'filtre',
+      icon: '🔩', sortOrder: 1, parentId: catYedekParca.id,
+      description: 'RO membran, karbon filtre, sediment filtre ve yedek parçalar',
     },
   })
 
   console.log('✅ Kategoriler oluşturuldu')
 
-  // ─── Yardımcı: ürün oluştur ────────────────────────────────────────────────
+  // ─── Yardımcı: ürün oluştur/güncelle ──────────────────────────────────────
 
   async function upsertProduct(data: {
     id: string
@@ -152,52 +271,62 @@ async function main() {
     specs: { name: string; value: string; unit?: string }[]
     tags: string[]
   }) {
-    // Mevcut ürünü kontrol et
     const existing = await prisma.product.findUnique({ where: { slug: data.slug } })
-    if (existing) {
-      console.log(`  ⏭  Atlandı (mevcut): ${data.name}`)
-      return existing
-    }
 
-    const product = await prisma.product.create({
-      data: {
-        id: data.id,
-        slug: data.slug,
-        brandId: data.brandId,
-        categoryId: data.categoryId,
-        name: data.name,
-        description: data.description,
-        shortDescription: data.shortDescription,
-        price: data.price,
-        salePrice: data.salePrice ?? null,
-        sku: data.sku,
-        unit: data.unit,
-        stockQuantity: data.stock,
-        isFeatured: data.isFeatured,
-        rating: data.rating,
-        reviewCount: data.reviewCount,
-        images: {
-          create: data.images.map((img, i) => ({
-            url: img.url,
-            altText: img.alt,
-            isPrimary: img.isPrimary,
-            sortOrder: i,
-          })),
+    let product
+
+    if (existing) {
+      // Kategori değişikliğini uygula
+      product = await prisma.product.update({
+        where: { slug: data.slug },
+        data: { categoryId: data.categoryId },
+      })
+      console.log(`  🔄 Kategori güncellendi: ${data.name}`)
+    } else {
+      product = await prisma.product.create({
+        data: {
+          id: data.id,
+          slug: data.slug,
+          brandId: data.brandId,
+          categoryId: data.categoryId,
+          name: data.name,
+          description: data.description,
+          shortDescription: data.shortDescription,
+          price: data.price,
+          salePrice: data.salePrice ?? null,
+          sku: data.sku,
+          unit: data.unit,
+          stockQuantity: data.stock,
+          isFeatured: data.isFeatured,
+          rating: data.rating,
+          reviewCount: data.reviewCount,
+          images: {
+            create: data.images.map((img, i) => ({
+              url: img.url,
+              altText: img.alt,
+              isPrimary: img.isPrimary,
+              sortOrder: i,
+            })),
+          },
+          specs: {
+            create: data.specs.map((s, i) => ({
+              specName: s.name,
+              specValue: s.value,
+              specUnit: s.unit ?? null,
+              sortOrder: i,
+            })),
+          },
         },
-        specs: {
-          create: data.specs.map((s, i) => ({
-            specName: s.name,
-            specValue: s.value,
-            specUnit: s.unit ?? null,
-            sortOrder: i,
-          })),
-        },
-      },
-    })
+      })
+      console.log(`  ✅ ${data.name}`)
+    }
 
     // Etiketler
     for (const tagName of data.tags) {
-      const tagSlug = tagName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9ğüşıöçğüşıöç-]/g, '')
+      const tagSlug = tagName
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9ğüşıöçğüşıöç-]/g, '')
       const tag = await prisma.tag.upsert({
         where: { name: tagName },
         update: {},
@@ -210,7 +339,6 @@ async function main() {
       })
     }
 
-    console.log(`  ✅ ${data.name}`)
     return product
   }
 
@@ -363,10 +491,10 @@ async function main() {
 
   console.log('\n💧 Albsu Teknolojileri ürünleri yükleniyor...')
 
-  // ─── Albsu Ürünleri ────────────────────────────────────────────────────────
+  // ─── Albsu Ürünleri — Eviniz İçin › Su Isıtıcıları ───────────────────────
 
   await upsertProduct({
-    id: 'albsu-001', slug: 'ao-smith-daisy', brandId: albSu.id, categoryId: catSuIsitici.id,
+    id: 'albsu-001', slug: 'ao-smith-daisy', brandId: albSu.id, categoryId: catEvSuIsitici.id,
     name: 'AO Smith DAISY', sku: 'ALBSU-AOS-DAISY', unit: 'adet', stock: 25,
     isFeatured: true, rating: 4.8, reviewCount: 88,
     price: 4500, salePrice: 3990,
@@ -379,11 +507,11 @@ async function main() {
       { name: 'Tip', value: 'Elektrikli su ısıtıcısı' },
       { name: 'Garanti', value: '2 yıl' },
     ],
-    tags: ['AO Smith', 'su ısıtıcı', 'elektrikli boiler', 'DAISY'],
+    tags: ['AO Smith', 'su ısıtıcı', 'elektrikli boiler', 'DAISY', 'ev'],
   })
 
   await upsertProduct({
-    id: 'albsu-002', slug: 'ao-smith-lotus-75-tc', brandId: albSu.id, categoryId: catSuIsitici.id,
+    id: 'albsu-002', slug: 'ao-smith-lotus-75-tc', brandId: albSu.id, categoryId: catEvSuIsitici.id,
     name: 'AO Smith LOTUS 75 TC', sku: 'ALBSU-AOS-LOTUS75TC', unit: 'adet', stock: 15,
     isFeatured: true, rating: 4.9, reviewCount: 64,
     price: 12500, salePrice: 10900,
@@ -396,11 +524,11 @@ async function main() {
       { name: 'Serpantin', value: 'Çift serpantin' },
       { name: 'Garanti', value: '5 yıl tank, 2 yıl elektrik' },
     ],
-    tags: ['AO Smith', 'LOTUS', 'boiler', '75 litre', 'merkezi sistem'],
+    tags: ['AO Smith', 'LOTUS', 'boiler', '75 litre', 'merkezi sistem', 'ev'],
   })
 
   await upsertProduct({
-    id: 'albsu-003', slug: 'ao-smith-lts-75-lx', brandId: albSu.id, categoryId: catSuIsitici.id,
+    id: 'albsu-003', slug: 'ao-smith-lts-75-lx', brandId: albSu.id, categoryId: catEvSuIsitici.id,
     name: 'AO Smith LTS 75 LX', sku: 'ALBSU-AOS-LTS75LX', unit: 'adet', stock: 10,
     isFeatured: false, rating: 4.8, reviewCount: 41,
     price: 15800,
@@ -413,11 +541,11 @@ async function main() {
       { name: 'Kontrol', value: 'Dijital panel' },
       { name: 'Garanti', value: '5 yıl tank' },
     ],
-    tags: ['AO Smith', 'LTS', 'premium', 'boiler', '75 litre'],
+    tags: ['AO Smith', 'LTS', 'premium', 'boiler', '75 litre', 'ev'],
   })
 
   await upsertProduct({
-    id: 'albsu-004', slug: 'ao-smith-lts-75-sx', brandId: albSu.id, categoryId: catSuIsitici.id,
+    id: 'albsu-004', slug: 'ao-smith-lts-75-sx', brandId: albSu.id, categoryId: catEvSuIsitici.id,
     name: 'AO Smith LTS 75 SX', sku: 'ALBSU-AOS-LTS75SX', unit: 'adet', stock: 12,
     isFeatured: false, rating: 4.7, reviewCount: 53,
     price: 13200, salePrice: 11500,
@@ -430,130 +558,11 @@ async function main() {
       { name: 'Isıtma Elemanı', value: 'Paslanmaz çelik' },
       { name: 'Garanti', value: '3 yıl' },
     ],
-    tags: ['AO Smith', 'LTS', 'boiler', '75 litre'],
+    tags: ['AO Smith', 'LTS', 'boiler', '75 litre', 'ev'],
   })
 
   await upsertProduct({
-    id: 'albsu-005', slug: 'ao-smith-frezya-300-s', brandId: albSu.id, categoryId: catSuIsitici.id,
-    name: 'AO Smith Frezya 300 S', sku: 'ALBSU-FRZ-300S', unit: 'adet', stock: 8,
-    isFeatured: true, rating: 4.9, reviewCount: 32,
-    price: 28500,
-    shortDescription: '300 litre kapasiteli Frezya S serisi ticari tip su ısıtıcısı.',
-    description: 'AO Smith Frezya 300 S, otel, işyeri ve apartmanlar için tasarlanmış 300 litrelik büyük kapasiteli ticari su ısıtıcısıdır. Güçlü ısıtma kapasitesi ve dayanıklı emaye tank yapısıyla kesintisiz sıcak su sağlar.',
-    images: [{ url: '/images/albsu-frezya-300s.jpg', alt: 'AO Smith Frezya 300 S', isPrimary: true }],
-    specs: [
-      { name: 'Kapasite', value: '300', unit: 'litre' },
-      { name: 'Seri', value: 'Frezya S' },
-      { name: 'Kullanım Alanı', value: 'Ticari / endüstriyel' },
-      { name: 'Garanti', value: '5 yıl tank' },
-    ],
-    tags: ['Frezya', 'AO Smith', 'ticari', '300 litre', 'boiler'],
-  })
-
-  await upsertProduct({
-    id: 'albsu-006', slug: 'ao-smith-frezya-300-tu', brandId: albSu.id, categoryId: catSuIsitici.id,
-    name: 'AO Smith Frezya 300 TU', sku: 'ALBSU-FRZ-300TU', unit: 'adet', stock: 6,
-    isFeatured: false, rating: 4.8, reviewCount: 21,
-    price: 32000, salePrice: 28800,
-    shortDescription: '300 litre TU serisi, serpantinli merkezi sistem entegrasyonu destekli boiler.',
-    description: 'AO Smith Frezya 300 TU, merkezi ısıtma sistemi veya güneş enerjisi kolektörleriyle entegre çalışabilen 300 litrelik TU serisi su ısıtıcısıdır. Çift serpantin desteği enerji verimliliğini maksimize eder.',
-    images: [{ url: '/images/albsu-frezya-300tu.jpg', alt: 'AO Smith Frezya 300 TU', isPrimary: true }],
-    specs: [
-      { name: 'Kapasite', value: '300', unit: 'litre' },
-      { name: 'Seri', value: 'Frezya TU' },
-      { name: 'Serpantin', value: 'Var (merkezi sistem / güneş enerjisi)' },
-      { name: 'Garanti', value: '5 yıl tank' },
-    ],
-    tags: ['Frezya', 'AO Smith', '300 litre', 'merkezi sistem', 'güneş enerjisi'],
-  })
-
-  await upsertProduct({
-    id: 'albsu-007', slug: 'ao-smith-frezya-600-s', brandId: albSu.id, categoryId: catSuIsitici.id,
-    name: 'AO Smith Frezya 600 S', sku: 'ALBSU-FRZ-600S', unit: 'adet', stock: 4,
-    isFeatured: false, rating: 5.0, reviewCount: 9,
-    price: 52000,
-    shortDescription: '600 litre büyük kapasiteli Frezya S serisi endüstriyel boiler.',
-    description: 'AO Smith Frezya 600 S, büyük ölçekli tesisler için 600 litrelik hacmiyle endüstriyel sınıf bir su ısıtıcısıdır. Oteller, spor tesisleri ve fabrikalarda yüksek sıcak su talebi için idealdir.',
-    images: [{ url: '/images/albsu-frezya-600s.jpg', alt: 'AO Smith Frezya 600 S', isPrimary: true }],
-    specs: [
-      { name: 'Kapasite', value: '600', unit: 'litre' },
-      { name: 'Seri', value: 'Frezya S' },
-      { name: 'Kullanım Alanı', value: 'Endüstriyel / otel' },
-      { name: 'Garanti', value: '5 yıl tank' },
-    ],
-    tags: ['Frezya', 'AO Smith', '600 litre', 'endüstriyel', 'otel'],
-  })
-
-  await upsertProduct({
-    id: 'albsu-008', slug: 'ao-smith-maxim-su-yumusatma', brandId: albSu.id, categoryId: catSuYumusatma.id,
-    name: 'AO Smith Maxim Su Yumuşatma Sistemi', sku: 'ALBSU-MAX-001', unit: 'adet', stock: 20,
-    isFeatured: true, rating: 4.8, reviewCount: 76,
-    price: 8900, salePrice: 7800,
-    shortDescription: 'Maxim serisi ev ve işyeri tipi iyon değiştirici su yumuşatma sistemi.',
-    description: 'AO Smith Maxim Su Yumuşatma, kireç ve sertliği yüksek sulara karşı boru, cihaz ve çamaşır makinesi hasarını önleyen iyon değiştiricili bir sistemdir. Otomatik rejenerasyon özelliğiyle bakım gerektirmez, tuz tüketimi düşüktür.',
-    images: [{ url: '/images/albsu-maxim.jpg', alt: 'AO Smith Maxim Su Yumuşatma', isPrimary: true }],
-    specs: [
-      { name: 'Teknoloji', value: 'İyon değiştirici' },
-      { name: 'Rejenerasyon', value: 'Otomatik zamanlayıcılı' },
-      { name: 'Kullanım', value: 'Ev / küçük işyeri' },
-      { name: 'Garanti', value: '2 yıl' },
-    ],
-    tags: ['su yumuşatma', 'kireç önleme', 'Maxim', 'iyon değiştirici'],
-  })
-
-  await upsertProduct({
-    id: 'albsu-009', slug: 'triasoft-mini-su-yumusatma', brandId: albSu.id, categoryId: catSuYumusatma.id,
-    name: 'TRIASOFT Mini Su Yumuşatma', sku: 'ALBSU-TRIAS-MINI', unit: 'adet', stock: 18,
-    isFeatured: false, rating: 4.7, reviewCount: 52,
-    price: 11500,
-    shortDescription: 'Kompakt TRIASOFT Mini, küçük daire ve ofisler için kireç önleyici sistem.',
-    description: 'TRIASOFT Mini, sınırlı montaj alanlarında rahatlıkla kurulabilen kompakt su yumuşatma sistemidir. Düşük tuz ve su tüketimiyle ekonomik çalışır, dijital kontrol paneli ve otomatik yenileme döngüsüne sahiptir.',
-    images: [{ url: '/images/albsu-triasoft-mini.jpg', alt: 'TRIASOFT Mini', isPrimary: true }],
-    specs: [
-      { name: 'Model', value: 'TRIASOFT Mini' },
-      { name: 'Boyut', value: 'Kompakt' },
-      { name: 'Kontrol', value: 'Dijital panel' },
-      { name: 'Garanti', value: '2 yıl' },
-    ],
-    tags: ['TRIASOFT', 'su yumuşatma', 'mini', 'kompakt'],
-  })
-
-  await upsertProduct({
-    id: 'albsu-010', slug: 'triasoft-midi-su-yumusatma', brandId: albSu.id, categoryId: catSuYumusatma.id,
-    name: 'TRIASOFT Midi Su Yumuşatma', sku: 'ALBSU-TRIAS-MIDI', unit: 'adet', stock: 14,
-    isFeatured: true, rating: 4.9, reviewCount: 38,
-    price: 15800, salePrice: 13900,
-    shortDescription: 'TRIASOFT Midi orta kapasite, 3-8 kişilik hane için ideal su yumuşatma sistemi.',
-    description: 'TRIASOFT Midi, 3-8 kişilik hanelerde yoğun su kullanımını karşılayan orta kapasiteli su yumuşatma sistemidir. Ayarlanabilir yenileme döngüsü ve yüksek reçine kapasitesiyle uzun süreli verimli çalışır.',
-    images: [{ url: '/images/albsu-triasoft-midi.jpg', alt: 'TRIASOFT Midi', isPrimary: true }],
-    specs: [
-      { name: 'Model', value: 'TRIASOFT Midi' },
-      { name: 'Uygun Hane Büyüklüğü', value: '3-8 kişi' },
-      { name: 'Rejenerasyon', value: 'Otomatik' },
-      { name: 'Garanti', value: '2 yıl' },
-    ],
-    tags: ['TRIASOFT', 'su yumuşatma', 'midi', 'orta kapasite'],
-  })
-
-  await upsertProduct({
-    id: 'albsu-011', slug: 'opal-nw-su-yumusatma', brandId: albSu.id, categoryId: catSuYumusatma.id,
-    name: 'OPAL NW Su Yumuşatma Sistemi', sku: 'ALBSU-OPAL-NW', unit: 'adet', stock: 10,
-    isFeatured: false, rating: 4.8, reviewCount: 27,
-    price: 22000,
-    shortDescription: 'OPAL NW çift tanklı, kesintisiz yumuşak su sağlayan yüksek kapasiteli sistem.',
-    description: 'OPAL NW Serisi, çift reçine tanklı tasarımıyla kesintisiz yumuşak su temin eden yüksek kapasiteli su yumuşatma sistemidir. Bir tank yenileme yaparken diğeri aktif çalıştığından hiçbir zaman sert su gelme riski yoktur.',
-    images: [{ url: '/images/albsu-opal-nw.jpg', alt: 'OPAL NW Su Yumuşatma', isPrimary: true }],
-    specs: [
-      { name: 'Seri', value: 'OPAL NW' },
-      { name: 'Tank Sayısı', value: 'Çift tank' },
-      { name: 'Çalışma', value: 'Kesintisiz yumuşak su' },
-      { name: 'Garanti', value: '2 yıl' },
-    ],
-    tags: ['OPAL', 'su yumuşatma', 'çift tank', 'kesintisiz'],
-  })
-
-  await upsertProduct({
-    id: 'albsu-012', slug: 'ao-smith-merkur-ecostar', brandId: albSu.id, categoryId: catSuIsitici.id,
+    id: 'albsu-012', slug: 'ao-smith-merkur-ecostar', brandId: albSu.id, categoryId: catEvSuIsitici.id,
     name: 'AO Smith Merkür Ecostar', sku: 'ALBSU-MERKUR-ECO', unit: 'adet', stock: 12,
     isFeatured: true, rating: 4.9, reviewCount: 45,
     price: 19800, salePrice: 17500,
@@ -566,11 +575,83 @@ async function main() {
       { name: 'COP', value: '3.5' },
       { name: 'Garanti', value: '3 yıl' },
     ],
-    tags: ['Merkür', 'Ecostar', 'ısı pompası', 'enerji tasarrufu', 'AO Smith'],
+    tags: ['Merkür', 'Ecostar', 'ısı pompası', 'enerji tasarrufu', 'AO Smith', 'ev'],
   })
 
   await upsertProduct({
-    id: 'albsu-013', slug: 'ortimax-aritma-sebil-siyah', brandId: albSu.id, categoryId: catSuAritma.id,
+    id: 'albsu-018', slug: 'ihlas-sofben', brandId: albSu.id, categoryId: catEvSuIsitici.id,
+    name: 'İhlas Şofben', sku: 'ALBSU-IHL-SOFB', unit: 'adet', stock: 35,
+    isFeatured: false, rating: 4.6, reviewCount: 78,
+    price: 3800, salePrice: 3200,
+    shortDescription: "Doğalgaz / LPG'li anlık su ısıtıcısı, yüksek debi ve enerji tasarrufu.",
+    description: 'İhlas Şofben, doğalgaz veya LPG yakıtlı anlık su ısıtma sistemidir. Depolama tankına ihtiyaç duymadan anında sıcak su üretir; dijital kontrol paneli, alev hata güvenliği ve donma koruma özelliğiyle donatılmıştır.',
+    images: [{ url: '/images/albsu-ihlas-sofben.jpg', alt: 'İhlas Şofben', isPrimary: true }],
+    specs: [
+      { name: 'Yakıt Tipi', value: 'Doğalgaz / LPG' },
+      { name: 'Tip', value: 'Anlık su ısıtıcısı' },
+      { name: 'Kontrol', value: 'Dijital panel' },
+      { name: 'Garanti', value: '2 yıl' },
+    ],
+    tags: ['şofben', 'İhlas', 'doğalgaz', 'LPG', 'anlık su ısıtıcı', 'ev'],
+  })
+
+  // ─── Albsu Ürünleri — Eviniz İçin › Su Yumuşatma ─────────────────────────
+
+  await upsertProduct({
+    id: 'albsu-008', slug: 'ao-smith-maxim-su-yumusatma', brandId: albSu.id, categoryId: catEvSuYumusatma.id,
+    name: 'AO Smith Maxim Su Yumuşatma Sistemi', sku: 'ALBSU-MAX-001', unit: 'adet', stock: 20,
+    isFeatured: true, rating: 4.8, reviewCount: 76,
+    price: 8900, salePrice: 7800,
+    shortDescription: 'Maxim serisi ev ve işyeri tipi iyon değiştirici su yumuşatma sistemi.',
+    description: 'AO Smith Maxim Su Yumuşatma, kireç ve sertliği yüksek sulara karşı boru, cihaz ve çamaşır makinesi hasarını önleyen iyon değiştiricili bir sistemdir. Otomatik rejenerasyon özelliğiyle bakım gerektirmez, tuz tüketimi düşüktür.',
+    images: [{ url: '/images/albsu-maxim.jpg', alt: 'AO Smith Maxim Su Yumuşatma', isPrimary: true }],
+    specs: [
+      { name: 'Teknoloji', value: 'İyon değiştirici' },
+      { name: 'Rejenerasyon', value: 'Otomatik zamanlayıcılı' },
+      { name: 'Kullanım', value: 'Ev / küçük işyeri' },
+      { name: 'Garanti', value: '2 yıl' },
+    ],
+    tags: ['su yumuşatma', 'kireç önleme', 'Maxim', 'iyon değiştirici', 'ev'],
+  })
+
+  await upsertProduct({
+    id: 'albsu-009', slug: 'triasoft-mini-su-yumusatma', brandId: albSu.id, categoryId: catEvSuYumusatma.id,
+    name: 'TRIASOFT Mini Su Yumuşatma', sku: 'ALBSU-TRIAS-MINI', unit: 'adet', stock: 18,
+    isFeatured: false, rating: 4.7, reviewCount: 52,
+    price: 11500,
+    shortDescription: 'Kompakt TRIASOFT Mini, küçük daire ve ofisler için kireç önleyici sistem.',
+    description: 'TRIASOFT Mini, sınırlı montaj alanlarında rahatlıkla kurulabilen kompakt su yumuşatma sistemidir. Düşük tuz ve su tüketimiyle ekonomik çalışır, dijital kontrol paneli ve otomatik yenileme döngüsüne sahiptir.',
+    images: [{ url: '/images/albsu-triasoft-mini.jpg', alt: 'TRIASOFT Mini', isPrimary: true }],
+    specs: [
+      { name: 'Model', value: 'TRIASOFT Mini' },
+      { name: 'Boyut', value: 'Kompakt' },
+      { name: 'Kontrol', value: 'Dijital panel' },
+      { name: 'Garanti', value: '2 yıl' },
+    ],
+    tags: ['TRIASOFT', 'su yumuşatma', 'mini', 'kompakt', 'ev'],
+  })
+
+  await upsertProduct({
+    id: 'albsu-010', slug: 'triasoft-midi-su-yumusatma', brandId: albSu.id, categoryId: catEvSuYumusatma.id,
+    name: 'TRIASOFT Midi Su Yumuşatma', sku: 'ALBSU-TRIAS-MIDI', unit: 'adet', stock: 14,
+    isFeatured: true, rating: 4.9, reviewCount: 38,
+    price: 15800, salePrice: 13900,
+    shortDescription: 'TRIASOFT Midi orta kapasite, 3-8 kişilik hane için ideal su yumuşatma sistemi.',
+    description: 'TRIASOFT Midi, 3-8 kişilik hanelerde yoğun su kullanımını karşılayan orta kapasiteli su yumuşatma sistemidir. Ayarlanabilir yenileme döngüsü ve yüksek reçine kapasitesiyle uzun süreli verimli çalışır.',
+    images: [{ url: '/images/albsu-triasoft-midi.jpg', alt: 'TRIASOFT Midi', isPrimary: true }],
+    specs: [
+      { name: 'Model', value: 'TRIASOFT Midi' },
+      { name: 'Uygun Hane Büyüklüğü', value: '3-8 kişi' },
+      { name: 'Rejenerasyon', value: 'Otomatik' },
+      { name: 'Garanti', value: '2 yıl' },
+    ],
+    tags: ['TRIASOFT', 'su yumuşatma', 'midi', 'orta kapasite', 'ev'],
+  })
+
+  // ─── Albsu Ürünleri — İş Yeriniz İçin › Arıtmalı Su Sebili ──────────────
+
+  await upsertProduct({
+    id: 'albsu-013', slug: 'ortimax-aritma-sebil-siyah', brandId: albSu.id, categoryId: catSuSebili.id,
     name: 'Ortimax Arıtmalı Sebil — Siyah', sku: 'ALBSU-ORT-SBL-SYH', unit: 'adet', stock: 30,
     isFeatured: true, rating: 4.8, reviewCount: 118,
     price: 5800, salePrice: 4990,
@@ -583,11 +664,11 @@ async function main() {
       { name: 'Filtrasyon', value: 'Entegre filtre sistemi' },
       { name: 'Garanti', value: '2 yıl' },
     ],
-    tags: ['sebil', 'arıtmalı', 'Ortimax', 'içme suyu', 'siyah'],
+    tags: ['sebil', 'arıtmalı', 'Ortimax', 'içme suyu', 'siyah', 'is-yeri'],
   })
 
   await upsertProduct({
-    id: 'albsu-014', slug: 'ortimax-aritma-sebil-kisa', brandId: albSu.id, categoryId: catSuAritma.id,
+    id: 'albsu-014', slug: 'ortimax-aritma-sebil-kisa', brandId: albSu.id, categoryId: catSuSebili.id,
     name: 'Ortimax Arıtmalı Sebil — Kısa', sku: 'ALBSU-ORT-SBL-KIS', unit: 'adet', stock: 22,
     isFeatured: false, rating: 4.7, reviewCount: 84,
     price: 4500,
@@ -600,8 +681,82 @@ async function main() {
       { name: 'Filtrasyon', value: 'Entegre filtre sistemi' },
       { name: 'Garanti', value: '2 yıl' },
     ],
-    tags: ['sebil', 'arıtmalı', 'Ortimax', 'kompakt', 'tezgah üstü'],
+    tags: ['sebil', 'arıtmalı', 'Ortimax', 'kompakt', 'tezgah üstü', 'is-yeri'],
   })
+
+  // ─── Albsu Ürünleri — İş Yeriniz İçin › Ticari Su Isıtıcıları ───────────
+
+  await upsertProduct({
+    id: 'albsu-005', slug: 'ao-smith-frezya-300-s', brandId: albSu.id, categoryId: catTicariBoiler.id,
+    name: 'AO Smith Frezya 300 S', sku: 'ALBSU-FRZ-300S', unit: 'adet', stock: 8,
+    isFeatured: true, rating: 4.9, reviewCount: 32,
+    price: 28500,
+    shortDescription: '300 litre kapasiteli Frezya S serisi ticari tip su ısıtıcısı.',
+    description: 'AO Smith Frezya 300 S, otel, işyeri ve apartmanlar için tasarlanmış 300 litrelik büyük kapasiteli ticari su ısıtıcısıdır. Güçlü ısıtma kapasitesi ve dayanıklı emaye tank yapısıyla kesintisiz sıcak su sağlar.',
+    images: [{ url: '/images/albsu-frezya-300s.jpg', alt: 'AO Smith Frezya 300 S', isPrimary: true }],
+    specs: [
+      { name: 'Kapasite', value: '300', unit: 'litre' },
+      { name: 'Seri', value: 'Frezya S' },
+      { name: 'Kullanım Alanı', value: 'Ticari / endüstriyel' },
+      { name: 'Garanti', value: '5 yıl tank' },
+    ],
+    tags: ['Frezya', 'AO Smith', 'ticari', '300 litre', 'boiler', 'is-yeri'],
+  })
+
+  await upsertProduct({
+    id: 'albsu-006', slug: 'ao-smith-frezya-300-tu', brandId: albSu.id, categoryId: catTicariBoiler.id,
+    name: 'AO Smith Frezya 300 TU', sku: 'ALBSU-FRZ-300TU', unit: 'adet', stock: 6,
+    isFeatured: false, rating: 4.8, reviewCount: 21,
+    price: 32000, salePrice: 28800,
+    shortDescription: '300 litre TU serisi, serpantinli merkezi sistem entegrasyonu destekli boiler.',
+    description: 'AO Smith Frezya 300 TU, merkezi ısıtma sistemi veya güneş enerjisi kolektörleriyle entegre çalışabilen 300 litrelik TU serisi su ısıtıcısıdır. Çift serpantin desteği enerji verimliliğini maksimize eder.',
+    images: [{ url: '/images/albsu-frezya-300tu.jpg', alt: 'AO Smith Frezya 300 TU', isPrimary: true }],
+    specs: [
+      { name: 'Kapasite', value: '300', unit: 'litre' },
+      { name: 'Seri', value: 'Frezya TU' },
+      { name: 'Serpantin', value: 'Var (merkezi sistem / güneş enerjisi)' },
+      { name: 'Garanti', value: '5 yıl tank' },
+    ],
+    tags: ['Frezya', 'AO Smith', '300 litre', 'merkezi sistem', 'güneş enerjisi', 'is-yeri'],
+  })
+
+  await upsertProduct({
+    id: 'albsu-007', slug: 'ao-smith-frezya-600-s', brandId: albSu.id, categoryId: catTicariBoiler.id,
+    name: 'AO Smith Frezya 600 S', sku: 'ALBSU-FRZ-600S', unit: 'adet', stock: 4,
+    isFeatured: false, rating: 5.0, reviewCount: 9,
+    price: 52000,
+    shortDescription: '600 litre büyük kapasiteli Frezya S serisi endüstriyel boiler.',
+    description: 'AO Smith Frezya 600 S, büyük ölçekli tesisler için 600 litrelik hacmiyle endüstriyel sınıf bir su ısıtıcısıdır. Oteller, spor tesisleri ve fabrikalarda yüksek sıcak su talebi için idealdir.',
+    images: [{ url: '/images/albsu-frezya-600s.jpg', alt: 'AO Smith Frezya 600 S', isPrimary: true }],
+    specs: [
+      { name: 'Kapasite', value: '600', unit: 'litre' },
+      { name: 'Seri', value: 'Frezya S' },
+      { name: 'Kullanım Alanı', value: 'Endüstriyel / otel' },
+      { name: 'Garanti', value: '5 yıl tank' },
+    ],
+    tags: ['Frezya', 'AO Smith', '600 litre', 'endüstriyel', 'otel', 'is-yeri'],
+  })
+
+  // ─── Albsu Ürünleri — İş Yeriniz İçin › Su Yumuşatma Sistemleri ──────────
+
+  await upsertProduct({
+    id: 'albsu-011', slug: 'opal-nw-su-yumusatma', brandId: albSu.id, categoryId: catIsYeriYumusatma.id,
+    name: 'OPAL NW Su Yumuşatma Sistemi', sku: 'ALBSU-OPAL-NW', unit: 'adet', stock: 10,
+    isFeatured: false, rating: 4.8, reviewCount: 27,
+    price: 22000,
+    shortDescription: 'OPAL NW çift tanklı, kesintisiz yumuşak su sağlayan yüksek kapasiteli sistem.',
+    description: 'OPAL NW Serisi, çift reçine tanklı tasarımıyla kesintisiz yumuşak su temin eden yüksek kapasiteli su yumuşatma sistemidir. Bir tank yenileme yaparken diğeri aktif çalıştığından hiçbir zaman sert su gelme riski yoktur.',
+    images: [{ url: '/images/albsu-opal-nw.jpg', alt: 'OPAL NW Su Yumuşatma', isPrimary: true }],
+    specs: [
+      { name: 'Seri', value: 'OPAL NW' },
+      { name: 'Tank Sayısı', value: 'Çift tank' },
+      { name: 'Çalışma', value: 'Kesintisiz yumuşak su' },
+      { name: 'Garanti', value: '2 yıl' },
+    ],
+    tags: ['OPAL', 'su yumuşatma', 'çift tank', 'kesintisiz', 'is-yeri'],
+  })
+
+  // ─── Albsu Ürünleri — Küçük Ev Aletleri › Klima Sistemleri ──────────────
 
   await upsertProduct({
     id: 'albsu-015', slug: 'ihlas-aura-18000-btu-klima', brandId: albSu.id, categoryId: catKlima.id,
@@ -618,7 +773,7 @@ async function main() {
       { name: 'WiFi', value: 'Var' },
       { name: 'Garanti', value: '3 yıl' },
     ],
-    tags: ['İhlas', 'Aura', 'klima', '18000 BTU', 'inverter', 'A++'],
+    tags: ['İhlas', 'Aura', 'klima', '18000 BTU', 'inverter', 'A++', 'kucuk-ev-aleti'],
   })
 
   await upsertProduct({
@@ -635,7 +790,7 @@ async function main() {
       { name: 'WiFi', value: 'Var' },
       { name: 'Garanti', value: '3 yıl' },
     ],
-    tags: ['İhlas', 'Aura', 'klima', '12000 BTU', 'inverter', 'A++'],
+    tags: ['İhlas', 'Aura', 'klima', '12000 BTU', 'inverter', 'A++', 'kucuk-ev-aleti'],
   })
 
   await upsertProduct({
@@ -653,28 +808,13 @@ async function main() {
       { name: 'Hava Dağılımı', value: '4 yönlü' },
       { name: 'Garanti', value: '3 yıl' },
     ],
-    tags: ['İhlas', 'Aura', 'klima', '24000 BTU', 'salon tipi'],
+    tags: ['İhlas', 'Aura', 'klima', '24000 BTU', 'salon tipi', 'kucuk-ev-aleti'],
   })
 
-  await upsertProduct({
-    id: 'albsu-018', slug: 'ihlas-sofben', brandId: albSu.id, categoryId: catSuIsitici.id,
-    name: 'İhlas Şofben', sku: 'ALBSU-IHL-SOFB', unit: 'adet', stock: 35,
-    isFeatured: false, rating: 4.6, reviewCount: 78,
-    price: 3800, salePrice: 3200,
-    shortDescription: "Doğalgaz / LPG'li anlık su ısıtıcısı, yüksek debi ve enerji tasarrufu.",
-    description: 'İhlas Şofben, doğalgaz veya LPG yakıtlı anlık su ısıtma sistemidir. Depolama tankına ihtiyaç duymadan anında sıcak su üretir; dijital kontrol paneli, alev hata güvenliği ve donma koruma özelliğiyle donatılmıştır.',
-    images: [{ url: '/images/albsu-ihlas-sofben.jpg', alt: 'İhlas Şofben', isPrimary: true }],
-    specs: [
-      { name: 'Yakıt Tipi', value: 'Doğalgaz / LPG' },
-      { name: 'Tip', value: 'Anlık su ısıtıcısı' },
-      { name: 'Kontrol', value: 'Dijital panel' },
-      { name: 'Garanti', value: '2 yıl' },
-    ],
-    tags: ['şofben', 'İhlas', 'doğalgaz', 'LPG', 'anlık su ısıtıcı'],
-  })
+  // ─── Albsu Ürünleri — Küçük Ev Aletleri › Vantilatör ────────────────────
 
   await upsertProduct({
-    id: 'albsu-019', slug: 'ihlas-au3502-new-vantilator', brandId: albSu.id, categoryId: catTemizlik.id,
+    id: 'albsu-019', slug: 'ihlas-au3502-new-vantilator', brandId: albSu.id, categoryId: catVantilator.id,
     name: 'İhlas AU3502 New Vantilatör', sku: 'ALBSU-IHL-AU3502', unit: 'adet', stock: 50,
     isFeatured: false, rating: 4.5, reviewCount: 63,
     price: 1850, salePrice: 1550,
@@ -689,8 +829,10 @@ async function main() {
       { name: 'Gece Modu', value: 'Var' },
       { name: 'Uzaktan Kumanda', value: 'Var' },
     ],
-    tags: ['vantilatör', 'İhlas', 'AU3502', 'kule tipi', 'uzaktan kumanda'],
+    tags: ['vantilatör', 'İhlas', 'AU3502', 'kule tipi', 'uzaktan kumanda', 'kucuk-ev-aleti'],
   })
+
+  // ─── Albsu Ürünleri — Küçük Ev Aletleri › Temizlik Aletleri ─────────────
 
   await upsertProduct({
     id: 'albsu-020', slug: 'karcher-k2-compact', brandId: albSu.id, categoryId: catTemizlik.id,
@@ -706,7 +848,7 @@ async function main() {
       { name: 'Debi', value: '360', unit: 'L/saat' },
       { name: 'Garanti', value: '2 yıl' },
     ],
-    tags: ['Kärcher', 'yüksek basınçlı yıkayıcı', 'temizlik', 'K2'],
+    tags: ['Kärcher', 'yüksek basınçlı yıkayıcı', 'temizlik', 'K2', 'kucuk-ev-aleti'],
   })
 
   await upsertProduct({
@@ -724,7 +866,7 @@ async function main() {
       { name: 'Kontrol', value: 'Full Control dijital basınç' },
       { name: 'Garanti', value: '2 yıl' },
     ],
-    tags: ['Kärcher', 'yüksek basınçlı yıkayıcı', 'K5', 'profesyonel'],
+    tags: ['Kärcher', 'yüksek basınçlı yıkayıcı', 'K5', 'profesyonel', 'kucuk-ev-aleti'],
   })
 
   await upsertProduct({
@@ -742,7 +884,7 @@ async function main() {
       { name: 'Ağırlık', value: '2.6', unit: 'kg' },
       { name: 'Garanti', value: '2 yıl' },
     ],
-    tags: ['Kärcher', 'elektrikli süpürge', 'şarjlı', 'VC 5', 'cordless'],
+    tags: ['Kärcher', 'elektrikli süpürge', 'şarjlı', 'VC 5', 'cordless', 'kucuk-ev-aleti'],
   })
 
   await upsertProduct({
@@ -760,7 +902,7 @@ async function main() {
       { name: 'Uygulama Kontrolü', value: 'Var (iOS / Android)' },
       { name: 'Garanti', value: '2 yıl' },
     ],
-    tags: ['Kärcher', 'robot süpürge', 'RCV 5', 'akıllı', 'lazer navigasyon'],
+    tags: ['Kärcher', 'robot süpürge', 'RCV 5', 'akıllı', 'lazer navigasyon', 'kucuk-ev-aleti'],
   })
 
   await upsertProduct({
@@ -770,7 +912,7 @@ async function main() {
     price: 6800, salePrice: 5900,
     shortDescription: 'RCW 2 Extra+ büyük ve ulaşılması zor pencereleri zahmetsizce temizler, iz bırakmaz.',
     description: 'Kärcher RCW 2 Extra+, güçlü vakum teknolojisiyle cam yüzeye yapışarak sistematik navigasyon ve nesne algılama sensörleriyle otomatik temizlik yapan pencere temizleme robotudur. Mikrofiber silme bezleri ve iki püskürtme başlığıyla her seferinde pırıl pırıl, iz bırakmayan sonuçlar sunar.',
-    images: [{ url: '/images/albsu-karcher-rcw2.jpg', alt: 'Kärcher RCW 2 Extra+ Pencere Temizleme Robotu', isPrimary: true }],
+    images: [{ url: '/images/albsu-karcher-wvr40.jpg', alt: 'Kärcher RCW 2 Extra+ Pencere Temizleme Robotu', isPrimary: true }],
     specs: [
       { name: 'Model', value: 'RCW 2 Extra+' },
       { name: 'Emiş Gücü', value: '3.300 Pa (maks. 5.000 Pa)' },
@@ -781,8 +923,13 @@ async function main() {
       { name: 'Voltaj', value: '100-240', unit: 'V' },
       { name: 'Garanti', value: '2 yıl' },
     ],
-    tags: ['Kärcher', 'cam temizleme robotu', 'RCW 2', 'pencere', 'robot'],
+    tags: ['Kärcher', 'cam temizleme robotu', 'RCW 2', 'pencere', 'robot', 'kucuk-ev-aleti'],
   })
+
+  // Kullanılmayan eski değişkenleri Prisma'nın şikayet etmemesi için void
+  void catEvSuAritma
+  void catEndustriyel
+  void catFiltre
 
   console.log('\n🎉 Seed tamamlandı!')
   const total = await prisma.product.count()

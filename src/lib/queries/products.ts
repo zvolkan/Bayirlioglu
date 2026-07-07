@@ -24,6 +24,8 @@ function toProduct(p: PrismaProduct): Product {
     sortOrder: p.category.sortOrder,
     description: p.category.description ?? undefined,
     image: p.category.imageUrl ?? undefined,
+    // parentId dahil: alt kategori ürünleri UI'da parent'a göre filtrelenebilir
+    parentId: p.category.parentId ?? undefined,
   }
 
   return {
