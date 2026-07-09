@@ -54,9 +54,8 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
       { label: 'Hakkımızda', href: '/hakkimizda' },
       { label: 'İletişim', href: '/iletisim' },
     ],
-    // VIDEO: /public/videos/tarim-hero.mp4 dosyasını ekleyin
-    video: '/videos/tarim-hero.mp4',
-    // GÖRSEL: /public/images/tarim-hero.jpg dosyasını ekleyin
+    video: '/videos/tarim-hero-desktop.mp4',
+    videoMobile: '/videos/tarim-hero-mobile.mp4',
     poster: '/images/tarim-hero.jpg',
     colors: {
       primary: 'bg-green-600',
@@ -119,9 +118,7 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
       { label: 'Referanslar', href: '/referanslar' },
       { label: 'İletişim', href: '/iletisim' },
     ],
-    // VIDEO: /public/videos/su-aritma-hero.mp4 dosyasını ekleyin
     video: '/videos/su-aritma-hero.mp4',
-    // GÖRSEL: /public/images/su-aritma-hero.jpg dosyasını ekleyin
     poster: '/images/su-aritma-hero.jpg',
     colors: {
       primary: 'bg-blue-600',

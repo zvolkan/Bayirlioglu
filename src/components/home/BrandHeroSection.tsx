@@ -13,10 +13,21 @@ export default function BrandHeroSection({ brandKey }: Props) {
   const cfg = BRANDS[brandKey]
   const isAlbSu = brandKey === 'alb-su-aritma'
 
-  const [loaded, setLoaded]       = useState(false)
+  const [loaded, setLoaded]         = useState(false)
+  const [videoSrc, setVideoSrc]     = useState<string | null>(null)
   const [videoReady, setVideoReady] = useState(false)
   const [videoError, setVideoError] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  // Mobil / masaüstü video kaynağını belirle; kaynak değişince hazır bayrağını sıfırla
+  useEffect(() => {
+    const src = window.innerWidth < 768 && cfg.videoMobile
+      ? cfg.videoMobile
+      : cfg.video
+    setVideoSrc(src)
+    setVideoReady(false)
+    setVideoError(false)
+  }, [cfg.video, cfg.videoMobile])
 
   // Giriş animasyonunu tetikle
   useEffect(() => {
@@ -47,9 +58,10 @@ export default function BrandHeroSection({ brandKey }: Props) {
         {/* Fallback gradient (video yokken veya hata varsa görünür) */}
         <div className={`absolute inset-0 bg-gradient-to-br ${heroBg}`} />
 
-        {/* Video */}
-        {!videoError && (
+        {/* Video — kaynağı mobil (<768px) veya masaüstüne göre seçilir */}
+        {!videoError && videoSrc && (
           <video
+            key={videoSrc}
             ref={videoRef}
             autoPlay
             muted
@@ -63,7 +75,7 @@ export default function BrandHeroSection({ brandKey }: Props) {
               videoReady ? 'opacity-100' : 'opacity-0',
             ].join(' ')}
           >
-            <source src={cfg.video} type="video/mp4" />
+            <source src={videoSrc} type="video/mp4" />
           </video>
         )}
 

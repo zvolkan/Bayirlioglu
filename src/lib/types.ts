@@ -38,6 +38,7 @@ export interface BrandConfig {
   stats: StatItem[];
   nav: NavItem[];
   video: string;
+  videoMobile?: string;
   poster: string;
   colors: BrandColors;
 }
