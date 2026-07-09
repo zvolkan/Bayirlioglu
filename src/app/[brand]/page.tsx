@@ -110,25 +110,29 @@ export default async function BrandHomePage({ params }: Props) {
             </Link>
           </div>
 
+          {/* Sadece kök (root) kategoriler gösterilir — alt kategoriler değil */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {brandCategories.slice(0, 8).map((cat) => (
-              <Link
-                key={cat.slug}
-                href={`/${brandKey}/urunler?kategori=${cat.slug}`}
-                className={`group relative border bg-gradient-to-br ${categoryBg} rounded-2xl p-5 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden`}
-              >
-                {/* Kayan alt aksan çizgisi */}
-                <span className={`absolute bottom-0 inset-x-0 h-0.5 ${categoryIcon} scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-b-2xl`} />
+            {brandCategories
+              .filter((c) => !c.parentId)
+              .slice(0, 8)
+              .map((cat) => (
+                <Link
+                  key={cat.slug}
+                  href={`/${brandKey}/urunler?kullanim=${cat.slug}`}
+                  className={`group relative border bg-gradient-to-br ${categoryBg} rounded-2xl p-5 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden`}
+                >
+                  {/* Kayan alt aksan çizgisi */}
+                  <span className={`absolute bottom-0 inset-x-0 h-0.5 ${categoryIcon} scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-b-2xl`} />
 
-                <div className={`w-10 h-10 rounded-xl ${categoryIcon} text-white flex items-center justify-center text-lg mb-3 transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg`}>
-                  {cat.icon}
-                </div>
-                <p className="font-semibold text-gray-900 text-sm leading-tight">{cat.name}</p>
-                {cat.productCount !== undefined && (
-                  <p className="text-gray-500 text-xs mt-1">{cat.productCount} ürün</p>
-                )}
-              </Link>
-            ))}
+                  <div className={`w-10 h-10 rounded-xl ${categoryIcon} text-white flex items-center justify-center text-lg mb-3 transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg`}>
+                    {cat.icon}
+                  </div>
+                  <p className="font-bold text-gray-900 text-sm leading-tight">{cat.name}</p>
+                  {cat.productCount !== undefined && cat.productCount > 0 && (
+                    <p className="text-gray-400 text-xs mt-1">{cat.productCount} ürün</p>
+                  )}
+                </Link>
+              ))}
           </div>
         </div>
       </section>

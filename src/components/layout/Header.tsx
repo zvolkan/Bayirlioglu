@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { BRANDS } from '@/lib/constants'
@@ -36,6 +36,12 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+
+  // JS-tabanlı dropdown: CSS group-hover yerine timer kullanıyoruz
+  // → mouse'u nav item'dan dropdown'a geçerken dropdown kapanmıyor
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const dropdownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const cartCount = getTotalItems()
 
   // Aktif marka belirle
@@ -45,12 +51,12 @@ export default function Header() {
 
   const activeBrand = activeBrandKey ? BRANDS[activeBrandKey] : null
 
-  // Hero sayfasında mı? → marka ana sayfası (/alb-tarim veya /alb-su-aritma)
+  // Hero sayfasında mı? → marka ana sayfası
   const isHeroPage = !!activeBrandKey && (
     pathname === `/${activeBrandKey}` || pathname === `/${activeBrandKey}/`
   )
 
-  // Header arka planı: hero sayfasında şeffaf → scroll'da glass-blur → diğer sayfalarda solid
+  // Header arka planı
   const headerBg =
     isHeroPage && !scrolled
       ? 'bg-transparent'
@@ -64,18 +70,30 @@ export default function Header() {
     ? 'bg-green-600 hover:bg-green-500'
     : 'bg-gray-700 hover:bg-gray-600'
 
-  const navHover = activeBrandKey === 'alb-su-aritma'
-    ? 'hover:text-blue-300'
-    : 'hover:text-green-300'
-
-  // Dropdown aksan renkleri
+  const navHover = activeBrandKey === 'alb-su-aritma' ? 'hover:text-blue-300' : 'hover:text-green-300'
   const dropdownAccent = activeBrandKey === 'alb-su-aritma' ? 'bg-blue-500' : 'bg-green-500'
-  const dropdownDot    = activeBrandKey === 'alb-su-aritma' ? 'bg-blue-400/50' : 'bg-green-400/50'
+  const dropdownDot    = activeBrandKey === 'alb-su-aritma' ? 'bg-blue-400/60' : 'bg-green-400/60'
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30)
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Dropdown aç/kapat — timer sayesinde gap'te bile kapanmaz
+  const openDropdown = (label: string) => {
+    if (dropdownTimerRef.current) clearTimeout(dropdownTimerRef.current)
+    setActiveDropdown(label)
+  }
+  const scheduleClose = () => {
+    dropdownTimerRef.current = setTimeout(() => setActiveDropdown(null), 120)
+  }
+  const cancelClose = () => {
+    if (dropdownTimerRef.current) clearTimeout(dropdownTimerRef.current)
+  }
+
+  useEffect(() => () => {
+    if (dropdownTimerRef.current) clearTimeout(dropdownTimerRef.current)
   }, [])
 
   // Marka değiştirildiğinde o markanın sayfasına git
@@ -107,7 +125,6 @@ export default function Header() {
     }
   }
 
-  // Marka nav linkleri — base prefix ekle
   const navPrefix = activeBrandKey ? `/${activeBrandKey}` : ''
   const navItems = activeBrand?.nav.map((item) => ({
     ...item,
@@ -127,11 +144,7 @@ export default function Header() {
             <div className="flex items-center justify-between h-14 sm:h-16">
 
               {/* LOGO */}
-              <Link
-                href="/"
-                className="flex items-center flex-shrink-0"
-                onClick={() => setMenuOpen(false)}
-              >
+              <Link href="/" className="flex items-center flex-shrink-0" onClick={() => setMenuOpen(false)}>
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center font-black text-white text-base shadow-lg">
                   B
                 </div>
@@ -159,8 +172,6 @@ export default function Header() {
 
               {/* SAĞ — Arama, Sepet, Giriş, Hamburger */}
               <div className="flex items-center gap-1">
-
-                {/* Arama */}
                 <button
                   onClick={() => setSearchOpen(!searchOpen)}
                   className="text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200"
@@ -171,11 +182,7 @@ export default function Header() {
                   </svg>
                 </button>
 
-                {/* Sepet */}
-                <Link
-                  href="/sepet"
-                  className="relative text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200"
-                >
+                <Link href="/sepet" className="relative text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
@@ -186,10 +193,8 @@ export default function Header() {
                   )}
                 </Link>
 
-                {/* Giriş — desktop */}
                 <UserMenuButton accentColor={accentColor} />
 
-                {/* Hamburger — mobile */}
                 <button
                   className="md:hidden text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200 ml-1"
                   onClick={() => setMenuOpen(!menuOpen)}
@@ -197,7 +202,7 @@ export default function Header() {
                 >
                   <div className="relative w-5 h-5">
                     <span className={`absolute block w-5 h-0.5 bg-current transition-all duration-300 ${menuOpen ? 'top-2 rotate-45' : 'top-0.5'}`} />
-                    <span className={`absolute block w-5 h-0.5 bg-current top-2 transition-all duration-300 ${menuOpen ? 'opacity-0 scale-x-0' : 'opacity-100 scale-x-100'}`} />
+                    <span className={`absolute block w-5 h-0.5 bg-current top-2 transition-all duration-300 ${menuOpen ? 'opacity-0 scale-x-0' : 'opacity-100'}`} />
                     <span className={`absolute block w-5 h-0.5 bg-current transition-all duration-300 ${menuOpen ? 'top-2 -rotate-45' : 'top-3.5'}`} />
                   </div>
                 </button>
@@ -216,15 +221,20 @@ export default function Header() {
             <div className="container-main">
               <nav className="flex items-center gap-0.5 h-10">
                 {navItems.map((item) => (
-                  <div key={item.label} className="relative group">
+                  <div
+                    key={item.label}
+                    className="relative"
+                    onMouseEnter={() => openDropdown(item.label)}
+                    onMouseLeave={scheduleClose}
+                  >
                     <Link
                       href={item.href}
-                      className={`text-white/65 ${navHover} text-sm font-medium px-3 py-1.5 rounded-lg transition-all duration-200 flex items-center gap-1.5 hover:bg-white/8`}
+                      className={`text-white/70 ${navHover} text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 hover:bg-white/8 whitespace-nowrap`}
                     >
                       {item.label}
                       {item.children && (
                         <svg
-                          className="w-3 h-3 opacity-40 transition-transform duration-300 group-hover:rotate-180"
+                          className={`w-3 h-3 opacity-50 transition-transform duration-300 ${activeDropdown === item.label ? 'rotate-180' : ''}`}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -234,20 +244,37 @@ export default function Header() {
                       )}
                     </Link>
 
+                    {/* Dropdown paneli — JS kontrollü, gap sorunu yok */}
                     {item.children && (
-                      <div className="absolute top-full left-0 mt-1.5 bg-gray-900/97 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 py-2 min-w-52 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-2 group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto">
-                        {/* Aksan çizgisi */}
-                        <div className={`h-0.5 mx-3 mb-2 rounded-full ${dropdownAccent}`} />
-                        {item.children.map((child) => (
-                          <Link
-                            key={child.label}
-                            href={child.href}
-                            className={`flex items-center gap-2.5 text-white/65 ${navHover} text-sm px-4 py-2.5 transition-all duration-150 hover:bg-white/6`}
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dropdownDot}`} />
-                            {child.label}
-                          </Link>
-                        ))}
+                      <div
+                        className={`absolute top-full left-0 z-50 pt-2 min-w-[13rem] transition-all duration-200 ${
+                          activeDropdown === item.label
+                            ? 'opacity-100 pointer-events-auto'
+                            : 'opacity-0 pointer-events-none'
+                        }`}
+                        onMouseEnter={cancelClose}
+                        onMouseLeave={scheduleClose}
+                      >
+                        {/* pt-2 → görünmez köprü: mouse gap'ten geçerken dropdown açık kalır */}
+                        <div
+                          className={`bg-gray-900 border border-white/12 rounded-2xl shadow-2xl shadow-black/50 py-2 transition-transform duration-200 ${
+                            activeDropdown === item.label ? 'translate-y-0' : '-translate-y-1'
+                          }`}
+                        >
+                          {/* Marka aksan çizgisi */}
+                          <div className={`h-px mx-3 mb-2 rounded-full ${dropdownAccent}`} />
+                          {item.children.map((child) => (
+                            <Link
+                              key={child.label}
+                              href={child.href}
+                              onClick={() => setActiveDropdown(null)}
+                              className={`flex items-center gap-2.5 text-white/75 ${navHover} text-sm px-4 py-2.5 transition-colors duration-150 hover:bg-white/8`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dropdownDot}`} />
+                              {child.label}
+                            </Link>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -257,7 +284,7 @@ export default function Header() {
           </div>
         )}
 
-        {/* ── ARAMA AÇILIR ── */}
+        {/* ── ARAMA ── */}
         {searchOpen && (
           <div className="absolute top-full inset-x-0 bg-gray-900/97 backdrop-blur-xl border-t border-white/10 p-4 shadow-2xl z-50">
             <form onSubmit={handleSearch} className="container-main">
@@ -270,10 +297,7 @@ export default function Header() {
                   className="w-full bg-white/10 text-white placeholder:text-white/40 border border-white/20 rounded-xl px-5 py-3 pr-12 focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all duration-200"
                   autoFocus
                 />
-                <button
-                  type="submit"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                >
+                <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -287,13 +311,9 @@ export default function Header() {
       {/* ── MOBİL MENÜ ── */}
       {menuOpen && (
         <>
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden"
-            onClick={() => setMenuOpen(false)}
-          />
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden" onClick={() => setMenuOpen(false)} />
           <div className="fixed inset-x-0 top-[56px] sm:top-[64px] bg-gray-900/97 backdrop-blur-xl border-t border-white/10 z-40 md:hidden max-h-[80vh] overflow-y-auto">
 
-            {/* Marka seçici - mobile */}
             <div className="p-4 border-b border-white/10">
               <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Marka Seç</p>
               <div className="flex gap-2">
@@ -314,7 +334,6 @@ export default function Header() {
               </div>
             </div>
 
-            {/* Nav linkleri */}
             {navItems.length > 0 && (
               <nav className="p-4 space-y-1">
                 {navItems.map((item) => (
@@ -332,7 +351,7 @@ export default function Header() {
                           <Link
                             key={child.label}
                             href={child.href}
-                            className="flex items-center gap-2 text-white/50 hover:text-white py-2 px-4 rounded-lg hover:bg-white/8 text-sm transition-all duration-200"
+                            className="flex items-center gap-2 text-white/55 hover:text-white py-2 px-4 rounded-lg hover:bg-white/8 text-sm transition-all duration-200"
                             onClick={() => setMenuOpen(false)}
                           >
                             {child.label}
