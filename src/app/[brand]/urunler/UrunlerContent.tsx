@@ -30,21 +30,27 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
   const isAlbSu = brandKey === 'alb-su-aritma'
   const cfg = BRANDS[brandKey] ?? BRANDS['alb-tarim']
 
-  const activeKullanim = searchParams.get('kullanim') ?? ''   // parent category slug
-  const activeCategory = searchParams.get('kategori') ?? ''   // child category slug
+  const activeKullanim = searchParams.get('kullanim') ?? ''
+  const activeCategory = searchParams.get('kategori') ?? ''
   const searchQuery = searchParams.get('arama') ?? ''
   const [sort, setSort] = useState('featured')
 
-  const primaryColor = isAlbSu ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'
-  const accentText = isAlbSu ? 'text-blue-600' : 'text-green-600'
-  const tagText = isAlbSu ? 'text-blue-500' : 'text-green-500'
-  const activePillCls = isAlbSu
-    ? 'bg-blue-600 text-white shadow-sm'
-    : 'bg-green-600 text-white shadow-sm'
+  // ── Renk sistemi ─────────────────────────────────────────────────────────
+  const accentText  = isAlbSu ? 'text-blue-600'           : 'text-green-700'
+  const accentBg    = isAlbSu ? 'bg-blue-600'              : 'bg-green-600'
+  const accentHover = isAlbSu ? 'hover:bg-blue-500'        : 'hover:bg-green-500'
+  const accentBorder= isAlbSu ? 'border-b-blue-600'        : 'border-b-green-600'
+  const accentLight = isAlbSu ? 'bg-blue-50/60'            : 'bg-green-50/60'
+  const accentTag   = isAlbSu ? 'text-blue-500'            : 'text-green-600'
+  const pillActive  = isAlbSu
+    ? 'bg-blue-600 hover:bg-blue-500 text-white border-transparent shadow-sm'
+    : 'bg-green-600 hover:bg-green-500 text-white border-transparent shadow-sm'
+  const pillInactive = 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:text-gray-800'
 
-  // ── Kategori hiyerarşisi ───────────────────────────────────────────────────
-  // Alb Su: parentId null → parent tab, parentId dolu → child (sidebar)
-  // ALB Tarım: tüm kategoriler flat (parentId yok)
+  // ── Kategori hiyerarşisi ──────────────────────────────────────────────────
+  // parentId === null → üst (parent) kategori
+  // parentId !== null → alt (child) kategori
+  // Her iki marka için de aynı mantık; hasHierarchy DB'deki yapıya göre otomatik belirlenir.
 
   const parentCategories = useMemo(
     () => initialCategories.filter((c) => c.parentId == null),
@@ -56,41 +62,34 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
     [initialCategories],
   )
 
-  const hasHierarchy = isAlbSu && parentCategories.length > 0 && childCategories.length > 0
+  const hasHierarchy = parentCategories.length > 0 && childCategories.length > 0
 
-  // Aktif parent tab nesnesi
   const activeParentCat = useMemo(
     () => (hasHierarchy ? parentCategories.find((c) => c.slug === activeKullanim) ?? null : null),
     [hasHierarchy, parentCategories, activeKullanim],
   )
 
-  // Sidebar'da gösterilecek kategoriler
-  const sidebarCategories = useMemo(() => {
-    if (hasHierarchy) {
-      return activeParentCat
-        ? childCategories.filter((c) => c.parentId === activeParentCat.id)
-        : []
-    }
-    // ALB Tarım: flat list
-    return parentCategories
-  }, [hasHierarchy, activeParentCat, childCategories, parentCategories])
+  const activeChildCats = useMemo(
+    () => (activeParentCat ? childCategories.filter((c) => c.parentId === activeParentCat.id) : []),
+    [activeParentCat, childCategories],
+  )
 
-  // ── Ürün filtreleme ────────────────────────────────────────────────────────
+  // ── Ürün filtreleme ───────────────────────────────────────────────────────
 
   const filtered = useMemo(() => {
     let list = [...initialProducts]
 
-    // 1. Kullanim (parent) filtresi
+    // 1. Parent filtresi (kullanim)
     if (hasHierarchy && activeParentCat && !activeCategory) {
       list = list.filter((p) => p.category.parentId === activeParentCat.id)
     }
 
-    // 2. Kategori (child) filtresi — kullanım filtreden önce gelir çünkü daha spesifik
+    // 2. Child filtresi (kategori) — parent'tan daha spesifik
     if (activeCategory) {
       list = list.filter((p) => p.category.slug === activeCategory)
     }
 
-    // 3. Arama filtresi
+    // 3. Arama
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
       list = list.filter(
@@ -110,7 +109,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
     }
   }, [initialProducts, hasHierarchy, activeParentCat, activeCategory, searchQuery, sort])
 
-  // ── URL yardımcıları ───────────────────────────────────────────────────────
+  // ── URL yardımcıları ──────────────────────────────────────────────────────
 
   const setKullanim = (slug: string) => {
     const sp = new URLSearchParams()
@@ -122,7 +121,6 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
     const sp = new URLSearchParams(searchParams.toString())
     if (slug) sp.set('kategori', slug)
     else sp.delete('kategori')
-    // Child seçilince kullanim da tutulur
     router.push(`?${sp.toString()}`)
   }
 
@@ -136,274 +134,356 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
   const discount = (product: Product) =>
     product.salePrice ? Math.round((1 - product.salePrice / product.price) * 100) : null
 
-  // Aktif kategori etiketi (breadcrumb görünümü için)
   const activeCategoryLabel = useMemo(() => {
-    if (activeCategory) {
+    if (activeCategory)
       return childCategories.find((c) => c.slug === activeCategory)?.name
         ?? initialCategories.find((c) => c.slug === activeCategory)?.name
-    }
     if (activeParentCat) return activeParentCat.name
     return null
   }, [activeCategory, activeParentCat, childCategories, initialCategories])
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* ── Breadcrumb + başlık ── */}
-      <div className="bg-white border-b border-gray-100 py-8">
+
+      {/* ─── Başlık + breadcrumb ─────────────────────────────────────────── */}
+      <div className="bg-white border-b border-gray-100 py-6">
         <div className="container-main">
-          <nav className="text-sm text-gray-500 mb-3">
-            <Link href={`/${brandKey}`} className="hover:text-gray-900 transition-colors">
+          <nav className="text-sm text-gray-400 mb-2 flex items-center gap-1.5">
+            <Link href={`/${brandKey}`} className="hover:text-gray-700 transition-colors">
               {cfg.name}
             </Link>
-            <span className="mx-2">/</span>
-            <span className="text-gray-900 font-medium">Ürünler</span>
+            <span>/</span>
+            <span className="text-gray-700 font-medium">Ürünler</span>
             {activeCategoryLabel && (
               <>
-                <span className="mx-2">/</span>
+                <span>/</span>
                 <span className={`font-semibold ${accentText}`}>{activeCategoryLabel}</span>
               </>
             )}
           </nav>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900">
-            {cfg.name} Ürünleri
-          </h1>
-          <p className="text-gray-500 mt-1">{filtered.length} ürün listeleniyor</p>
+          <div className="flex items-end justify-between gap-4">
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">
+              {activeCategoryLabel ?? `${cfg.name} Ürünleri`}
+            </h1>
+            <p className="text-sm text-gray-400 hidden sm:block shrink-0">
+              {filtered.length} ürün
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* ── Alb Su: Parent Kategori Sekmeleri ── */}
+      {/* ─── Level-1: Üst kategori sekme çubuğu ─────────────────────────── */}
       {hasHierarchy && (
-        <div className="bg-white border-b border-gray-100">
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-[0_1px_4px_rgba(0,0,0,.06)]">
           <div className="container-main">
-            <div className="flex items-center gap-2 overflow-x-auto py-3 scrollbar-hide">
+            <div
+              role="tablist"
+              className="flex items-stretch overflow-x-auto scrollbar-hide -mb-px"
+            >
+              {/* Tümü */}
               <button
+                role="tab"
+                aria-selected={!activeKullanim && !activeCategory}
                 onClick={clearAll}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                className={[
+                  'flex-shrink-0 px-5 py-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap',
                   !activeKullanim && !activeCategory
-                    ? activePillCls
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                    ? `${accentText} ${accentBorder}`
+                    : 'text-gray-500 border-transparent hover:text-gray-800 hover:border-gray-300',
+                ].join(' ')}
               >
-                Tüm Ürünler
+                Tümü
               </button>
-              {parentCategories.map((cat) => (
-                <button
-                  key={cat.slug}
-                  onClick={() => setKullanim(cat.slug)}
-                  className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                    activeKullanim === cat.slug
-                      ? activePillCls
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <span>{cat.icon}</span>
-                  <span>{cat.name}</span>
-                </button>
-              ))}
+
+              {/* Ayraç */}
+              <span aria-hidden className="self-center text-gray-200 select-none px-1">|</span>
+
+              {parentCategories.map((cat, idx) => {
+                const isActive = activeKullanim === cat.slug
+                return (
+                  <div key={cat.slug} className="flex items-stretch flex-shrink-0">
+                    <button
+                      role="tab"
+                      aria-selected={isActive}
+                      onClick={() => setKullanim(cat.slug)}
+                      className={[
+                        'flex items-center gap-2 px-5 py-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap',
+                        isActive
+                          ? `${accentText} ${accentBorder}`
+                          : 'text-gray-500 border-transparent hover:text-gray-800 hover:border-gray-300',
+                      ].join(' ')}
+                    >
+                      <span>{cat.icon}</span>
+                      <span>{cat.name}</span>
+                      {cat.productCount != null && cat.productCount > 0 && (
+                        <span
+                          className={[
+                            'text-[10px] font-bold rounded-full px-1.5 py-0.5 leading-none transition-colors',
+                            isActive
+                              ? `${accentBg} text-white`
+                              : 'bg-gray-100 text-gray-500',
+                          ].join(' ')}
+                        >
+                          {cat.productCount}
+                        </span>
+                      )}
+                    </button>
+                    {idx < parentCategories.length - 1 && (
+                      <span aria-hidden className="self-center text-gray-200 select-none px-1">|</span>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
       )}
 
-      <div className="container-main py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* ── Sidebar: Alt kategoriler (Alb Su) veya flat liste (ALB Tarım) ── */}
-          <aside className="hidden lg:block lg:w-56 flex-shrink-0">
-            <div className="bg-white rounded-2xl border border-gray-100 p-4 sticky top-24">
-              <h3 className="font-bold text-gray-900 mb-3 text-sm uppercase tracking-wide">
-                {hasHierarchy
-                  ? (activeParentCat ? activeParentCat.name : 'Kategoriler')
-                  : 'Kategoriler'}
-              </h3>
+      {/* ─── Level-2: Alt kategori pill şeridi ───────────────────────────── */}
+      {hasHierarchy && activeParentCat && activeChildCats.length > 0 && (
+        <div className={`${accentLight} border-b border-gray-100`}>
+          <div className="container-main">
+            <div className="flex items-center gap-2 overflow-x-auto py-3 scrollbar-hide">
+              {/* Tümü pill */}
+              <button
+                onClick={() => setKullanim(activeKullanim)}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  !activeCategory ? pillActive : pillInactive
+                }`}
+              >
+                Tümü
+              </button>
 
-              {/* "Tümü" butonu */}
-              {(!hasHierarchy || sidebarCategories.length > 0) && (
-                <button
-                  onClick={() => {
-                    if (hasHierarchy && activeKullanim) {
-                      // Alt kategoriler sıfırla, parent tab kalsın
-                      const sp = new URLSearchParams()
-                      sp.set('kullanim', activeKullanim)
-                      router.push(`?${sp.toString()}`)
-                    } else {
-                      clearAll()
-                    }
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors mb-1 ${
-                    !activeCategory
-                      ? `${primaryColor} text-white font-semibold`
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  {hasHierarchy && activeParentCat ? `Tüm ${activeParentCat.name}` : 'Tüm Ürünler'}
-                </button>
-              )}
-
-              {/* Kategori listesi */}
-              {sidebarCategories.map((cat) => (
-                <button
-                  key={cat.slug}
-                  onClick={() => setCategory(cat.slug)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between mb-1 ${
-                    activeCategory === cat.slug
-                      ? `${primaryColor} text-white font-semibold`
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span>{cat.icon}</span>
-                    <span>{cat.name}</span>
-                  </span>
-                  {cat.productCount != null && (
-                    <span className={`text-xs ${activeCategory === cat.slug ? 'text-white/70' : 'text-gray-400'}`}>
-                      {cat.productCount}
-                    </span>
-                  )}
-                </button>
-              ))}
-
-              {/* Alb Su: Parent seçili ama hiç alt kategori yoksa mesaj */}
-              {hasHierarchy && activeParentCat && sidebarCategories.length === 0 && (
-                <p className="text-xs text-gray-400 px-3 py-2">Alt kategori bulunamadı.</p>
-              )}
-
-              {/* Alb Su: Hiç parent seçili değilse yönlendirme ipucu */}
-              {hasHierarchy && !activeParentCat && (
-                <p className="text-xs text-gray-400 px-3 py-2 leading-relaxed">
-                  Üstteki sekmelerden bir kullanım alanı seçin.
-                </p>
-              )}
-            </div>
-          </aside>
-
-          {/* ── Ana İçerik ── */}
-          <div className="flex-1">
-            {/* Mobil: Alb Su için yatay scroll kategori şeridi */}
-            {hasHierarchy && activeParentCat && sidebarCategories.length > 0 && (
-              <div className="lg:hidden flex gap-2 overflow-x-auto pb-3 mb-4 scrollbar-hide">
-                <button
-                  onClick={() => setKullanim(activeKullanim)}
-                  className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                    !activeCategory ? `${primaryColor} text-white` : 'bg-white border border-gray-200 text-gray-600'
-                  }`}
-                >
-                  Tümü
-                </button>
-                {sidebarCategories.map((cat) => (
+              {activeChildCats.map((cat) => {
+                const isActive = activeCategory === cat.slug
+                return (
                   <button
                     key={cat.slug}
                     onClick={() => setCategory(cat.slug)}
-                    className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                      activeCategory === cat.slug
-                        ? `${primaryColor} text-white`
-                        : 'bg-white border border-gray-200 text-gray-600'
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap ${
+                      isActive ? pillActive : pillInactive
                     }`}
                   >
                     <span>{cat.icon}</span>
                     <span>{cat.name}</span>
                   </button>
-                ))}
-              </div>
-            )}
-
-            {/* Sıralama */}
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-sm text-gray-500">
-                {activeCategoryLabel && (
-                  <span className={`font-semibold ${accentText}`}>
-                    {activeCategoryLabel} •{' '}
-                  </span>
-                )}
-                {filtered.length} ürün
-              </p>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:border-gray-400"
-              >
-                {SORT_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
+                )
+              })}
             </div>
-
-            {filtered.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="text-4xl mb-4">🔍</p>
-                <p className="text-gray-500 font-medium">Bu kategoride ürün bulunamadı</p>
-                <button onClick={clearAll} className={`mt-4 ${accentText} underline text-sm`}>
-                  Tüm ürünleri gör
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filtered.map((product) => {
-                  const disc = discount(product)
-                  const displayPrice = product.salePrice ?? product.price
-                  const primaryImg = product.images?.find((i) => i.isPrimary)?.url ?? ''
-                  return (
-                    <div
-                      key={product.slug}
-                      className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col"
-                    >
-                      <Link href={`/${brandKey}/urunler/${product.slug}`}>
-                        <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden">
-                          <ProductImage
-                            src={primaryImg}
-                            alt={product.name}
-                            fallback={product.category.icon || '📦'}
-                            fill
-                            className="object-contain p-4"
-                            sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                          />
-                          {disc && (
-                            <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
-                              -%{disc}
-                            </span>
-                          )}
-                          {product.isFeatured && !disc && (
-                            <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full text-white z-10 ${isAlbSu ? 'bg-blue-600' : 'bg-green-600'}`}>
-                              Öne Çıkan
-                            </span>
-                          )}
-                        </div>
-                      </Link>
-                      <div className="p-4 flex flex-col flex-1">
-                        <p className={`text-[10px] font-semibold uppercase tracking-wide ${tagText} mb-1`}>
-                          {product.category.name}
-                        </p>
-                        <Link href={`/${brandKey}/urunler/${product.slug}`}>
-                          <h3 className="font-bold text-gray-900 text-sm leading-tight line-clamp-2 mb-2 group-hover:text-gray-700 transition-colors">
-                            {product.name}
-                          </h3>
-                        </Link>
-                        <div className="mt-auto">
-                          <div className="flex items-end gap-2 mb-3">
-                            <p className={`font-black text-lg ${accentText}`}>
-                              {displayPrice.toLocaleString('tr-TR')} ₺
-                            </p>
-                            {product.salePrice && (
-                              <p className="text-gray-400 text-xs line-through mb-0.5">
-                                {product.price.toLocaleString('tr-TR')} ₺
-                              </p>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => handleAddToCart(product)}
-                            className={`w-full ${primaryColor} text-white text-sm py-2 rounded-xl font-semibold transition-colors`}
-                          >
-                            Sepete Ekle
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
           </div>
         </div>
+      )}
+
+      {/* ─── Ana içerik ──────────────────────────────────────────────────── */}
+      <div className="container-main py-8">
+
+        {/* Sıralama + sayım */}
+        <div className="flex items-center justify-between mb-6">
+          <p className="text-sm text-gray-500">
+            {activeCategoryLabel && (
+              <span className={`font-semibold ${accentText}`}>{activeCategoryLabel} · </span>
+            )}
+            {filtered.length} ürün listeleniyor
+          </p>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:border-gray-400"
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Flat (hiyerarşi yok): sidebar + ürünler */}
+        {!hasHierarchy && (
+          <div className="flex flex-col lg:flex-row gap-8">
+            <aside className="hidden lg:block w-56 flex-shrink-0">
+              <div className="bg-white rounded-2xl border border-gray-100 p-4 sticky top-24">
+                <h3 className="font-bold text-gray-900 mb-3 text-xs uppercase tracking-widest">
+                  Kategoriler
+                </h3>
+                <button
+                  onClick={clearAll}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors mb-1 ${
+                    !activeCategory
+                      ? `${accentBg} ${accentHover} text-white font-semibold`
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Tüm Ürünler
+                </button>
+                {initialCategories.map((cat) => (
+                  <button
+                    key={cat.slug}
+                    onClick={() => setCategory(cat.slug)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between mb-1 ${
+                      activeCategory === cat.slug
+                        ? `${accentBg} ${accentHover} text-white font-semibold`
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>{cat.icon}</span>
+                      <span>{cat.name}</span>
+                    </span>
+                    {cat.productCount != null && (
+                      <span className={`text-xs ${activeCategory === cat.slug ? 'text-white/70' : 'text-gray-400'}`}>
+                        {cat.productCount}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </aside>
+            <div className="flex-1">
+              <ProductGrid
+                products={filtered}
+                brandKey={brandKey}
+                accentBg={accentBg}
+                accentHover={accentHover}
+                accentText={accentText}
+                accentTag={accentTag}
+                discount={discount}
+                handleAddToCart={handleAddToCart}
+                clearAll={clearAll}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Hiyerarşik: tam genişlik ürün ızgarası */}
+        {hasHierarchy && (
+          <ProductGrid
+            products={filtered}
+            brandKey={brandKey}
+            accentBg={accentBg}
+            accentHover={accentHover}
+            accentText={accentText}
+            accentTag={accentTag}
+            discount={discount}
+            handleAddToCart={handleAddToCart}
+            clearAll={clearAll}
+          />
+        )}
       </div>
+    </div>
+  )
+}
+
+// ─── Ürün ızgarası alt bileşeni ───────────────────────────────────────────────
+
+interface GridProps {
+  products: Product[]
+  brandKey: BrandKey
+  accentBg: string
+  accentHover: string
+  accentText: string
+  accentTag: string
+  discount: (p: Product) => number | null
+  handleAddToCart: (p: Product) => void
+  clearAll: () => void
+}
+
+function ProductGrid({
+  products,
+  brandKey,
+  accentBg,
+  accentHover,
+  accentText,
+  accentTag,
+  discount,
+  handleAddToCart,
+  clearAll,
+}: GridProps) {
+  if (products.length === 0) {
+    return (
+      <div className="text-center py-24">
+        <p className="text-5xl mb-4">🔍</p>
+        <p className="text-gray-500 font-medium text-lg">Bu kategoride ürün bulunamadı</p>
+        <button
+          onClick={clearAll}
+          className={`mt-5 ${accentText} underline underline-offset-2 text-sm font-medium`}
+        >
+          Tüm ürünleri gör
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+      {products.map((product) => {
+        const disc = discount(product)
+        const displayPrice = product.salePrice ?? product.price
+        const primaryImg = product.images?.find((i) => i.isPrimary)?.url ?? ''
+
+        return (
+          <div
+            key={product.slug}
+            className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col"
+          >
+            {/* Görsel */}
+            <Link href={`/${brandKey}/urunler/${product.slug}`}>
+              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center relative overflow-hidden">
+                <ProductImage
+                  src={primaryImg}
+                  alt={product.name}
+                  fallback={product.category.icon || '📦'}
+                  fill
+                  className="object-contain p-5 group-hover:scale-105 transition-transform duration-300"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                />
+                {disc && (
+                  <span className="absolute top-2.5 left-2.5 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 shadow-sm">
+                    -%{disc}
+                  </span>
+                )}
+                {product.isFeatured && !disc && (
+                  <span
+                    className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full text-white z-10 shadow-sm ${accentBg}`}
+                  >
+                    ⭐ Öne Çıkan
+                  </span>
+                )}
+              </div>
+            </Link>
+
+            {/* İçerik */}
+            <div className="p-4 flex flex-col flex-1">
+              <p className={`text-[10px] font-bold uppercase tracking-widest ${accentTag} mb-1 truncate`}>
+                {product.category.name}
+              </p>
+              <Link href={`/${brandKey}/urunler/${product.slug}`}>
+                <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2 group-hover:text-gray-700 transition-colors">
+                  {product.name}
+                </h3>
+              </Link>
+              <div className="mt-auto">
+                <div className="flex items-end gap-2 mb-3">
+                  <p className={`font-black text-lg ${accentText}`}>
+                    {displayPrice.toLocaleString('tr-TR')} ₺
+                  </p>
+                  {product.salePrice && (
+                    <p className="text-gray-400 text-xs line-through mb-0.5">
+                      {product.price.toLocaleString('tr-TR')} ₺
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleAddToCart(product)}
+                  className={`w-full ${accentBg} ${accentHover} text-white text-sm py-2.5 rounded-xl font-semibold transition-colors`}
+                >
+                  Sepete Ekle
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

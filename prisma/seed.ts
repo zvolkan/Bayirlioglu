@@ -76,6 +76,144 @@ async function main() {
     },
   })
 
+  // ─── ALB Tarım: Üst (parent) kategori sistemi ─────────────────────────────
+  // Mevcut flat kategoriler (gubreler, sulama, ilac, toprak) "ALB Tarım Ürünleri"
+  // parent'ı altına taşınır. 3 yeni parent eklenir.
+
+  const catAlbTarimUrunleri = await prisma.category.upsert({
+    where: { slug: 'alb-tarim-urunleri' },
+    update: { sortOrder: 1 },
+    create: {
+      brandId: albTarim.id, name: 'ALB Tarım Ürünleri', slug: 'alb-tarim-urunleri',
+      icon: '🌱', sortOrder: 1,
+      description: 'ALB Tarım markasına ait gübre, sulama ve ilaç ürünleri',
+    },
+  })
+
+  // Mevcut flat kategorileri ALB Tarım Ürünleri altına taşı
+  await prisma.category.updateMany({
+    where: { slug: { in: ['gubreler', 'sulama', 'ilac', 'toprak'] } },
+    data: { parentId: catAlbTarimUrunleri.id },
+  })
+
+  const catIthalUrunler = await prisma.category.upsert({
+    where: { slug: 'ithal-urunler' },
+    update: { sortOrder: 2 },
+    create: {
+      brandId: albTarim.id, name: 'İthal Ürünler', slug: 'ithal-urunler',
+      icon: '🌍', sortOrder: 2,
+      description: 'Dünya markalarından ithal tarım gübre ve ürünleri',
+    },
+  })
+
+  // İthal Ürünler — 7 alt kategori
+  await prisma.category.upsert({
+    where: { slug: 'taban-gubresi' },
+    update: { parentId: catIthalUrunler.id, sortOrder: 1 },
+    create: { brandId: albTarim.id, name: 'Taban Gübresi', slug: 'taban-gubresi', icon: '🪨', sortOrder: 1, parentId: catIthalUrunler.id, description: 'Ekim ve dikim öncesi toprak gübrelemesi' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'damla-sulama-gubreleri' },
+    update: { parentId: catIthalUrunler.id, sortOrder: 2 },
+    create: { brandId: albTarim.id, name: 'Damla Sulama Gübreleri', slug: 'damla-sulama-gubreleri', icon: '💧', sortOrder: 2, parentId: catIthalUrunler.id, description: 'Fertigasyon ve damla sulama uyumlu çözünür gübreler' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'yaprak-gubreleri' },
+    update: { parentId: catIthalUrunler.id, sortOrder: 3 },
+    create: { brandId: albTarim.id, name: 'Yaprak Gübreleri', slug: 'yaprak-gubreleri', icon: '🌿', sortOrder: 3, parentId: catIthalUrunler.id, description: 'Yapraktan uygulanan hızlı etkili gübreler' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'mikro-elementler' },
+    update: { parentId: catIthalUrunler.id, sortOrder: 4 },
+    create: { brandId: albTarim.id, name: 'Mikro Elementler', slug: 'mikro-elementler', icon: '🔬', sortOrder: 4, parentId: catIthalUrunler.id, description: 'Çinko, demir, mangan, bor ve diğer iz elementler' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'sivi-gubreler-amino' },
+    update: { parentId: catIthalUrunler.id, sortOrder: 5 },
+    create: { brandId: albTarim.id, name: 'Sıvı Gübreler ve Amino Asitler', slug: 'sivi-gubreler-amino', icon: '🧪', sortOrder: 5, parentId: catIthalUrunler.id, description: 'Biostimulant, amino asit ve sıvı NPK formülasyonları' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'deniz-yosunu-organik' },
+    update: { parentId: catIthalUrunler.id, sortOrder: 6 },
+    create: { brandId: albTarim.id, name: 'Deniz Yosunu ve Organik Gübreler', slug: 'deniz-yosunu-organik', icon: '🌊', sortOrder: 6, parentId: catIthalUrunler.id, description: 'Doğal kaynaklı organik biostimulantlar ve deniz yosunu özleri' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'diger-ithal-urunler' },
+    update: { parentId: catIthalUrunler.id, sortOrder: 7 },
+    create: { brandId: albTarim.id, name: 'Diğer Ürünler', slug: 'diger-ithal-urunler', icon: '📦', sortOrder: 7, parentId: catIthalUrunler.id, description: 'Diğer ithal tarım ürünleri ve özel formülasyonlar' },
+  })
+
+  const catToptanci = await prisma.category.upsert({
+    where: { slug: 'toptanci-olunanlar' },
+    update: { sortOrder: 3 },
+    create: {
+      brandId: albTarim.id, name: 'Toptancısı Olunanlar', slug: 'toptanci-olunanlar',
+      icon: '🤝', sortOrder: 3,
+      description: "Türkiye'de toptancısı olduğumuz uluslararası tarım markaları",
+    },
+  })
+
+  // Toptancısı — 5 marka (alt kategori)
+  await prisma.category.upsert({
+    where: { slug: 'atlantica-agricola' },
+    update: { parentId: catToptanci.id, sortOrder: 1 },
+    create: { brandId: albTarim.id, name: 'Atlantica Agricola', slug: 'atlantica-agricola', icon: '🌊', sortOrder: 1, parentId: catToptanci.id, description: 'Biostimulant ve özel gübre uzmanı İspanyol markası' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'unittar' },
+    update: { parentId: catToptanci.id, sortOrder: 2 },
+    create: { brandId: albTarim.id, name: 'Unittar', slug: 'unittar', icon: '⚗️', sortOrder: 2, parentId: catToptanci.id, description: 'Yüksek saflıkta çözünür gübre formülasyonları' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'lances-link' },
+    update: { parentId: catToptanci.id, sortOrder: 3 },
+    create: { brandId: albTarim.id, name: "Lance's Link", slug: 'lances-link', icon: '🔗', sortOrder: 3, parentId: catToptanci.id, description: 'Özel bitki besleme ve ürün koruma çözümleri' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'lebosol' },
+    update: { parentId: catToptanci.id, sortOrder: 4 },
+    create: { brandId: albTarim.id, name: 'Lebosol', slug: 'lebosol', icon: '🧬', sortOrder: 4, parentId: catToptanci.id, description: 'Alman menşeli mikro element ve yaprak gübre uzmanı' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'tamagro' },
+    update: { parentId: catToptanci.id, sortOrder: 5 },
+    create: { brandId: albTarim.id, name: 'Tamagro', slug: 'tamagro', icon: '🌾', sortOrder: 5, parentId: catToptanci.id, description: 'Verim artırıcı tarım teknoloji ürünleri' },
+  })
+
+  const catBayilik = await prisma.category.upsert({
+    where: { slug: 'bayilik-olunanlar' },
+    update: { sortOrder: 4 },
+    create: {
+      brandId: albTarim.id, name: 'Bayilik Olunanlar', slug: 'bayilik-olunanlar',
+      icon: '🏬', sortOrder: 4,
+      description: 'Bölge bayisi olduğumuz uluslararası tarım markaları',
+    },
+  })
+
+  // Bayilik — 4 marka (alt kategori)
+  await prisma.category.upsert({
+    where: { slug: 'timac-agro' },
+    update: { parentId: catBayilik.id, sortOrder: 1 },
+    create: { brandId: albTarim.id, name: 'Timac Agro', slug: 'timac-agro', icon: '🏭', sortOrder: 1, parentId: catBayilik.id, description: 'Fransız tarım ve gübre grubu' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'bazachem' },
+    update: { parentId: catBayilik.id, sortOrder: 2 },
+    create: { brandId: albTarim.id, name: 'Bazachem', slug: 'bazachem', icon: '⚗️', sortOrder: 2, parentId: catBayilik.id, description: 'Özel kimyasal ve gübre formülasyonları' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'haifa-cal' },
+    update: { parentId: catBayilik.id, sortOrder: 3 },
+    create: { brandId: albTarim.id, name: 'Haifa Cal', slug: 'haifa-cal', icon: '🌿', sortOrder: 3, parentId: catBayilik.id, description: 'İsrail menşeli kalsiyum ve potasyum ürün serisi' },
+  })
+  await prisma.category.upsert({
+    where: { slug: 'stoller' },
+    update: { parentId: catBayilik.id, sortOrder: 4 },
+    create: { brandId: albTarim.id, name: 'Stoller', slug: 'stoller', icon: '🌱', sortOrder: 4, parentId: catBayilik.id, description: 'Stres yönetimi ve ürün kalitesi odaklı Amerikan markası' },
+  })
+
+  console.log('✅ ALB Tarım kategori hiyerarşisi oluşturuldu (4 parent + 20 alt kategori)')
+
   // ─── Eski Alb Su flat kategorilerini deaktive et ──────────────────────────
   // (su-aritma, klima, su-isitici, su-yumusatma, temizlik)
   // Bu kategoriler artık hiyerarşik yapıyla değiştirildi.

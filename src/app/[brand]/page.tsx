@@ -7,6 +7,7 @@ import { MOCK_BLOG_POSTS } from '@/data/mock'
 import { getFeaturedProducts } from '@/lib/queries/products'
 import { getCategoriesByBrand } from '@/lib/queries/categories'
 import type { BrandKey } from '@/lib/types'
+import BrandHeroSection from '@/components/home/BrandHeroSection'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,94 +45,22 @@ export default async function BrandHomePage({ params }: Props) {
   ])
   const brandPosts = MOCK_BLOG_POSTS.filter((p) => p.brand === brandKey).slice(0, 3)
 
-  const heroBg = isAlbSu
-    ? 'from-blue-950 via-blue-900 to-cyan-950'
-    : 'from-green-950 via-green-900 to-emerald-950'
-  const primaryBtn = isAlbSu ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'
-  const outlineBtn = isAlbSu ? 'border-blue-400/60 hover:bg-blue-400/10' : 'border-green-400/60 hover:bg-green-400/10'
-  const badgeBg = isAlbSu
-    ? 'bg-blue-500/15 border-blue-400/30 text-blue-300'
-    : 'bg-green-500/15 border-green-400/30 text-green-300'
-  const tagText = isAlbSu ? 'text-blue-400' : 'text-green-400'
-  const accentText = isAlbSu ? 'text-blue-600' : 'text-green-600'
-  const categoryBg = isAlbSu
+  // Renk sistemi
+  const heroBg       = isAlbSu ? 'from-blue-950 via-blue-900 to-cyan-950'       : 'from-green-950 via-green-900 to-emerald-950'
+  const tagText      = isAlbSu ? 'text-blue-400'   : 'text-green-400'
+  const accentText   = isAlbSu ? 'text-blue-600'   : 'text-green-600'
+  const categoryBg   = isAlbSu
     ? 'from-blue-50 to-cyan-50 border-blue-100 hover:shadow-blue-100'
     : 'from-green-50 to-emerald-50 border-green-100 hover:shadow-green-100'
-  const categoryIcon = isAlbSu ? 'bg-blue-600' : 'bg-green-600'
+  const categoryIcon = isAlbSu ? 'bg-blue-600'     : 'bg-green-600'
   const categoryLink = isAlbSu ? 'text-blue-600 hover:text-blue-700' : 'text-green-600 hover:text-green-700'
+  const primaryBtn   = isAlbSu ? 'bg-blue-600 hover:bg-blue-500'     : 'bg-green-600 hover:bg-green-500'
+  const whyIconBg    = isAlbSu ? 'bg-blue-50'      : 'bg-green-50'
 
   return (
     <>
-      {/* ── HERO ── */}
-      <section className={`relative min-h-[80vh] flex items-center bg-gradient-to-br ${heroBg} overflow-hidden`}>
-        {/* VIDEO: /public/videos/${brandKey}-hero.mp4 */}
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_left,white,transparent_60%)]" />
-
-        <div className="relative z-10 container-main py-20 w-full">
-          <div className="max-w-2xl">
-            <span className={`inline-flex items-center gap-2 border rounded-full text-sm px-4 py-1.5 mb-8 font-medium ${badgeBg}`}>
-              <span className="w-2 h-2 rounded-full bg-current opacity-80 animate-pulse" />
-              {cfg.badge}
-            </span>
-
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-6">
-              {cfg.tagline.split('\n').map((line, i) => (
-                <span key={i} className={i === 1 ? `block ${tagText}` : 'block'}>
-                  {line}
-                </span>
-              ))}
-            </h1>
-            <p className="text-white/60 text-lg mb-2">{cfg.subtitle}</p>
-            <p className="text-white/80 text-base leading-relaxed mb-10 max-w-xl">
-              {cfg.description}
-            </p>
-
-            <div className="flex flex-wrap gap-4">
-              {isAlbSu ? (
-                <>
-                  <Link
-                    href={`/${brandKey}/urunler?kullanim=ev`}
-                    className="bg-white text-blue-900 px-7 py-3.5 rounded-xl font-semibold transition-colors shadow-lg flex items-center gap-2 hover:bg-blue-50"
-                  >
-                    🏠 Eviniz İçin
-                  </Link>
-                  <Link
-                    href={`/${brandKey}/urunler?kullanim=isyeri`}
-                    className={`border-2 ${outlineBtn} text-white px-7 py-3.5 rounded-xl font-semibold transition-colors flex items-center gap-2`}
-                  >
-                    🏢 İş Yeriniz İçin
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href={`/${brandKey}/urunler`}
-                    className={`${primaryBtn} text-white px-7 py-3.5 rounded-xl font-semibold transition-colors shadow-lg`}
-                  >
-                    {cfg.cta.label}
-                  </Link>
-                  <Link
-                    href={`/${brandKey}${cfg.ctaSecondary.href}`}
-                    className={`border-2 ${outlineBtn} text-white px-7 py-3.5 rounded-xl font-semibold transition-colors`}
-                  >
-                    {cfg.ctaSecondary.label}
-                  </Link>
-                </>
-              )}
-            </div>
-
-            {/* İstatistikler */}
-            <div className="flex flex-wrap gap-8 mt-12 pt-8 border-t border-white/10">
-              {cfg.stats.map((s) => (
-                <div key={s.label}>
-                  <p className="text-2xl font-black text-white">{s.value}</p>
-                  <p className="text-white/50 text-sm">{s.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── HERO (video arka plan) ── */}
+      <BrandHeroSection brandKey={brandKey} />
 
       {/* ── GÜVEN ROZETLERİ (Alb Su) ── */}
       {isAlbSu && (
@@ -186,9 +115,12 @@ export default async function BrandHomePage({ params }: Props) {
               <Link
                 key={cat.slug}
                 href={`/${brandKey}/urunler?kategori=${cat.slug}`}
-                className={`group border bg-gradient-to-br ${categoryBg} rounded-2xl p-5 hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5`}
+                className={`group relative border bg-gradient-to-br ${categoryBg} rounded-2xl p-5 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden`}
               >
-                <div className={`w-10 h-10 rounded-xl ${categoryIcon} text-white flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform`}>
+                {/* Kayan alt aksan çizgisi */}
+                <span className={`absolute bottom-0 inset-x-0 h-0.5 ${categoryIcon} scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-b-2xl`} />
+
+                <div className={`w-10 h-10 rounded-xl ${categoryIcon} text-white flex items-center justify-center text-lg mb-3 transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg`}>
                   {cat.icon}
                 </div>
                 <p className="font-semibold text-gray-900 text-sm leading-tight">{cat.name}</p>
@@ -240,7 +172,7 @@ export default async function BrandHomePage({ params }: Props) {
                 <Link
                   key={item.title}
                   href={item.href}
-                  className="group bg-white/5 border border-white/10 rounded-2xl p-7 hover:bg-white/10 transition-all duration-200 flex flex-col"
+                  className="group bg-white/5 border border-white/10 rounded-2xl p-7 hover:bg-white/12 hover:-translate-y-1.5 hover:border-white/20 transition-all duration-300 flex flex-col"
                 >
                   <div className="text-4xl mb-4">{item.icon}</div>
                   <h3 className="text-xl font-black text-white mb-2">{item.title}</h3>
@@ -276,7 +208,7 @@ export default async function BrandHomePage({ params }: Props) {
                   <Link
                     key={product.slug}
                     href={`/${brandKey}/urunler/${product.slug}`}
-                    className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+                    className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1.5 hover:border-gray-200 transition-all duration-300"
                   >
                     <div className="aspect-square bg-gray-100 relative overflow-hidden">
                       {product.images[0] ? (
@@ -285,22 +217,31 @@ export default async function BrandHomePage({ params }: Props) {
                           alt={product.images[0].alt || product.name}
                           fill
                           sizes="(max-width: 768px) 50vw, 17vw"
-                          className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
+                          className="object-contain p-2 transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-4xl">
+                        <div className="w-full h-full flex items-center justify-center text-4xl transition-transform duration-300 group-hover:scale-110">
                           {product.category.icon || '📦'}
                         </div>
                       )}
+
                       {product.salePrice && (
-                        <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                        <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">
                           İndirim
                         </span>
                       )}
+
+                      {/* Quick-view overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-end justify-center pb-3">
+                        <span className="bg-white/95 text-gray-900 text-[10px] font-bold px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 shadow-lg tracking-widest">
+                          İNCELE →
+                        </span>
+                      </div>
                     </div>
+
                     <div className="p-3">
                       <p className="text-gray-900 font-semibold text-xs leading-tight line-clamp-2 mb-1">{product.name}</p>
-                      <p className="text-gray-500 text-[10px] mb-2">{product.category.name}</p>
+                      <p className="text-gray-400 text-[10px] mb-2">{product.category.name}</p>
                       <div className="flex items-center justify-between">
                         <p className={`font-black text-sm ${accentText}`}>
                           {displayPrice.toLocaleString('tr-TR')} ₺
@@ -342,10 +283,12 @@ export default async function BrandHomePage({ params }: Props) {
                   { icon: '💰', title: 'Uygun Fiyat', desc: 'Çiftçi dostu fiyatlarla kaliteli ürünler.' },
                 ]
             ).map((item) => (
-              <div key={item.title} className="text-center p-6 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all">
-                <div className="text-4xl mb-4">{item.icon}</div>
+              <div key={item.title} className="group text-center p-6 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5">
+                <div className={`w-14 h-14 ${whyIconBg} rounded-2xl flex items-center justify-center text-3xl mb-4 mx-auto transition-transform duration-300 group-hover:scale-110 group-hover:shadow-md`}>
+                  {item.icon}
+                </div>
                 <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
+                <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -409,7 +352,7 @@ export default async function BrandHomePage({ params }: Props) {
               ].map((item) => (
                 <div
                   key={item.title}
-                  className="bg-white rounded-2xl border border-blue-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                  className="group bg-white rounded-2xl border border-blue-100 p-6 hover:shadow-2xl hover:-translate-y-2 hover:border-blue-200 transition-all duration-300"
                 >
                   <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-2xl mb-4">
                     {item.icon}
@@ -489,11 +432,14 @@ export default async function BrandHomePage({ params }: Props) {
                 <Link
                   key={post.slug}
                   href={`/${brandKey}/blog/${post.slug}`}
-                  className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200"
+                  className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                 >
                   {/* GÖRSEL: /public/images/blog/${post.slug}.jpg */}
-                  <div className={`aspect-[16/9] bg-gradient-to-br ${heroBg} flex items-center justify-center text-5xl`}>
-                    {isAlbSu ? '💧' : '🌱'}
+                  <div className={`aspect-[16/9] bg-gradient-to-br ${heroBg} flex items-center justify-center text-5xl relative overflow-hidden`}>
+                    <span className="transition-transform duration-500 group-hover:scale-125 select-none">
+                      {isAlbSu ? '💧' : '🌱'}
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                   <div className="p-5">
                     <p className={`text-xs font-semibold uppercase tracking-wide mb-2 ${accentText}`}>
