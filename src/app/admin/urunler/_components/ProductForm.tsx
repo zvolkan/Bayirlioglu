@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useTransition } from 'react'
+import { createSignedUploadUrl } from '@/app/actions/admin'
 
 type Brand = { id: number; key: string; name: string }
 type Category = { id: number; name: string; brand: Brand }
@@ -48,10 +49,15 @@ export default function ProductForm({
       { name: '', value: '', unit: '' },
     ],
   )
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    defaultValues.images?.find((i) => i.isPrimary)?.url ?? null,
-  )
-  const [replaceImage, setReplaceImage] = useState(false)
+
+  const existingImageUrl = defaultValues.images?.find((i) => i.isPrimary)?.url ?? null
+
+  // Kaydedilecek görsel URL (dosya yükleme veya manuel URL girişi)
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(existingImageUrl)
+  const [imagePreview, setImagePreview]         = useState<string | null>(existingImageUrl)
+  const [replaceImage, setReplaceImage]         = useState(false)
+  const [uploading, setUploading]               = useState(false)
+  const [uploadError, setUploadError]           = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const filteredCategories = categories.filter((c) => c.brand.id === selectedBrandId)
@@ -65,31 +71,72 @@ export default function ProductForm({
       .replace(/^-|-$/g, '')
   }
 
-  function addSpec() {
-    setSpecs((prev) => [...prev, { name: '', value: '', unit: '' }])
-  }
-
-  function removeSpec(idx: number) {
-    setSpecs((prev) => prev.filter((_, i) => i !== idx))
-  }
-
+  function addSpec() { setSpecs((prev) => [...prev, { name: '', value: '', unit: '' }]) }
+  function removeSpec(idx: number) { setSpecs((prev) => prev.filter((_, i) => i !== idx)) }
   function updateSpec(idx: number, field: keyof Spec, val: string) {
     setSpecs((prev) => prev.map((s, i) => (i === idx ? { ...s, [field]: val } : s)))
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  /**
+   * Kullanıcı dosya seçtiğinde:
+   * 1. Önizleme göster
+   * 2. Signed URL al (sunucu action)
+   * 3. Dosyayı Supabase'e PUT ile yükle (Vercel üzerinden geçmez → 4.5 MB limiti yok)
+   * 4. Public URL'yi state'e kaydet
+   */
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file) {
-      setImagePreview(URL.createObjectURL(file))
+    if (!file) return
+
+    setImagePreview(URL.createObjectURL(file))
+    setUploading(true)
+    setUploadError(null)
+
+    try {
+      const slugInput = document.getElementById('slug-input') as HTMLInputElement
+      const slug = slugInput?.value?.trim() || `urun-${Date.now()}`
+      const ext = file.name.split('.').pop() || 'jpg'
+      const fileName = `${slug}.${ext}`
+
+      const { signedUrl, publicUrl } = await createSignedUploadUrl(fileName)
+
+      const res = await fetch(signedUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+      setUploadedImageUrl(publicUrl)
       setReplaceImage(true)
+    } catch (err) {
+      console.error('[ProductForm] upload error:', err)
+      setUploadError('Görsel yüklenemedi. Lütfen tekrar deneyin.')
+      setImagePreview(existingImageUrl)
+      if (fileRef.current) fileRef.current.value = ''
+    } finally {
+      setUploading(false)
     }
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    if (uploading) return
+
     const formData = new FormData(e.currentTarget)
     formData.set('specs', JSON.stringify(specs))
-    formData.set('replaceImage', replaceImage ? 'true' : 'false')
+
+    // Dosya asla sunucuya gönderilmez — zaten Supabase'e yüklendi
+    formData.delete('imageFile')
+
+    if (replaceImage && uploadedImageUrl) {
+      formData.set('imageUrl', uploadedImageUrl)
+      formData.set('replaceImage', 'true')
+    } else {
+      // Manuel URL input varsa FormData'daki değeri kullan
+      const manualUrl = (formData.get('imageUrl') as string)?.trim()
+      formData.set('replaceImage', manualUrl ? 'true' : 'false')
+    }
 
     startTransition(async () => {
       await action(formData)
@@ -98,7 +145,8 @@ export default function ProductForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Temel Bilgiler */}
+
+      {/* ── Temel Bilgiler ── */}
       <section className="bg-white rounded-xl shadow-sm p-6 space-y-5">
         <h2 className="font-semibold text-gray-800 text-base border-b pb-3">Temel Bilgiler</h2>
 
@@ -114,9 +162,7 @@ export default function ProductForm({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {brands.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
+                <option key={b.id} value={b.id}>{b.name}</option>
               ))}
             </select>
           </div>
@@ -132,9 +178,7 @@ export default function ProductForm({
             >
               <option value="">Seçiniz</option>
               {filteredCategories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
+                <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
           </div>
@@ -205,7 +249,7 @@ export default function ProductForm({
         </div>
       </section>
 
-      {/* Fiyat & Stok */}
+      {/* ── Fiyat & Stok ── */}
       <section className="bg-white rounded-xl shadow-sm p-6 space-y-5">
         <h2 className="font-semibold text-gray-800 text-base border-b pb-3">Fiyat & Stok</h2>
 
@@ -213,42 +257,29 @@ export default function ProductForm({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fiyat (₺) *</label>
             <input
-              name="price"
-              type="number"
-              step="0.01"
-              min="0"
-              required
+              name="price" type="number" step="0.01" min="0" required
               defaultValue={defaultValues.price ?? ''}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="0.00"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">İndirimli Fiyat (₺)</label>
             <input
-              name="salePrice"
-              type="number"
-              step="0.01"
-              min="0"
+              name="salePrice" type="number" step="0.01" min="0"
               defaultValue={defaultValues.salePrice ?? ''}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="0.00"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Stok Adedi *</label>
             <input
-              name="stockQuantity"
-              type="number"
-              min="0"
-              required
+              name="stockQuantity" type="number" min="0" required
               defaultValue={defaultValues.stock ?? 0}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Birim</label>
             <select
@@ -259,6 +290,7 @@ export default function ProductForm({
               <option value="adet">adet</option>
               <option value="kg">kg</option>
               <option value="lt">lt</option>
+              <option value="litre">litre</option>
               <option value="m">m</option>
               <option value="m²">m²</option>
               <option value="çift">çift</option>
@@ -268,22 +300,49 @@ export default function ProductForm({
         </div>
       </section>
 
-      {/* Görsel */}
+      {/* ── Görsel ── */}
       <section className="bg-white rounded-xl shadow-sm p-6 space-y-4">
         <h2 className="font-semibold text-gray-800 text-base border-b pb-3">Ürün Görseli</h2>
 
+        {/* Önizleme */}
         {imagePreview && (
-          <div className="relative w-40 h-40 rounded-lg overflow-hidden border border-gray-200">
+          <div className="relative w-40 h-40 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={imagePreview} alt="Önizleme" className="w-full h-full object-contain" />
+            {uploading && (
+              <div className="absolute inset-0 bg-white/75 flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
           </div>
+        )}
+
+        {/* Yükleme durumu / hata */}
+        {uploading && (
+          <p className="text-sm text-blue-600 flex items-center gap-2">
+            <span className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin inline-block" />
+            Görsel Supabase Storage&apos;a yükleniyor…
+          </p>
+        )}
+        {uploadError && (
+          <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
+            {uploadError}
+          </p>
+        )}
+        {!uploading && replaceImage && uploadedImageUrl && !uploadError && (
+          <p className="text-sm text-green-600 bg-green-50 border border-green-200 px-3 py-2 rounded-lg">
+            ✓ Görsel başarıyla yüklendi
+          </p>
         )}
 
         <div className="flex flex-col gap-3">
           {/* Dosya yükle */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Dosya Yükle (Supabase Storage)
+              Dosya Yükle
+              <span className="ml-1.5 text-xs font-normal text-gray-400">
+                (Supabase&apos;e doğrudan yüklenir — boyut sınırı yok)
+              </span>
             </label>
             <input
               ref={fileRef}
@@ -291,26 +350,29 @@ export default function ProductForm({
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="block text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              disabled={uploading}
+              className="block text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
             />
           </div>
 
-          {/* ya da URL gir */}
+          {/* Manuel URL */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              veya Görsel URL&apos;si (public/ dizini)
+              veya Görsel URL&apos;si <span className="text-xs font-normal text-gray-400">(public/ dizini)</span>
             </label>
             <input
               name="imageUrl"
-              type="url"
+              type="text"
               defaultValue={
-                !defaultValues.images?.find((i) => i.isPrimary)?.url?.includes('supabase')
-                  ? defaultValues.images?.find((i) => i.isPrimary)?.url ?? ''
+                existingImageUrl && !existingImageUrl.includes('supabase')
+                  ? existingImageUrl
                   : ''
               }
               onChange={(e) => {
-                if (e.target.value) {
-                  setImagePreview(e.target.value)
+                const val = e.target.value.trim()
+                if (val) {
+                  setImagePreview(val)
+                  setUploadedImageUrl(val)
                   setReplaceImage(true)
                 }
               }}
@@ -321,7 +383,7 @@ export default function ProductForm({
         </div>
       </section>
 
-      {/* Teknik Özellikler */}
+      {/* ── Teknik Özellikler ── */}
       <section className="bg-white rounded-xl shadow-sm p-6 space-y-4">
         <div className="flex items-center justify-between border-b pb-3">
           <h2 className="font-semibold text-gray-800 text-base">Teknik Özellikler</h2>
@@ -370,17 +432,13 @@ export default function ProductForm({
         )}
       </section>
 
-      {/* Durum */}
+      {/* ── Yayın Durumu ── */}
       <section className="bg-white rounded-xl shadow-sm p-6">
         <h2 className="font-semibold text-gray-800 text-base border-b pb-3 mb-4">Yayın Durumu</h2>
 
         <div className="flex flex-col sm:flex-row gap-4">
           <label className="flex items-center gap-3 cursor-pointer select-none">
-            <input
-              type="hidden"
-              name="isActive"
-              value="false"
-            />
+            <input type="hidden" name="isActive" value="false" />
             <input
               type="checkbox"
               name="isActive"
@@ -392,11 +450,7 @@ export default function ProductForm({
           </label>
 
           <label className="flex items-center gap-3 cursor-pointer select-none">
-            <input
-              type="hidden"
-              name="isFeatured"
-              value="false"
-            />
+            <input type="hidden" name="isFeatured" value="false" />
             <input
               type="checkbox"
               name="isFeatured"
@@ -409,7 +463,7 @@ export default function ProductForm({
         </div>
       </section>
 
-      {/* Submit */}
+      {/* ── Submit ── */}
       <div className="flex items-center justify-end gap-4">
         <a
           href="/admin/urunler"
@@ -419,10 +473,10 @@ export default function ProductForm({
         </a>
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || uploading}
           className="px-6 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {isPending ? 'Kaydediliyor...' : submitLabel}
+          {uploading ? 'Görsel yükleniyor…' : isPending ? 'Kaydediliyor...' : submitLabel}
         </button>
       </div>
     </form>

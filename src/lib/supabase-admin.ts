@@ -11,6 +11,22 @@ function getClient() {
   return createClient(url, key, { auth: { persistSession: false } })
 }
 
+/**
+ * Supabase Storage'a doğrudan tarayıcıdan yükleme yapmak için signed upload URL üretir.
+ * İstemci bu URL'ye PUT isteği ile dosyayı Vercel üzerinden geçirmeden yükler.
+ */
+export async function getSignedUploadUrl(
+  fileName: string,
+): Promise<{ signedUrl: string; publicUrl: string }> {
+  const client = getClient()
+
+  const { data, error } = await client.storage.from(BUCKET).createSignedUploadUrl(fileName)
+  if (error) throw new Error(`Signed URL hatası: ${error.message}`)
+
+  const { data: urlData } = client.storage.from(BUCKET).getPublicUrl(fileName)
+  return { signedUrl: data.signedUrl, publicUrl: urlData.publicUrl }
+}
+
 /** Dosyayı Supabase Storage'a yükler, public URL döner */
 export async function uploadProductImage(file: File, fileName: string): Promise<string> {
   const client = getClient()

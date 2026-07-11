@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
-import { uploadProductImage, deleteProductImage } from '@/lib/supabase-admin'
+import { uploadProductImage, deleteProductImage, getSignedUploadUrl } from '@/lib/supabase-admin'
 
 const ADMIN_COOKIE = 'admin_session'
 const COOKIE_MAX_AGE = 60 * 60 * 8 // 8 saat
@@ -35,6 +35,19 @@ export async function adminLogout() {
   const cookieStore = await cookies()
   cookieStore.delete(ADMIN_COOKIE)
   redirect('/admin/giris')
+}
+
+// ─── UPLOAD ───────────────────────────────────────────────────────────────────
+
+/**
+ * İstemcinin Supabase Storage'a doğrudan yüklemesi için signed URL üretir.
+ * Dosya Vercel serverless function'dan geçmez → 4.5 MB payload limiti aşılmaz.
+ */
+export async function createSignedUploadUrl(fileName: string) {
+  const cookieStore = await cookies()
+  const session = cookieStore.get(ADMIN_COOKIE)?.value
+  if (!session || session !== 'authenticated') throw new Error('Yetkisiz erişim')
+  return getSignedUploadUrl(fileName)
 }
 
 // ─── BRANDS & CATEGORIES ─────────────────────────────────────────────────────
