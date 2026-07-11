@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Product, CartItem } from '@/lib/types'
 
 interface CartState {
@@ -68,18 +68,9 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'bayirlioglu-cart',
-      storage: {
-        getItem: (name) => {
-          const value = localStorage.getItem(name)
-          return value ? JSON.parse(value) : null
-        },
-        setItem: (name, value) => {
-          localStorage.setItem(name, JSON.stringify(value))
-        },
-        removeItem: (name) => {
-          localStorage.removeItem(name)
-        },
-      },
+      // createJSONStorage, localStorage'a yalnızca tarayıcı ortamında erişir;
+      // SSR sırasında window.localStorage undefined hatası vermez.
+      storage: createJSONStorage(() => localStorage),
     }
   )
 )

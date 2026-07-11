@@ -13,13 +13,20 @@ export default async function DuzenleUrunPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [brands, categories, product] = await Promise.all([
+  const [rawBrands, rawCategories, product] = await Promise.all([
     getBrandsForAdmin(),
     getCategoriesForAdmin(),
     getProductForEdit(id),
   ])
 
   if (!product) notFound()
+
+  const brands = rawBrands.map((b) => ({ id: b.id, key: b.key, name: b.name }))
+  const categories = rawCategories.map((c) => ({
+    id: c.id,
+    name: c.name,
+    brand: { id: c.brand.id, key: c.brand.key, name: c.brand.name },
+  }))
 
   async function handleUpdate(formData: FormData) {
     'use server'
@@ -41,7 +48,7 @@ export default async function DuzenleUrunPage({
 
       <ProductForm
         brands={brands}
-        categories={categories.map((c) => ({ id: c.id, name: c.name, brand: c.brand }))}
+        categories={categories}
         action={handleUpdate}
         submitLabel="Değişiklikleri Kaydet"
         defaultValues={{

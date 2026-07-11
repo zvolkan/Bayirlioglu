@@ -1,11 +1,24 @@
 import { getBrandsForAdmin, getCategoriesForAdmin, createProduct } from '@/app/actions/admin'
 import ProductForm from '../_components/ProductForm'
 
+// Admin sayfaları her zaman dinamik render edilmeli — auth middleware cookie'ye
+// dayanır ve statik derleme sırasında DB bağlantısı olmayabilir.
+export const dynamic = 'force-dynamic'
+
 export default async function YeniUrunPage() {
-  const [brands, categories] = await Promise.all([
+  const [rawBrands, rawCategories] = await Promise.all([
     getBrandsForAdmin(),
     getCategoriesForAdmin(),
   ])
+
+  // Prisma nesnelerinden yalnızca Client Component'in ihtiyaç duyduğu alanları al.
+  // Date / Decimal gibi RSC serileştirmesinde sorun çıkarabilecek alanlar atlanır.
+  const brands = rawBrands.map((b) => ({ id: b.id, key: b.key, name: b.name }))
+  const categories = rawCategories.map((c) => ({
+    id: c.id,
+    name: c.name,
+    brand: { id: c.brand.id, key: c.brand.key, name: c.brand.name },
+  }))
 
   return (
     <div className="space-y-6">
@@ -21,7 +34,7 @@ export default async function YeniUrunPage() {
 
       <ProductForm
         brands={brands}
-        categories={categories.map((c) => ({ id: c.id, name: c.name, brand: c.brand }))}
+        categories={categories}
         action={createProduct}
         submitLabel="Ürünü Kaydet"
       />
