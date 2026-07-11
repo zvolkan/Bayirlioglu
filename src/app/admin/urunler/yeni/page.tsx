@@ -20,6 +20,14 @@ export default async function YeniUrunPage() {
     brand: { id: c.brand.id, key: c.brand.key, name: c.brand.name },
   }))
 
+  // Module-level server action'ları startTransition üzerinden çağırırken
+  // Next.js 15 / React 19'da redirect() client-side exception'a yol açabiliyor.
+  // Edit sayfasıyla aynı pattern: inline 'use server' wrapper kullan.
+  async function handleCreate(formData: FormData) {
+    'use server'
+    await createProduct(formData)
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -35,7 +43,7 @@ export default async function YeniUrunPage() {
       <ProductForm
         brands={brands}
         categories={categories}
-        action={createProduct}
+        action={handleCreate}
         submitLabel="Ürünü Kaydet"
       />
     </div>
