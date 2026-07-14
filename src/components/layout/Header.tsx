@@ -261,8 +261,6 @@ export default function Header() {
                             activeDropdown === item.label ? 'translate-y-0' : '-translate-y-1'
                           }`}
                         >
-                          {/* Marka aksan çizgisi */}
-                          <div className={`h-px mx-3 mb-2 rounded-full ${dropdownAccent}`} />
                           {item.children.map((child) => (
                             <Link
                               key={child.label}

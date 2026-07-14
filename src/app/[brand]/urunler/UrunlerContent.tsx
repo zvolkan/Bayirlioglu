@@ -30,66 +30,129 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
   const isAlbSu = brandKey === 'alb-su-aritma'
   const cfg = BRANDS[brandKey] ?? BRANDS['alb-tarim']
 
+  // ── URL parametreleri ─────────────────────────────────────────────────────
+  // kullanim → L0 (kök kategori slug'ı: alb-tarim-urunleri | ithal-urunler)
+  // marka    → L1 (sadece İthal modunda: marka slug'ı)
+  // kategori → ürün tipi slug'ı (ALB'de L1, İthal'de L2)
   const activeKullanim = searchParams.get('kullanim') ?? ''
+  const activeMarka    = searchParams.get('marka')    ?? ''
   const activeCategory = searchParams.get('kategori') ?? ''
-  const searchQuery = searchParams.get('arama') ?? ''
+  const searchQuery    = searchParams.get('arama')    ?? ''
   const [sort, setSort] = useState('featured')
 
   // ── Renk sistemi ─────────────────────────────────────────────────────────
-  const accentText  = isAlbSu ? 'text-blue-600'           : 'text-green-700'
-  const accentBg    = isAlbSu ? 'bg-blue-600'              : 'bg-green-600'
-  const accentHover = isAlbSu ? 'hover:bg-blue-500'        : 'hover:bg-green-500'
-  const accentBorder= isAlbSu ? 'border-b-blue-600'        : 'border-b-green-600'
-  const accentLight = isAlbSu ? 'bg-blue-50/60'            : 'bg-green-50/60'
-  const accentTag   = isAlbSu ? 'text-blue-500'            : 'text-green-600'
-  const pillActive  = isAlbSu
+  const accentText   = isAlbSu ? 'text-blue-600'    : 'text-green-700'
+  const accentBg     = isAlbSu ? 'bg-blue-600'       : 'bg-green-600'
+  const accentHover  = isAlbSu ? 'hover:bg-blue-500' : 'hover:bg-green-500'
+  const accentBorder = isAlbSu ? 'border-b-blue-600' : 'border-b-green-600'
+  const accentLight  = isAlbSu ? 'bg-blue-50/60'     : 'bg-green-50/60'
+  const accentTag    = isAlbSu ? 'text-blue-500'     : 'text-green-600'
+  const pillActive   = isAlbSu
     ? 'bg-blue-600 hover:bg-blue-500 text-white border-transparent shadow-sm'
     : 'bg-green-600 hover:bg-green-500 text-white border-transparent shadow-sm'
   const pillInactive = 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:text-gray-800'
 
-  // ── Kategori hiyerarşisi ──────────────────────────────────────────────────
-  // parentId === null → üst (parent) kategori
-  // parentId !== null → alt (child) kategori
-  // Her iki marka için de aynı mantık; hasHierarchy DB'deki yapıya göre otomatik belirlenir.
+  // ── Kategori haritaları ───────────────────────────────────────────────────
+  const catById = useMemo(
+    () => new Map(initialCategories.map((c) => [c.id, c])),
+    [initialCategories],
+  )
+  const catBySlug = useMemo(
+    () => new Map(initialCategories.map((c) => [c.slug, c])),
+    [initialCategories],
+  )
 
-  const parentCategories = useMemo(
+  // L0: kök kategoriler (parentId = null)
+  const rootCategories = useMemo(
     () => initialCategories.filter((c) => c.parentId == null),
     [initialCategories],
   )
 
-  const childCategories = useMemo(
-    () => initialCategories.filter((c) => c.parentId != null),
-    [initialCategories],
+  // L1: kök kategorilerin doğrudan çocukları
+  //   ALB Tarım → ürün tipleri
+  //   İthal Ürünler → markalar
+  const level1Categories = useMemo(
+    () =>
+      initialCategories.filter((c) => {
+        if (c.parentId == null) return false
+        return catById.get(c.parentId)?.parentId == null
+      }),
+    [initialCategories, catById],
   )
 
-  const hasHierarchy = parentCategories.length > 0 && childCategories.length > 0
-
-  const activeParentCat = useMemo(
-    () => (hasHierarchy ? parentCategories.find((c) => c.slug === activeKullanim) ?? null : null),
-    [hasHierarchy, parentCategories, activeKullanim],
+  // L2: L1 kategorilerin doğrudan çocukları
+  //   İthal marka → ürün tipleri
+  const level2Categories = useMemo(
+    () =>
+      initialCategories.filter((c) => {
+        if (c.parentId == null) return false
+        const parent = catById.get(c.parentId)
+        if (!parent || parent.parentId == null) return false
+        return catById.get(parent.parentId)?.parentId == null
+      }),
+    [initialCategories, catById],
   )
 
-  const activeChildCats = useMemo(
-    () => (activeParentCat ? childCategories.filter((c) => c.parentId === activeParentCat.id) : []),
-    [activeParentCat, childCategories],
+  const hasHierarchy = rootCategories.length > 0
+
+  // Aktif kök kategori (kullanim param'dan)
+  const activeRootCat = useMemo(
+    () => rootCategories.find((c) => c.slug === activeKullanim) ?? null,
+    [rootCategories, activeKullanim],
+  )
+
+  // Aktif kök altındaki L1 kategoriler
+  const activeL1Cats = useMemo(
+    () => (activeRootCat ? level1Categories.filter((c) => c.parentId === activeRootCat.id) : []),
+    [activeRootCat, level1Categories],
+  )
+
+  // İthal modu mu?
+  const isIthal = activeRootCat?.slug === 'ithal-urunler'
+
+  // Seçili marka kategorisi (sadece İthal modunda)
+  const activeMarkaCat = useMemo(
+    () => (isIthal && activeMarka ? activeL1Cats.find((c) => c.slug === activeMarka) ?? null : null),
+    [isIthal, activeMarka, activeL1Cats],
+  )
+
+  // Seçili marka altındaki L2 kategoriler (ürün tipleri)
+  const activeL2Cats = useMemo(
+    () => (activeMarkaCat ? level2Categories.filter((c) => c.parentId === activeMarkaCat.id) : []),
+    [activeMarkaCat, level2Categories],
   )
 
   // ── Ürün filtreleme ───────────────────────────────────────────────────────
 
+  // Bir ürünün kategorisinin belirli bir atadan gelip gelmediğini kontrol eder
+  const isInAncestor = (productCatSlug: string, ancestorId: number): boolean => {
+    let cat = catBySlug.get(productCatSlug)
+    while (cat) {
+      if (cat.id === ancestorId) return true
+      cat = cat.parentId != null ? catById.get(cat.parentId) : undefined
+    }
+    return false
+  }
+
   const filtered = useMemo(() => {
     let list = [...initialProducts]
 
-    // 1. Parent filtresi (kullanim)
-    if (hasHierarchy && activeParentCat && !activeCategory) {
-      list = list.filter((p) => p.category.parentId === activeParentCat.id)
+    // 1. Kök kategori filtresi (alb-tarim-urunleri | ithal-urunler)
+    if (activeKullanim && activeRootCat) {
+      list = list.filter((p) => isInAncestor(p.category.slug, activeRootCat.id))
     }
 
-    // 2. Child filtresi (kategori) — parent'tan daha spesifik
+    // 2. Marka filtresi (sadece İthal modunda)
+    if (isIthal && activeMarka && activeMarkaCat) {
+      list = list.filter((p) => isInAncestor(p.category.slug, activeMarkaCat.id))
+    }
+
+    // 3. Ürün tipi filtresi (kategori slug eşleşmesi)
     if (activeCategory) {
       list = list.filter((p) => p.category.slug === activeCategory)
     }
 
-    // 3. Arama
+    // 4. Arama
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
       list = list.filter(
@@ -100,30 +163,51 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
       )
     }
 
-    // 4. Sıralama
+    // 5. Sıralama
     switch (sort) {
       case 'price-asc':  return [...list].sort((a, b) => a.price - b.price)
       case 'price-desc': return [...list].sort((a, b) => b.price - a.price)
       case 'newest':     return [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       default:           return [...list].sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0))
     }
-  }, [initialProducts, hasHierarchy, activeParentCat, activeCategory, searchQuery, sort])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialProducts, initialCategories, catBySlug, catById, activeKullanim, activeRootCat?.id, isIthal, activeMarka, activeMarkaCat?.id, activeCategory, searchQuery, sort])
 
   // ── URL yardımcıları ──────────────────────────────────────────────────────
 
+  // Kök kategori değiştir → diğer tüm filtreleri sıfırla
   const setKullanim = (slug: string) => {
     const sp = new URLSearchParams()
     if (slug) sp.set('kullanim', slug)
     router.push(`?${sp.toString()}`)
   }
 
-  const setCategory = (slug: string) => {
-    const sp = new URLSearchParams(searchParams.toString())
-    if (slug) sp.set('kategori', slug)
-    else sp.delete('kategori')
+  // Marka seç (İthal modunda) → ürün tipi filtresini sıfırla
+  const setMarkaSlug = (slug: string) => {
+    const sp = new URLSearchParams()
+    sp.set('kullanim', activeKullanim)
+    if (slug) sp.set('marka', slug)
     router.push(`?${sp.toString()}`)
   }
 
+  // Ürün tipi seç
+  const setCategory = (slug: string) => {
+    const sp = new URLSearchParams()
+    sp.set('kullanim', activeKullanim)
+    if (isIthal && activeMarka) sp.set('marka', activeMarka)
+    if (slug) sp.set('kategori', slug)
+    router.push(`?${sp.toString()}`)
+  }
+
+  // Ürün tipi filtresini temizle (markayı koru)
+  const clearCategory = () => {
+    const sp = new URLSearchParams()
+    sp.set('kullanim', activeKullanim)
+    if (isIthal && activeMarka) sp.set('marka', activeMarka)
+    router.push(`?${sp.toString()}`)
+  }
+
+  // Tüm filtreleri temizle
   const clearAll = () => router.push('?')
 
   const handleAddToCart = (product: Product) => {
@@ -134,13 +218,28 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
   const discount = (product: Product) =>
     product.salePrice ? Math.round((1 - product.salePrice / product.price) * 100) : null
 
+  // L2 "Tümü" aktif mi?
+  // ALB modunda: ürün tipi seçili değil
+  // İthal modunda: marka seçili değil
+  const l2AllActive = isIthal ? !activeMarka : !activeCategory
+
+  // Breadcrumb etiketi
   const activeCategoryLabel = useMemo(() => {
-    if (activeCategory)
-      return childCategories.find((c) => c.slug === activeCategory)?.name
-        ?? initialCategories.find((c) => c.slug === activeCategory)?.name
-    if (activeParentCat) return activeParentCat.name
+    if (isIthal) {
+      if (activeMarkaCat && activeCategory) {
+        const typeCat = activeL2Cats.find((c) => c.slug === activeCategory)
+        if (typeCat) return `${activeMarkaCat.name} › ${typeCat.name}`
+        return activeMarkaCat.name
+      }
+      if (activeMarkaCat) return activeMarkaCat.name
+      if (activeRootCat) return activeRootCat.name
+      return null
+    }
+    // ALB Tarım
+    if (activeCategory) return activeL1Cats.find((c) => c.slug === activeCategory)?.name ?? null
+    if (activeRootCat) return activeRootCat.name
     return null
-  }, [activeCategory, activeParentCat, childCategories, initialCategories])
+  }, [isIthal, activeMarkaCat, activeCategory, activeL2Cats, activeRootCat, activeL1Cats])
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -174,7 +273,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
         </div>
       </div>
 
-      {/* ─── Level-1: Üst kategori sekme çubuğu ─────────────────────────── */}
+      {/* ─── L0: Kök kategori sekme çubuğu ──────────────────────────────── */}
       {hasHierarchy && (
         <div className="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-[0_1px_4px_rgba(0,0,0,.06)]">
           <div className="container-main">
@@ -185,11 +284,11 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
               {/* Tümü */}
               <button
                 role="tab"
-                aria-selected={!activeKullanim && !activeCategory}
+                aria-selected={!activeKullanim}
                 onClick={clearAll}
                 className={[
                   'flex-shrink-0 px-5 py-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap',
-                  !activeKullanim && !activeCategory
+                  !activeKullanim
                     ? `${accentText} ${accentBorder}`
                     : 'text-gray-500 border-transparent hover:text-gray-800 hover:border-gray-300',
                 ].join(' ')}
@@ -197,10 +296,9 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                 Tümü
               </button>
 
-              {/* Ayraç */}
               <span aria-hidden className="self-center text-gray-200 select-none px-1">|</span>
 
-              {parentCategories.map((cat, idx) => {
+              {rootCategories.map((cat, idx) => {
                 const isActive = activeKullanim === cat.slug
                 return (
                   <div key={cat.slug} className="flex items-stretch flex-shrink-0">
@@ -215,7 +313,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                           : 'text-gray-500 border-transparent hover:text-gray-800 hover:border-gray-300',
                       ].join(' ')}
                     >
-                      <span>{cat.icon}</span>
+                      {cat.icon && <span>{cat.icon}</span>}
                       <span>{cat.name}</span>
                       {cat.productCount != null && cat.productCount > 0 && (
                         <span
@@ -230,7 +328,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                         </span>
                       )}
                     </button>
-                    {idx < parentCategories.length - 1 && (
+                    {idx < rootCategories.length - 1 && (
                       <span aria-hidden className="self-center text-gray-200 select-none px-1">|</span>
                     )}
                   </div>
@@ -241,32 +339,37 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
         </div>
       )}
 
-      {/* ─── Level-2: Alt kategori pill şeridi ───────────────────────────── */}
-      {hasHierarchy && activeParentCat && activeChildCats.length > 0 && (
+      {/* ─── L1: Marka/Ürün-tipi pill şeridi ────────────────────────────── */}
+      {/* ALB Tarım → ürün tipleri | İthal Ürünler → markalar */}
+      {hasHierarchy && activeRootCat && activeL1Cats.length > 0 && (
         <div className={`${accentLight} border-b border-gray-100`}>
           <div className="container-main">
 
             {/* ── Mobil: Tümü + dropdown ── */}
             <div className="flex md:hidden items-center gap-2 py-3">
               <button
-                onClick={() => setKullanim(activeKullanim)}
+                onClick={() => (isIthal ? setKullanim(activeKullanim) : clearCategory())}
                 className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  !activeCategory ? pillActive : pillInactive
+                  l2AllActive ? pillActive : pillInactive
                 }`}
               >
                 Tümü
               </button>
-
               <div className="relative">
                 <select
-                  value={activeCategory || ''}
-                  onChange={(e) =>
-                    e.target.value ? setCategory(e.target.value) : setKullanim(activeKullanim)
-                  }
+                  value={isIthal ? activeMarka : activeCategory}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (isIthal) {
+                      val ? setMarkaSlug(val) : setKullanim(activeKullanim)
+                    } else {
+                      val ? setCategory(val) : clearCategory()
+                    }
+                  }}
                   className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-gray-400 cursor-pointer"
                 >
-                  <option value="">Kategori Seç</option>
-                  {activeChildCats.map((cat) => (
+                  <option value="">{isIthal ? 'Marka Seç' : 'Kategori Seç'}</option>
+                  {activeL1Cats.map((cat) => (
                     <option key={cat.slug} value={cat.slug}>
                       {cat.name}
                     </option>
@@ -284,15 +387,82 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
             {/* ── Desktop: sarmalayan pill'ler ── */}
             <div className="hidden md:flex flex-wrap items-center gap-2 py-3">
               <button
-                onClick={() => setKullanim(activeKullanim)}
+                onClick={() => (isIthal ? setKullanim(activeKullanim) : clearCategory())}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  l2AllActive ? pillActive : pillInactive
+                }`}
+              >
+                Tümü
+              </button>
+              {activeL1Cats.map((cat) => {
+                const isActive = isIthal ? activeMarka === cat.slug : activeCategory === cat.slug
+                return (
+                  <button
+                    key={cat.slug}
+                    onClick={() => (isIthal ? setMarkaSlug(cat.slug) : setCategory(cat.slug))}
+                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap ${
+                      isActive ? pillActive : pillInactive
+                    }`}
+                  >
+                    {cat.icon && <span>{cat.icon}</span>}
+                    <span>{cat.name}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ─── L2: Ürün tipi pill şeridi (sadece İthal + marka seçiliyken) ── */}
+      {isIthal && activeMarkaCat && activeL2Cats.length > 0 && (
+        <div className="bg-white/80 border-b border-gray-100">
+          <div className="container-main">
+
+            {/* ── Mobil ── */}
+            <div className="flex md:hidden items-center gap-2 py-2.5">
+              <button
+                onClick={clearCategory}
                 className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                   !activeCategory ? pillActive : pillInactive
                 }`}
               >
                 Tümü
               </button>
+              <div className="relative">
+                <select
+                  value={activeCategory}
+                  onChange={(e) => (e.target.value ? setCategory(e.target.value) : clearCategory())}
+                  className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-gray-400 cursor-pointer"
+                >
+                  <option value="">Kategori Seç</option>
+                  {activeL2Cats.map((cat) => (
+                    <option key={cat.slug} value={cat.slug}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <svg
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none"
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
 
-              {activeChildCats.map((cat) => {
+            {/* ── Desktop ── */}
+            <div className="hidden md:flex flex-wrap items-center gap-2 py-2.5">
+              <button
+                onClick={clearCategory}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  !activeCategory ? pillActive : pillInactive
+                }`}
+              >
+                Tümü
+              </button>
+              {activeL2Cats.map((cat) => {
                 const isActive = activeCategory === cat.slug
                 return (
                   <button
@@ -302,7 +472,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                       isActive ? pillActive : pillInactive
                     }`}
                   >
-                    <span>{cat.icon}</span>
+                    {cat.icon && <span>{cat.icon}</span>}
                     <span>{cat.name}</span>
                   </button>
                 )
@@ -335,7 +505,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
           </select>
         </div>
 
-        {/* Flat (hiyerarşi yok): sidebar + ürünler */}
+        {/* Flat düzen (hiyerarşi yok — ALB Su vb.) */}
         {!hasHierarchy && (
           <div className="flex flex-col lg:flex-row gap-8">
             <aside className="hidden lg:block w-56 flex-shrink-0">
@@ -364,7 +534,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                     }`}
                   >
                     <span className="flex items-center gap-2">
-                      <span>{cat.icon}</span>
+                      {cat.icon && <span>{cat.icon}</span>}
                       <span>{cat.name}</span>
                     </span>
                     {cat.productCount != null && (
@@ -392,7 +562,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
           </div>
         )}
 
-        {/* Hiyerarşik: tam genişlik ürün ızgarası */}
+        {/* Hiyerarşik düzen (ALB Tarım vb.) */}
         {hasHierarchy && (
           <ProductGrid
             products={filtered}
