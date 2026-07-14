@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useRef, useTransition } from 'react'
+import { useState, useRef, useTransition, useMemo } from 'react'
 import { createSignedUploadUrl } from '@/app/actions/admin'
 
 type Brand = { id: number; key: string; name: string }
-type Category = { id: number; name: string; brand: Brand }
+type Category = { id: number; name: string; parentId?: number | null; brand: Brand }
 type Spec = { name: string; value: string; unit: string }
 type ImageRecord = { id: number; url: string; isPrimary: boolean }
 
@@ -52,7 +52,6 @@ export default function ProductForm({
 
   const existingImageUrl = defaultValues.images?.find((i) => i.isPrimary)?.url ?? null
 
-  // Kaydedilecek görsel URL (dosya yükleme veya manuel URL girişi)
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(existingImageUrl)
   const [imagePreview, setImagePreview]         = useState<string | null>(existingImageUrl)
   const [replaceImage, setReplaceImage]         = useState(false)
@@ -60,7 +59,56 @@ export default function ProductForm({
   const [uploadError, setUploadError]           = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const filteredCategories = categories.filter((c) => c.brand.id === selectedBrandId)
+  // ── Kategori hiyerarşisi ─────────────────────────────────────────────────
+  // parentCategories: parentId === null olan ana kategoriler (seçilen marka için)
+  // allChildren: parentId !== null olan alt kategoriler (seçilen marka için)
+  // hasHierarchy: her iki seviye de varsa true → 2 kademeli UI göster
+
+  const parentCategories = useMemo(
+    () => categories.filter((c) => c.brand.id === selectedBrandId && c.parentId == null),
+    [categories, selectedBrandId],
+  )
+
+  const allChildren = useMemo(
+    () => categories.filter((c) => c.brand.id === selectedBrandId && c.parentId != null),
+    [categories, selectedBrandId],
+  )
+
+  const hasHierarchy = parentCategories.length > 0 && allChildren.length > 0
+
+  // Düzenleme modunda mevcut categoryId'nin parent'ını bul
+  function resolveInitialParentId(brandId: number): number {
+    if (defaultValues.categoryId) {
+      const currentCat = categories.find((c) => c.id === defaultValues.categoryId)
+      if (currentCat?.parentId != null) return currentCat.parentId
+    }
+    return categories.find((c) => c.brand.id === brandId && c.parentId == null)?.id ?? 0
+  }
+
+  const [selectedParentId, setSelectedParentId] = useState<number>(() =>
+    resolveInitialParentId(selectedBrandId),
+  )
+
+  // Seçilen parent'a göre filtrelenmiş çocuk kategoriler
+  const filteredChildren = useMemo(
+    () => allChildren.filter((c) => c.parentId === selectedParentId),
+    [allChildren, selectedParentId],
+  )
+
+  // Flat kategoriler (hiyerarşi yoksa)
+  const flatCategories = useMemo(
+    () => (!hasHierarchy ? categories.filter((c) => c.brand.id === selectedBrandId) : []),
+    [categories, selectedBrandId, hasHierarchy],
+  )
+
+  // Seçili alt kategori (controlled)
+  function resolveInitialCategoryId(): number {
+    if (defaultValues.categoryId) return defaultValues.categoryId
+    return 0
+  }
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(resolveInitialCategoryId)
+
+  // ── Yardımcılar ──────────────────────────────────────────────────────────
 
   function slugify(text: string) {
     return text
@@ -77,13 +125,15 @@ export default function ProductForm({
     setSpecs((prev) => prev.map((s, i) => (i === idx ? { ...s, [field]: val } : s)))
   }
 
-  /**
-   * Kullanıcı dosya seçtiğinde:
-   * 1. Önizleme göster
-   * 2. Signed URL al (sunucu action)
-   * 3. Dosyayı Supabase'e PUT ile yükle (Vercel üzerinden geçmez → 4.5 MB limiti yok)
-   * 4. Public URL'yi state'e kaydet
-   */
+  // ── Marka değişince parent/child sıfırla ─────────────────────────────────
+  function handleBrandChange(newBrandId: number) {
+    setSelectedBrandId(newBrandId)
+    const firstParent = categories.find((c) => c.brand.id === newBrandId && c.parentId == null)
+    setSelectedParentId(firstParent?.id ?? 0)
+    setSelectedCategoryId(0)
+  }
+
+  // ── Görsel yükleme (Supabase Storage → signed URL) ───────────────────────
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -119,6 +169,7 @@ export default function ProductForm({
     }
   }
 
+  // ── Form gönderimi ────────────────────────────────────────────────────────
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (uploading) return
@@ -133,7 +184,6 @@ export default function ProductForm({
       formData.set('imageUrl', uploadedImageUrl)
       formData.set('replaceImage', 'true')
     } else {
-      // Manuel URL input varsa FormData'daki değeri kullan
       const manualUrl = (formData.get('imageUrl') as string)?.trim()
       formData.set('replaceImage', manualUrl ? 'true' : 'false')
     }
@@ -142,6 +192,8 @@ export default function ProductForm({
       await action(formData)
     })
   }
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -158,7 +210,7 @@ export default function ProductForm({
               name="brandId"
               required
               value={selectedBrandId}
-              onChange={(e) => setSelectedBrandId(Number(e.target.value))}
+              onChange={(e) => handleBrandChange(Number(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {brands.map((b) => (
@@ -167,21 +219,70 @@ export default function ProductForm({
             </select>
           </div>
 
-          {/* Kategori */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Kategori *</label>
-            <select
-              name="categoryId"
-              required
-              defaultValue={defaultValues.categoryId ?? ''}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Seçiniz</option>
-              {filteredCategories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
+          {/* ── Kategori: Hiyerarşik ── */}
+          {hasHierarchy ? (
+            <>
+              {/* Ana Kategori */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ana Kategori *</label>
+                <select
+                  required
+                  value={selectedParentId || ''}
+                  onChange={(e) => {
+                    const newParentId = Number(e.target.value)
+                    setSelectedParentId(newParentId)
+                    setSelectedCategoryId(0)
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Seçiniz</option>
+                  {parentCategories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Alt Kategori — categoryId burada gönderilir */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Alt Kategori *
+                  {selectedParentId > 0 && filteredChildren.length === 0 && (
+                    <span className="ml-2 text-xs text-amber-600 font-normal">
+                      Bu ana kategoride alt kategori bulunamadı
+                    </span>
+                  )}
+                </label>
+                <select
+                  name="categoryId"
+                  required
+                  value={selectedCategoryId || ''}
+                  onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Seçiniz</option>
+                  {filteredChildren.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          ) : (
+            /* ── Kategori: Flat ── */
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Kategori *</label>
+              <select
+                name="categoryId"
+                required
+                defaultValue={defaultValues.categoryId ?? ''}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Seçiniz</option>
+                {flatCategories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Ürün Adı */}
           <div className="md:col-span-2">

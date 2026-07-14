@@ -66,14 +66,15 @@ export async function getCategoriesForAdmin(brandId?: number) {
 
 // ─── PRODUCT LIST ─────────────────────────────────────────────────────────────
 
-export async function getProductsForAdmin() {
+export async function getProductsForAdmin(brandKey?: string) {
   return prisma.product.findMany({
+    where: brandKey ? { brand: { key: brandKey } } : undefined,
     include: {
       brand: true,
       category: true,
       images: { where: { isPrimary: true }, take: 1 },
     },
-    orderBy: [{ brand: { name: 'asc' } }, { createdAt: 'desc' }],
+    orderBy: [{ createdAt: 'desc' }],
   })
 }
 

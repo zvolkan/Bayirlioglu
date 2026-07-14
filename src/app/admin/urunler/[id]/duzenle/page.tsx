@@ -25,6 +25,7 @@ export default async function DuzenleUrunPage({
   const categories = rawCategories.map((c) => ({
     id: c.id,
     name: c.name,
+    parentId: c.parentId,
     brand: { id: c.brand.id, key: c.brand.key, name: c.brand.name },
   }))
 
@@ -37,7 +38,7 @@ export default async function DuzenleUrunPage({
     <div className="space-y-6">
       <div>
         <a
-          href="/admin/urunler"
+          href={`/admin/urunler/${product.brand.key}`}
           className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
         >
           ← Ürünlere Dön
