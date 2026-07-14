@@ -226,7 +226,7 @@ export default function HizmetlerPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+905001234567"
+              href="tel:+905071781633"
               className="inline-block bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all duration-200"
             >
               📞 +90 500 123 45 67

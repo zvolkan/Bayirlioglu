@@ -339,7 +339,7 @@ export default function BayiBasvuruPage() {
 
             {/* WhatsApp CTA */}
             <a
-              href="https://wa.me/905001234567?text=Bayi%20ba%C5%9Fvurusu%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum"
+              href="https://wa.me/905071781633?text=Bayi%20ba%C5%9Fvurusu%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 w-full bg-green-500 hover:bg-green-600 text-white rounded-2xl p-4 transition-colors"
