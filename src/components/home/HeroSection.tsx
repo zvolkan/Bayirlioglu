@@ -34,7 +34,7 @@ export default function HeroSection() {
           <div className={`absolute inset-0 ${BRAND.colors.fallbackGradient}`} />
         )}
         <div className={`absolute inset-0 bg-gradient-to-br ${BRAND.colors.gradientOverlay}`} />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/10" />
         <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-white/5 blur-3xl pointer-events-none" />
       </div>
 

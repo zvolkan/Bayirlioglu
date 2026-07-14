@@ -63,7 +63,7 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
       primaryText: 'text-green-600',
       primaryLight: 'bg-green-50',
       primaryBorder: 'border-green-200',
-      gradientOverlay: 'from-green-950/90 via-green-900/70 to-emerald-950/80',
+      gradientOverlay: 'from-green-950/60 via-green-900/35 to-emerald-950/50',
       fallbackGradient: 'bg-gradient-to-br from-green-900 via-emerald-800 to-teal-900',
       logoBg: 'bg-green-600',
       accentPrimary:

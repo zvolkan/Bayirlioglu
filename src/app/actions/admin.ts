@@ -58,7 +58,10 @@ export async function getBrandsForAdmin() {
 
 export async function getCategoriesForAdmin(brandId?: number) {
   return prisma.category.findMany({
-    where: brandId ? { brandId } : undefined,
+    where: {
+      isActive: true,
+      ...(brandId ? { brandId } : {}),
+    },
     orderBy: [{ brand: { name: 'asc' } }, { sortOrder: 'asc' }],
     include: { brand: true },
   })

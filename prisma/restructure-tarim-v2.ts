@@ -12,7 +12,13 @@
 
 import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+// Local script'ler için pooler (6543) yerine direct bağlantı (5432) kullan.
+// DIRECT_URL = Supabase "Direct connection" URL'i (Settings → Database → Connection string → URI)
+const prisma = new PrismaClient({
+  datasources: {
+    db: { url: process.env.DIRECT_URL ?? process.env.DATABASE_URL },
+  },
+})
 
 async function main() {
   console.log('🔄 ALB Tarım kategori yeniden yapılandırması başlatıldı...\n')
