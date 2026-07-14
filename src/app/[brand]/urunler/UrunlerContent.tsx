@@ -245,8 +245,44 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
       {hasHierarchy && activeParentCat && activeChildCats.length > 0 && (
         <div className={`${accentLight} border-b border-gray-100`}>
           <div className="container-main">
-            <div className="flex items-center gap-2 overflow-x-auto py-3 scrollbar-hide">
-              {/* Tümü pill */}
+
+            {/* ── Mobil: Tümü + dropdown ── */}
+            <div className="flex md:hidden items-center gap-2 py-3">
+              <button
+                onClick={() => setKullanim(activeKullanim)}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  !activeCategory ? pillActive : pillInactive
+                }`}
+              >
+                Tümü
+              </button>
+
+              <div className="relative">
+                <select
+                  value={activeCategory || ''}
+                  onChange={(e) =>
+                    e.target.value ? setCategory(e.target.value) : setKullanim(activeKullanim)
+                  }
+                  className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-gray-400 cursor-pointer"
+                >
+                  <option value="">Kategori Seç</option>
+                  {activeChildCats.map((cat) => (
+                    <option key={cat.slug} value={cat.slug}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <svg
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none"
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* ── Desktop: sarmalayan pill'ler ── */}
+            <div className="hidden md:flex flex-wrap items-center gap-2 py-3">
               <button
                 onClick={() => setKullanim(activeKullanim)}
                 className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
@@ -262,7 +298,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                   <button
                     key={cat.slug}
                     onClick={() => setCategory(cat.slug)}
-                    className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap ${
+                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap ${
                       isActive ? pillActive : pillInactive
                     }`}
                   >
@@ -272,6 +308,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                 )
               })}
             </div>
+
           </div>
         </div>
       )}
