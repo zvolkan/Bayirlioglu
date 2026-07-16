@@ -655,6 +655,13 @@ export default function ProductForm({
         </div>
       </section>
 
+      {/* Redirect için gizli alan — hangi markadaysak oraya dön */}
+      <input
+        type="hidden"
+        name="redirectBrand"
+        value={brands.find((b) => b.id === selectedBrandId)?.key ?? 'alb-tarim'}
+      />
+
       {/* ── Submit ── */}
       <div className="flex items-center justify-end gap-4">
         <a

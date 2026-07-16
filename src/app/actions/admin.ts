@@ -167,10 +167,11 @@ export async function createProduct(formData: FormData) {
     }
   }
 
+  const redirectBrand = (formData.get('redirectBrand') as string) || 'alb-tarim'
   revalidatePath('/admin/urunler')
   revalidatePath(`/alb-tarim/urunler`)
   revalidatePath(`/alb-su-aritma/urunler`)
-  redirect('/admin/urunler')
+  redirect(`/admin/urunler/${redirectBrand}`)
 }
 
 // ─── UPDATE ───────────────────────────────────────────────────────────────────
@@ -251,10 +252,11 @@ export async function updateProduct(id: string, formData: FormData) {
     }
   }
 
+  const redirectBrand = (formData.get('redirectBrand') as string) || 'alb-tarim'
   revalidatePath('/admin/urunler')
   revalidatePath(`/alb-tarim/urunler`)
   revalidatePath(`/alb-su-aritma/urunler`)
-  redirect('/admin/urunler')
+  redirect(`/admin/urunler/${redirectBrand}`)
 }
 
 // ─── DELETE ───────────────────────────────────────────────────────────────────
