@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
   title: 'Bayırlıoğlu Grup — ALB Tarım & Alb Su Teknolojileri',
@@ -53,23 +54,34 @@ export default function HomePage() {
     <div className="bg-white">
       {/* ── HERO ── */}
       <section className="relative min-h-[88vh] flex items-center bg-gray-900 overflow-hidden">
-        {/* Arka plan gradient — fotoğraf eklenince bg-image olarak değiştirin */}
+        {/* Arka plan gradient — Bayırlıoğlu Grup: charcoal/stone */}
         {/* GÖRSEL: /public/images/bayirlioglu-hero.jpg */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-slate-900" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(34,197,94,0.12),transparent_55%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.12),transparent_55%)]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-950 via-neutral-900 to-stone-900" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(82,82,82,0.35),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(120,113,108,0.2),transparent_55%)]" />
 
         <div className="relative z-10 container-main w-full py-20">
           <div className="max-w-3xl mx-auto text-center">
+            {/* Logo mark */}
+            <div className="flex justify-center mb-6">
+              <Image
+                src="/images/logo-mark-white.svg"
+                alt="Bayırlıoğlu"
+                width={72}
+                height={72}
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain opacity-90"
+              />
+            </div>
+
             {/* Kuruluş yılı rozeti */}
-            <span className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/80 text-sm px-4 py-1.5 rounded-full mb-8 font-medium">
-              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <span className="inline-flex items-center gap-2 bg-white/8 border border-white/15 text-white/75 text-sm px-4 py-1.5 rounded-full mb-8 font-medium">
+              <span className="w-2 h-2 rounded-full bg-stone-400 animate-pulse" />
               Türkiye&apos;de 20+ Yıllık Deneyim
             </span>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-6">
               Bayırlıoğlu
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-400">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-stone-200 to-stone-400">
                 Grup
               </span>
             </h1>
@@ -135,7 +147,7 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-14 items-center">
             {/* Metin */}
             <div>
-              <p className="text-green-600 font-bold uppercase text-sm tracking-widest mb-3">
+              <p className="text-stone-600 font-bold uppercase text-sm tracking-widest mb-3">
                 Kurumsal
               </p>
               <h2 className="text-3xl sm:text-4xl font-black text-gray-900 leading-tight mb-6">
@@ -196,7 +208,7 @@ export default function HomePage() {
       <section className="py-20 bg-white">
         <div className="container-main">
           <div className="text-center mb-14">
-            <p className="text-blue-600 font-bold uppercase text-sm tracking-widest mb-3">
+            <p className="text-stone-600 font-bold uppercase text-sm tracking-widest mb-3">
               Markalarımız
             </p>
             <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
@@ -266,7 +278,7 @@ export default function HomePage() {
       <section className="py-20 bg-gray-900">
         <div className="container-main">
           <div className="text-center mb-14">
-            <p className="text-green-400 font-bold uppercase text-sm tracking-widest mb-3">
+            <p className="text-stone-400 font-bold uppercase text-sm tracking-widest mb-3">
               Felsefemiz
             </p>
             <h2 className="text-3xl sm:text-4xl font-black text-white">Değerlerimiz</h2>

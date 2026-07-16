@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { BRANDS } from '@/lib/constants'
 import { useCart } from '@/hooks/useCart'
@@ -145,9 +146,14 @@ export default function Header() {
 
               {/* LOGO */}
               <Link href="/" className="flex items-center flex-shrink-0" onClick={() => setMenuOpen(false)}>
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center font-black text-white text-base shadow-lg">
-                  B
-                </div>
+                <Image
+                  src="/images/logo-mark-white.svg"
+                  alt="Bayırlıoğlu"
+                  width={44}
+                  height={44}
+                  className="w-9 h-9 sm:w-10 sm:h-10 object-contain"
+                  priority
+                />
               </Link>
 
               {/* MARKA SEÇİCİ */}
