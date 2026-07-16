@@ -139,26 +139,24 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
   const activePills = isIthal ? ithalTypePills : albTypePills
 
   // ── Ürün kartı marka etiketi ──────────────────────────────────────────────
-  // - ALB ürünü (L1 kategori): "ALB Tarım"
-  // - İthal ürünü (L2 kategori): L1 kategori adı (marka adı)
+  // Önce product.productBrand alanını kullan (admin'den girilen direkt marka adı).
+  // Yoksa kategori ağacından türet (geriye dönük uyumluluk).
   const getProductBrandLabel = (productCatSlug: string): string => {
     const cat = catBySlug.get(productCatSlug)
     if (!cat) return ''
-    if (cat.parentId == null) return cat.name // L0 (olmamalı ama defensive)
+    if (cat.parentId == null) return cat.name
     const parent = catById.get(cat.parentId)
     if (!parent) return cat.name
-    if (parent.parentId == null) {
-      // cat = L1 (ALB tipi kategori) → kök = ALB Tarım Ürünleri → "ALB Tarım" yaz
-      return 'ALB Tarım'
-    }
-    // cat = L2 (İthal marka altındaki tip) → parent = marka adı
+    if (parent.parentId == null) return 'ALB Tarım'
     return parent.name
   }
 
   const productBrandLabels = useMemo(() => {
     const map = new Map<string, string>()
     initialProducts.forEach((p) => {
-      map.set(p.slug, getProductBrandLabel(p.category.slug))
+      // productBrand alanı doluysa direkt kullan; yoksa kategori ağacından türet
+      const label = p.productBrand?.trim() || getProductBrandLabel(p.category.slug)
+      map.set(p.slug, label)
     })
     return map
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -3,6 +3,21 @@
 import { useState, useRef, useTransition, useMemo } from 'react'
 import { createSignedUploadUrl } from '@/app/actions/admin'
 
+// ── Ürün markası listesi (11 marka) ──────────────────────────────────────────
+const URUN_MARKALARI = [
+  'ALB TARIM',
+  'TİMAC AGRO',
+  'BAZACHEM',
+  'HAIFA',
+  'STOLLER',
+  'ATLANTICA AGRICOLA',
+  'UNITTAR',
+  "LANCE'S LINK",
+  'LEBOSOL',
+  'TAMAGRO',
+  'FERTIVAL',
+]
+
 type Brand = { id: number; key: string; name: string }
 type Category = { id: number; name: string; parentId?: number | null; brand: Brand }
 type Spec = { name: string; value: string; unit: string }
@@ -25,6 +40,7 @@ interface ProductFormProps {
     sku?: string
     brandId?: number
     categoryId?: number
+    productBrand?: string        // ← YENİ
     isActive?: boolean
     isFeatured?: boolean
     specs?: Spec[]
@@ -41,9 +57,17 @@ export default function ProductForm({
   submitLabel = 'Kaydet',
 }: ProductFormProps) {
   const [isPending, startTransition] = useTransition()
+
+  // ── Website markası (ALB Tarım / ALB Su Arıtma) ──────────────────────────
   const [selectedBrandId, setSelectedBrandId] = useState<number>(
     defaultValues.brandId ?? brands[0]?.id ?? 0,
   )
+
+  // ── Ürün markası (TİMAC AGRO, ALB TARIM, FERTIVAL vb.) ──────────────────
+  const [selectedProductBrand, setSelectedProductBrand] = useState<string>(
+    defaultValues.productBrand ?? '',
+  )
+
   const [specs, setSpecs] = useState<Spec[]>(
     defaultValues.specs?.map((s) => ({ name: s.name, value: s.value, unit: s.unit ?? '' })) ?? [
       { name: '', value: '', unit: '' },
@@ -60,9 +84,8 @@ export default function ProductForm({
   const fileRef = useRef<HTMLInputElement>(null)
 
   // ── Kategori hiyerarşisi ─────────────────────────────────────────────────
-  // parentCategories: parentId === null olan ana kategoriler (seçilen marka için)
-  // allChildren: parentId !== null olan alt kategoriler (seçilen marka için)
-  // hasHierarchy: her iki seviye de varsa true → 2 kademeli UI göster
+  // parentCategories: parentId === null (L0 kök kategoriler)
+  // allChildren:      parentId !== null (L1 + L2 dahil tüm alt kategoriler)
 
   const parentCategories = useMemo(
     () => categories.filter((c) => c.brand.id === selectedBrandId && c.parentId == null),
@@ -76,11 +99,20 @@ export default function ProductForm({
 
   const hasHierarchy = parentCategories.length > 0 && allChildren.length > 0
 
-  // Düzenleme modunda mevcut categoryId'nin parent'ını bul
+  // ── Düzenleme modunda başlangıç parent ID'yi çöz ─────────────────────────
   function resolveInitialParentId(brandId: number): number {
     if (defaultValues.categoryId) {
       const currentCat = categories.find((c) => c.id === defaultValues.categoryId)
-      if (currentCat?.parentId != null) return currentCat.parentId
+      if (currentCat?.parentId != null) {
+        // L2 kategori (İthal ürün tipi) → parent = brand L1 → grandparent = root
+        const parentCat = categories.find((c) => c.id === currentCat.parentId)
+        if (parentCat?.parentId != null) {
+          // Grandparent = root (L0)
+          return parentCat.parentId
+        }
+        // L1 kategori (ALB ürün tipi) → parent = root (L0)
+        return currentCat.parentId
+      }
     }
     return categories.find((c) => c.brand.id === brandId && c.parentId == null)?.id ?? 0
   }
@@ -89,13 +121,32 @@ export default function ProductForm({
     resolveInitialParentId(selectedBrandId),
   )
 
-  // Seçilen parent'a göre filtrelenmiş çocuk kategoriler
-  const filteredChildren = useMemo(
-    () => allChildren.filter((c) => c.parentId === selectedParentId),
-    [allChildren, selectedParentId],
-  )
+  // ── İthal Ürünler mi seçili? ─────────────────────────────────────────────
+  const isIthalSelected = useMemo(() => {
+    const parent = parentCategories.find((c) => c.id === selectedParentId)
+    return parent?.name === 'İthal Ürünler'
+  }, [parentCategories, selectedParentId])
 
-  // Flat kategoriler (hiyerarşi yoksa)
+  // İthal modunda: seçilen ürün markasına karşılık gelen L1 marka kategorisi
+  const brandL1Cat = useMemo(() => {
+    if (!isIthalSelected || !selectedProductBrand) return null
+    return allChildren.find(
+      (c) =>
+        c.parentId === selectedParentId &&
+        c.name.toUpperCase() === selectedProductBrand.toUpperCase(),
+    )
+  }, [isIthalSelected, selectedParentId, selectedProductBrand, allChildren])
+
+  // Alt Kategori: İthal → L2 (marka'nın ürün tipleri), ALB → L1 (ürün tipleri)
+  const filteredChildren = useMemo(() => {
+    if (isIthalSelected) {
+      if (!brandL1Cat) return []
+      return allChildren.filter((c) => c.parentId === brandL1Cat.id)
+    }
+    return allChildren.filter((c) => c.parentId === selectedParentId)
+  }, [isIthalSelected, brandL1Cat, selectedParentId, allChildren])
+
+  // Flat (hiyerarşi yoksa)
   const flatCategories = useMemo(
     () => (!hasHierarchy ? categories.filter((c) => c.brand.id === selectedBrandId) : []),
     [categories, selectedBrandId, hasHierarchy],
@@ -125,12 +176,26 @@ export default function ProductForm({
     setSpecs((prev) => prev.map((s, i) => (i === idx ? { ...s, [field]: val } : s)))
   }
 
-  // ── Marka değişince parent/child sıfırla ─────────────────────────────────
+  // Website markası değişince tüm kategori seçimlerini sıfırla
   function handleBrandChange(newBrandId: number) {
     setSelectedBrandId(newBrandId)
     const firstParent = categories.find((c) => c.brand.id === newBrandId && c.parentId == null)
     setSelectedParentId(firstParent?.id ?? 0)
     setSelectedCategoryId(0)
+    setSelectedProductBrand('')
+  }
+
+  // Ürün markası değişince alt kategori seçimini sıfırla
+  function handleProductBrandChange(brand: string) {
+    setSelectedProductBrand(brand)
+    setSelectedCategoryId(0)
+  }
+
+  // Ana Kategori değişince alt kategori + ürün markasını sıfırla
+  function handleParentChange(newParentId: number) {
+    setSelectedParentId(newParentId)
+    setSelectedCategoryId(0)
+    setSelectedProductBrand('')
   }
 
   // ── Görsel yükleme (Supabase Storage → signed URL) ───────────────────────
@@ -203,7 +268,8 @@ export default function ProductForm({
         <h2 className="font-semibold text-gray-800 text-base border-b pb-3">Temel Bilgiler</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Marka */}
+
+          {/* Website Markası (ALB Tarım / ALB Su Arıtma) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Marka *</label>
             <select
@@ -222,17 +288,13 @@ export default function ProductForm({
           {/* ── Kategori: Hiyerarşik ── */}
           {hasHierarchy ? (
             <>
-              {/* Ana Kategori */}
+              {/* Ana Kategori (L0) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Ana Kategori *</label>
                 <select
                   required
                   value={selectedParentId || ''}
-                  onChange={(e) => {
-                    const newParentId = Number(e.target.value)
-                    setSelectedParentId(newParentId)
-                    setSelectedCategoryId(0)
-                  }}
+                  onChange={(e) => handleParentChange(Number(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Seçiniz</option>
@@ -242,11 +304,43 @@ export default function ProductForm({
                 </select>
               </div>
 
-              {/* Alt Kategori — categoryId burada gönderilir */}
+              {/* Ürün Markası (YENİ — her iki modda da gösterilir) */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ürün Markası *
+                  <span className="ml-1.5 text-xs font-normal text-gray-400">
+                    (Ürün kartında gösterilir)
+                  </span>
+                </label>
+                <select
+                  name="productBrand"
+                  required
+                  value={selectedProductBrand}
+                  onChange={(e) => handleProductBrandChange(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Seçiniz</option>
+                  {URUN_MARKALARI.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Alt Kategori (ürün tipi) */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Alt Kategori *
-                  {selectedParentId > 0 && filteredChildren.length === 0 && (
+                  {isIthalSelected && !selectedProductBrand && (
+                    <span className="ml-2 text-xs text-amber-600 font-normal">
+                      Önce bir ürün markası seçin
+                    </span>
+                  )}
+                  {isIthalSelected && selectedProductBrand && filteredChildren.length === 0 && (
+                    <span className="ml-2 text-xs text-amber-600 font-normal">
+                      Bu marka için kategori bulunamadı — SQL'de eklenmiş mi?
+                    </span>
+                  )}
+                  {!isIthalSelected && selectedParentId > 0 && filteredChildren.length === 0 && (
                     <span className="ml-2 text-xs text-amber-600 font-normal">
                       Bu ana kategoride alt kategori bulunamadı
                     </span>
@@ -296,7 +390,7 @@ export default function ProductForm({
                 if (slugInput && !defaultValues.id) slugInput.value = slugify(e.target.value)
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Örn: Husqvarna 135 Mark II"
+              placeholder="Örn: FERTIACTYL GZ"
             />
           </div>
 
@@ -320,7 +414,7 @@ export default function ProductForm({
               name="sku"
               defaultValue={defaultValues.sku ?? ''}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="HUS-135-MK2"
+              placeholder="TİMAC-FGZE-25"
             />
           </div>
         </div>
@@ -418,7 +512,6 @@ export default function ProductForm({
           </div>
         )}
 
-        {/* Yükleme durumu / hata */}
         {uploading && (
           <p className="text-sm text-blue-600 flex items-center gap-2">
             <span className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin inline-block" />
@@ -437,7 +530,6 @@ export default function ProductForm({
         )}
 
         <div className="flex flex-col gap-3">
-          {/* Dosya yükle */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Dosya Yükle
@@ -456,7 +548,6 @@ export default function ProductForm({
             />
           </div>
 
-          {/* Manuel URL */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               veya Görsel URL&apos;si <span className="text-xs font-normal text-gray-400">(public/ dizini)</span>

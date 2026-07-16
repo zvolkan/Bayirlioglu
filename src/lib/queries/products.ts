@@ -38,6 +38,7 @@ function toProduct(p: PrismaProduct): Product {
     salePrice: p.salePrice ? Number(p.salePrice) : undefined,
     brand: p.brand.key as BrandKey,
     category,
+    productBrand: p.productBrand ?? undefined,
     sku: p.sku ?? '',
     unit: p.unit,
     stock: p.stockQuantity,

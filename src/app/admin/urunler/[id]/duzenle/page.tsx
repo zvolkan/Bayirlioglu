@@ -65,6 +65,7 @@ export default async function DuzenleUrunPage({
           sku: product.sku ?? '',
           brandId: product.brandId,
           categoryId: product.categoryId,
+          productBrand: product.productBrand ?? undefined,
           isActive: product.isActive,
           isFeatured: product.isFeatured,
           specs: product.specs.map((s) => ({

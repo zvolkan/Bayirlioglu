@@ -121,6 +121,7 @@ export async function createProduct(formData: FormData) {
   const shortDescription = (formData.get('shortDescription') as string) || ''
   const isActive = formData.get('isActive') === 'true'
   const isFeatured = formData.get('isFeatured') === 'true'
+  const productBrand = (formData.get('productBrand') as string) || null
 
   const product = await prisma.product.create({
     data: {
@@ -137,6 +138,7 @@ export async function createProduct(formData: FormData) {
       shortDescription,
       isActive,
       isFeatured,
+      productBrand,
       images: imageUrl
         ? {
             create: [{ url: imageUrl, altText: name, isPrimary: true, sortOrder: 0 }],
@@ -198,6 +200,7 @@ export async function updateProduct(id: string, formData: FormData) {
   const shortDescription = (formData.get('shortDescription') as string) || ''
   const isActive = formData.get('isActive') === 'true'
   const isFeatured = formData.get('isFeatured') === 'true'
+  const productBrand = (formData.get('productBrand') as string) || null
 
   await prisma.product.update({
     where: { id },
@@ -215,6 +218,7 @@ export async function updateProduct(id: string, formData: FormData) {
       shortDescription,
       isActive,
       isFeatured,
+      productBrand,
     },
   })
 

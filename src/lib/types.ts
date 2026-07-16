@@ -90,6 +90,7 @@ export interface Product {
   rating: number;
   reviewCount: number;
   sku: string;
+  productBrand?: string;   // TİMAC AGRO, ALB TARIM, FERTIVAL vb.
   tags?: string[];
   createdAt: string;
   updatedAt: string;

@@ -83,6 +83,9 @@ model Product {
   metaTitle        String?  @map("meta_title") @db.VarChar(255)
   metaDescription  String?  @map("meta_description") @db.Text
 
+  // Ürün markası (TİMAC AGRO, HAIFA, ALB TARIM, FERTIVAL vb.)
+  productBrand     String?  @map("product_brand") @db.VarChar(100)
+
   // Değerlendirme (ortalama — review tablosu hazır değil iken burada tutuyoruz)
   rating           Decimal  @default(0) @map("rating") @db.Decimal(3, 1)
   reviewCount      Int      @default(0) @map("review_count")
