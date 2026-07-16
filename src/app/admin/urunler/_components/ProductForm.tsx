@@ -240,6 +240,13 @@ export default function ProductForm({
     if (uploading) return
 
     const formData = new FormData(e.currentTarget)
+
+    // Checkbox değerlerini normalize et:
+    // hidden("false") + checkbox("true") → formData.get() her zaman ilk "false"'u döndürür.
+    // getAll() ile iki değeri okuyup tek doğru değere indirgiyoruz.
+    formData.set('isActive', formData.getAll('isActive').includes('true') ? 'true' : 'false')
+    formData.set('isFeatured', formData.getAll('isFeatured').includes('true') ? 'true' : 'false')
+
     formData.set('specs', JSON.stringify(specs))
 
     // Dosya asla sunucuya gönderilmez — zaten Supabase'e yüklendi
