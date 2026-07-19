@@ -297,7 +297,7 @@ export default function BayiBasvuruPage() {
                   <span className="text-lg">📞</span>
                   <div>
                     <p className="font-medium text-gray-800">Bayi Destek Hattı</p>
-                    <p>+90 500 123 45 67</p>
+                    <p>+90 507 178 16 33</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

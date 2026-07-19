@@ -145,7 +145,7 @@ export default function Footer() {
                   <div>
                     <p className="text-gray-500 text-xs mb-1">ALB Tarım</p>
                     <a href="tel:+905071781633" className="text-gray-400 hover:text-white transition-colors text-sm">
-                      +90 500 123 45 67
+                      +90 507 178 16 33
                     </a>
                   </div>
                 </li>
@@ -155,8 +155,8 @@ export default function Footer() {
                   </svg>
                   <div>
                     <p className="text-gray-500 text-xs mb-1">Alb Su Teknolojileri</p>
-                    <a href="tel:+905071781633" className="text-gray-400 hover:text-white transition-colors text-sm">
-                      +90 500 765 43 21
+                    <a href="tel:+905444142254" className="text-gray-400 hover:text-white transition-colors text-sm">
+                      +90 544 414 22 54
                     </a>
                   </div>
                 </li>

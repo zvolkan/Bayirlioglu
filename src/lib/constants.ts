@@ -77,7 +77,7 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     cta: { label: 'Ürünlerimizi İnceleyin', href: '/urunler' },
     ctaSecondary: { label: 'Ücretsiz Teklif Al', href: '/iletisim' },
     whatsapp: {
-      phone: process.env.NEXT_PUBLIC_WHATSAPP_ALBSU ?? '905071781633',
+      phone: process.env.NEXT_PUBLIC_WHATSAPP_ALBSU ?? '905444142254',
       message: 'Merhaba! Alb Su Teknolojileri su arıtma sistemleri hakkında bilgi almak istiyorum.',
       tooltip: "Alb Su Teknolojileri'ne WhatsApp'tan yazın!",
     },
@@ -141,7 +141,7 @@ export const BRAND = BRANDS[ACTIVE_BRAND_KEY];
 export const SITE_CONFIG = {
   name: BRAND.name,
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
-  phone: '+90 500 123 45 67',
+  phone: '+90 507 178 16 33',
   email: 'info@albgrup.com.tr',
   address: 'Atatürk Caddesi No:1, Ankara / Türkiye',
   workingHours: 'Pazartesi – Cumartesi: 08:00 – 18:00',

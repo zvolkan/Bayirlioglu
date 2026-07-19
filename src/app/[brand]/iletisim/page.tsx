@@ -78,7 +78,7 @@ export default function IletisimPage() {
               {
                 icon: '📞',
                 title: 'Telefon',
-                lines: ['0850 123 45 67', 'Hafta içi 08:00–18:00'],
+                lines: [isAlbSu ? '+90 544 414 22 54' : '+90 507 178 16 33', 'Hafta içi 08:00–18:00'],
               },
               {
                 icon: '📧',

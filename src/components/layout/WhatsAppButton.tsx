@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { BRAND } from '@/lib/constants'
+import { usePathname } from 'next/navigation'
+import { BRANDS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
 export default function WhatsAppButton() {
+  const pathname = usePathname()
   const [showTooltip, setShowTooltip] = useState(false)
   const [pulsing, setPulsing] = useState(false)
 
@@ -16,7 +18,15 @@ export default function WhatsAppButton() {
     return () => clearInterval(interval)
   }, [])
 
-  const url = `https://wa.me/${BRAND.whatsapp.phone}?text=${encodeURIComponent(BRAND.whatsapp.message)}`
+  // Bulunduğumuz bölüme göre WhatsApp hedefi:
+  // - /alb-tarim*      → ALB Tarım   (+90 507 178 16 33)
+  // - /alb-su-aritma*  → ALB Su      (+90 544 414 22 54)
+  // - Bayırlıoğlu landing ve diğer sayfalar → ALB Su (+90 544 414 22 54)
+  const whatsapp = pathname.startsWith('/alb-tarim')
+    ? BRANDS['alb-tarim'].whatsapp
+    : BRANDS['alb-su-aritma'].whatsapp
+
+  const url = `https://wa.me/${whatsapp.phone}?text=${encodeURIComponent(whatsapp.message)}`
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
