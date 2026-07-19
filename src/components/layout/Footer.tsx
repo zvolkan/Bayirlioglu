@@ -155,7 +155,7 @@ export default function Footer() {
                   </svg>
                   <div>
                     <p className="text-gray-500 text-xs mb-1">Alb Su Teknolojileri</p>
-                    <a href="tel:+905007654321" className="text-gray-400 hover:text-white transition-colors text-sm">
+                    <a href="tel:+905071781633" className="text-gray-400 hover:text-white transition-colors text-sm">
                       +90 500 765 43 21
                     </a>
                   </div>

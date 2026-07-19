@@ -19,7 +19,7 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     cta: { label: 'Ürünlerimizi İnceleyin', href: '/urunler' },
     ctaSecondary: { label: 'Ücretsiz Danışmanlık Al', href: '/iletisim' },
     whatsapp: {
-      phone: process.env.NEXT_PUBLIC_WHATSAPP_ALB_TARIM ?? '905001234567',
+      phone: process.env.NEXT_PUBLIC_WHATSAPP_ALB_TARIM ?? '905071781633',
       message: 'Merhaba! ALB Tarım ürünleri hakkında bilgi almak istiyorum.',
       tooltip: "ALB Tarım'a WhatsApp'tan yazın!",
     },
@@ -77,7 +77,7 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     cta: { label: 'Ürünlerimizi İnceleyin', href: '/urunler' },
     ctaSecondary: { label: 'Ücretsiz Teklif Al', href: '/iletisim' },
     whatsapp: {
-      phone: process.env.NEXT_PUBLIC_WHATSAPP_ALBSU ?? '905007654321',
+      phone: process.env.NEXT_PUBLIC_WHATSAPP_ALBSU ?? '905071781633',
       message: 'Merhaba! Alb Su Teknolojileri su arıtma sistemleri hakkında bilgi almak istiyorum.',
       tooltip: "Alb Su Teknolojileri'ne WhatsApp'tan yazın!",
     },
