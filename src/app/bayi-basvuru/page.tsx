@@ -311,7 +311,7 @@ export default function BayiBasvuruPage() {
                   <span className="text-lg">🕐</span>
                   <div>
                     <p className="font-medium text-gray-800">Çalışma Saatleri</p>
-                    <p>Pazartesi – Cumartesi: 08:00 – 18:00</p>
+                    <p>Pazartesi – Cumartesi: 08:30 – 19:00</p>
                   </div>
                 </div>
               </div>

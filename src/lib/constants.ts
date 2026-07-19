@@ -151,8 +151,11 @@ export const SITE_CONFIG = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
   phone: '+90 544 414 22 54',
   email: 'info@albgrup.com.tr',
-  address: 'Atatürk Caddesi No:1, Ankara / Türkiye',
-  workingHours: 'Pazartesi – Cumartesi: 08:00 – 18:00',
+  address:
+    'SAÇKAN KAVŞAĞI DOĞUSU SAVCI-ŞOK MARKET YANI, Yeşilyurt, Akdeniz Cd. NO:20/22, 33640 Anamur/Mersin',
+  mapsUrl:
+    'https://www.google.com/maps/place//data=!4m2!3m1!1s0x14dc3d918f947551:0x35f4224c2a7044c3?sa=X&ved=1t:8290&ictx=111',
+  workingHours: 'Pzt – Cmt: 08:30 – 19:00',
   socialMedia: {
     instagram: 'https://instagram.com/albgrup',
     facebook: 'https://facebook.com/albgrup',

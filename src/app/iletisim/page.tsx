@@ -241,7 +241,7 @@ export default function IletisimPage() {
     {
       icon: Clock,
       title: 'Çalışma Saatleri',
-      lines: [SITE_CONFIG.workingHours ?? 'Pzt–Cmt: 08:00–18:00'],
+      lines: [SITE_CONFIG.workingHours ?? 'Pzt–Cmt: 08:30–19:00'],
       color: 'text-purple-600',
       bg: 'bg-purple-50',
     },
@@ -300,14 +300,19 @@ export default function IletisimPage() {
                 )
               })}
 
-              {/* Map placeholder */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="h-44 bg-gray-100 flex flex-col items-center justify-center gap-2">
+              {/* Harita — Google Maps'e gider */}
+              <a
+                href={SITE_CONFIG.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <div className="h-44 bg-gray-100 flex flex-col items-center justify-center gap-2 px-4">
                   <span className="text-4xl">📍</span>
-                  <p className="text-sm text-gray-500 font-medium">Harita Görünümü</p>
-                  <p className="text-xs text-gray-400">{SITE_CONFIG.address}</p>
+                  <p className="text-sm text-gray-500 font-medium">Haritada Görüntüle</p>
+                  <p className="text-xs text-gray-400 text-center">{SITE_CONFIG.address}</p>
                 </div>
-              </div>
+              </a>
 
               {/* WhatsApp */}
               <a

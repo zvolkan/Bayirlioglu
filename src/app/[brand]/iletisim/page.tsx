@@ -78,7 +78,7 @@ export default function IletisimPage() {
               {
                 icon: '📞',
                 title: 'Telefon',
-                lines: [isAlbSu ? '+90 544 414 22 54' : '+90 507 178 16 33', 'Hafta içi 08:00–18:00'],
+                lines: [isAlbSu ? '+90 544 414 22 54' : '+90 507 178 16 33', 'Pzt–Cmt: 08:30–19:00'],
               },
               {
                 icon: '📧',
@@ -88,12 +88,16 @@ export default function IletisimPage() {
               {
                 icon: '📍',
                 title: 'Adres',
-                lines: ['Organize Sanayi Bölgesi', 'Konya, Türkiye'],
+                lines: [
+                  'Saçkan Kavşağı Doğusu Savcı-Şok Market Yanı',
+                  'Yeşilyurt, Akdeniz Cd. No:20/22',
+                  '33640 Anamur / Mersin',
+                ],
               },
               {
                 icon: '⏰',
                 title: 'Çalışma Saatleri',
-                lines: ['Pzt–Cuma: 08:00–18:00', 'Cumartesi: 09:00–14:00'],
+                lines: ['Pzt–Cmt: 08:30–19:00'],
               },
             ].map((item) => (
               <div key={item.title} className="bg-white rounded-2xl border border-gray-100 p-5 flex gap-4">

@@ -9,7 +9,7 @@ const sections = [
   {
     title: '1. Veri Sorumlusunun Kimliği',
     content:
-      'Bayırlıoğlu Grup (ALB Tarım ve Alb Su Teknolojileri markaları), 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca veri sorumlusu sıfatıyla aşağıdaki bilgileri paylaşmaktadır.\n\nAdres: Atatürk Caddesi No:1, Çumra / Konya\nE-posta: kvkk@bayirlioglugrup.com.tr',
+      'Bayırlıoğlu Grup (ALB Tarım ve Alb Su Teknolojileri markaları), 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca veri sorumlusu sıfatıyla aşağıdaki bilgileri paylaşmaktadır.\n\nAdres: Saçkan Kavşağı Doğusu Savcı-Şok Market Yanı, Yeşilyurt, Akdeniz Cd. No:20/22, 33640 Anamur/Mersin\nE-posta: kvkk@bayirlioglugrup.com.tr',
   },
   {
     title: '2. İşlenen Kişisel Veriler',
