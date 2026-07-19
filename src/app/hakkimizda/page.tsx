@@ -113,15 +113,15 @@ export default function HakkimizdaPage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Hikayemiz</h2>
             <div className="prose prose-lg text-gray-700 space-y-4">
               <p>
-                Bayırlıoğlu ailesi, 2006 yılında Konya'nın tarım kalbi Çumra ilçesinde küçük bir
-                tarım deposuyla bu yolculuğa başladı. Kurucu Ahmet Bayırlıoğlu'nun çiftçilere
+                Bayırlıoğlu ailesi, 2006 yılında Mersin'in bereketli toprakları Anamur'da küçük
+                bir tarım deposuyla bu yolculuğa başladı. Kurucu Ahmet Bayırlıoğlu'nun çiftçilere
                 dürüst ve kaliteli ürün sunma vizyonu, kısa sürede bölge çiftçilerinin güvenini
                 kazandı.
               </p>
               <p>
-                2010 yılında Konya merkeze taşınan firma, gübre ve tohum ürünlerinin yanı sıra
-                damla sulama sistemleriyle büyüyen ürün yelpazesini genişletti. 2015 yılında ise
-                su arıtma ve iklimlendirme sektörüne adım atarak{' '}
+                Yıllar içinde gübre ve tohum ürünlerinin yanı sıra damla sulama sistemleriyle
+                büyüyen ürün yelpazesini genişleten firma, 2015 yılında su arıtma ve
+                iklimlendirme sektörüne adım atarak{' '}
                 <strong>Alb Su Teknolojileri</strong> markasını kurdu.
               </p>
               <p>

@@ -1202,7 +1202,7 @@ export const MOCK_TESTIMONIALS: Testimonial[] = [
   {
     id: 1,
     name: 'Hasan Demir',
-    location: 'Konya',
+    location: 'Anamur / Mersin',
     role: 'Buğday Üreticisi',
     body: 'ALB Tarım gübrelerini 3 yıldır kullanıyorum. Verimim geçen yıla göre %25 arttı. Teknik destek ekibi her zaman yardımcı oluyor.',
     rating: 5,

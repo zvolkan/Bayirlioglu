@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const TARIM_TIMELINE = [
-  { year: '2000', event: 'ALB Tarım kuruldu. İlk depomuz Konya\'da açıldı.' },
+  { year: '2000', event: 'ALB Tarım kuruldu. İlk depomuz Anamur\'da açıldı.' },
   { year: '2005', event: 'Ulusal dağıtım ağımızı kurarak 50 ile ulaştık.' },
   { year: '2010', event: 'Organik tarım sertifikası alındı, 5.000 çiftçi milini geçtik.' },
   { year: '2015', event: 'Online satış platformumuz devreye girdi.' },

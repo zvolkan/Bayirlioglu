@@ -35,7 +35,7 @@ const SECTORS = [
 // ─── Kurumsal Referanslar ─────────────────────────────────────────────────────
 const CORPORATE_REFS = [
   {
-    name: 'Konya Büyükşehir Belediyesi',
+    name: 'Anamur Belediyesi',
     sector: 'Kamu',
     icon: '🏛️',
     desc: 'İdare binaları ve sosyal tesisler için endüstriyel su arıtma sistemleri kurulumu.',
@@ -43,7 +43,7 @@ const CORPORATE_REFS = [
     system: 'Endüstriyel RO Sistemi',
   },
   {
-    name: 'Selçuk Üniversitesi',
+    name: 'Mersin Üniversitesi',
     sector: 'Eğitim',
     icon: '🎓',
     desc: 'Yurt binaları ve kantin tesisleri için kapsamlı su arıtma altyapısı.',
@@ -51,7 +51,7 @@ const CORPORATE_REFS = [
     system: 'Çoklu Nokta RO Sistemi',
   },
   {
-    name: 'Konya Devlet Hastanesi',
+    name: 'Anamur Devlet Hastanesi',
     sector: 'Sağlık',
     icon: '🏥',
     desc: 'Tıbbi kullanım için yüksek safiyetli su üretimi; diyaliz bölümü özel sistemi.',
@@ -75,7 +75,7 @@ const CORPORATE_REFS = [
     system: 'Endüstriyel Yumuşatma',
   },
   {
-    name: 'Türk Telekom Konya Merkezi',
+    name: 'Türk Telekom Mersin Merkezi',
     sector: 'Ofis',
     icon: '📡',
     desc: 'Sunucu soğutma sistemleri için saf su üretimi ve periyodik bakım.',
@@ -83,7 +83,7 @@ const CORPORATE_REFS = [
     system: 'Deiyonize Su Sistemi',
   },
   {
-    name: 'Konya Park AVM',
+    name: 'Mersin Marina AVM',
     sector: 'Ticari',
     icon: '🏬',
     desc: 'AVM restoranları ve gıda alanları için yüksek kapasiteli RO sistemi.',
@@ -91,7 +91,7 @@ const CORPORATE_REFS = [
     system: 'Yüksek Kapasiteli RO',
   },
   {
-    name: 'Farmasi Konya Deposu',
+    name: 'Farmasi Mersin Deposu',
     sector: 'Lojistik & Üretim',
     icon: '📦',
     desc: 'Depo ve ofis alanları için merkezi içme suyu arıtma sistemi.',
@@ -113,7 +113,7 @@ const TESTIMONIALS = [
   {
     name: 'Elif Şahin',
     title: 'Ev Hanımı',
-    company: 'Konya Selçuklu',
+    company: 'Anamur / Mersin',
     text: 'Alkali su arıtma cihazımızı aleli eve koyduk. Çocuklarım artık sokaktan su almıyor, sağlıklı bir suya kavuştuk. Montaj ekibi çok titiz çalıştı, her şeyi açıkladılar.',
     rating: 5,
     avatar: 'EŞ',
