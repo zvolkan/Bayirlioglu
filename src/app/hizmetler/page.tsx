@@ -225,12 +225,11 @@ export default function HizmetlerPage() {
             Uzman ekibimiz en kısa sürede size ulaşsın. Ücretsiz keşif ve danışmanlık için hemen arayın.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="tel:+905071781633"
-              className="inline-block bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all duration-200"
+            <span
+              className="inline-block bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold text-lg select-none"
             >
-              📞 +90 507 178 16 33
-            </a>
+              📞 +90 544 414 22 54
+            </span>
             <Link
               href="/iletisim"
               className="inline-block border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white/10 transition-all duration-200"

@@ -297,7 +297,7 @@ export default function BayiBasvuruPage() {
                   <span className="text-lg">📞</span>
                   <div>
                     <p className="font-medium text-gray-800">Bayi Destek Hattı</p>
-                    <p>+90 507 178 16 33</p>
+                    <p>+90 544 414 22 54</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -339,7 +339,7 @@ export default function BayiBasvuruPage() {
 
             {/* WhatsApp CTA */}
             <a
-              href="https://wa.me/905071781633?text=Bayi%20ba%C5%9Fvurusu%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum"
+              href="https://wa.me/905444142254?text=Merhaba!%20Bay%C4%B1rl%C4%B1o%C4%9Flu%20Grup%20bayi%20ba%C5%9Fvurusu%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 w-full bg-green-500 hover:bg-green-600 text-white rounded-2xl p-4 transition-colors"

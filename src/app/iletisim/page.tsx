@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import toast, { Toaster } from 'react-hot-toast'
-import { SITE_CONFIG } from '@/lib/constants'
+import { SITE_CONFIG, GROUP_WHATSAPP } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { Phone, Mail, MapPin, Clock, MessageCircle, Send, User, ChevronDown } from 'lucide-react'
 
@@ -311,7 +311,7 @@ export default function IletisimPage() {
 
               {/* WhatsApp */}
               <a
-                href={`https://wa.me/${SITE_CONFIG.phone.replace(/\D/g, '')}`}
+                href={`https://wa.me/${GROUP_WHATSAPP.phone}?text=${encodeURIComponent(GROUP_WHATSAPP.message)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2.5 w-full bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl px-5 py-3.5 text-sm transition-colors shadow-sm"

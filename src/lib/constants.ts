@@ -129,6 +129,14 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
   },
 };
 
+// ─── BAYIRLIOĞLU GRUP (marka dışı sayfalar: landing, hakkımızda, bayi vb.) ───
+
+export const GROUP_WHATSAPP = {
+  phone: process.env.NEXT_PUBLIC_WHATSAPP_GROUP ?? '905444142254',
+  message: 'Merhaba! Bayırlıoğlu Grup hakkında bilgi almak istiyorum.',
+  tooltip: "Bayırlıoğlu Grup'a WhatsApp'tan yazın!",
+};
+
 // ─── AKTİF MARKA (env'den okur) ──────────────────────────────────────────────
 
 export const ACTIVE_BRAND_KEY: BrandKey =
@@ -141,7 +149,7 @@ export const BRAND = BRANDS[ACTIVE_BRAND_KEY];
 export const SITE_CONFIG = {
   name: BRAND.name,
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
-  phone: '+90 507 178 16 33',
+  phone: '+90 544 414 22 54',
   email: 'info@albgrup.com.tr',
   address: 'Atatürk Caddesi No:1, Ankara / Türkiye',
   workingHours: 'Pazartesi – Cumartesi: 08:00 – 18:00',
