@@ -1,5 +1,7 @@
 import { BRAND, ACTIVE_BRAND_KEY } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import Reveal from '@/components/ui/Reveal';
+import RevealGroup from '@/components/ui/RevealGroup';
 
 const BASE_FEATURES = [
   {
@@ -42,7 +44,7 @@ export default function WhyUs() {
     <section className="bg-gray-50 py-16 sm:py-20 lg:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Başlık */}
-        <div className="text-center mb-12">
+        <Reveal className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
             Neden Bizi Tercih Etmelisiniz?
           </h2>
@@ -51,7 +53,7 @@ export default function WhyUs() {
               ? 'Çiftçilerimize en iyi hizmeti sunmak için buradayız.'
               : 'Müşterilerimize kaliteli ürün ve kesintisiz destek sunuyoruz.'}
           </p>
-        </div>
+        </Reveal>
 
         {/* Kart Grid */}
         <div
@@ -60,32 +62,34 @@ export default function WhyUs() {
             isTarim ? 'lg:grid-cols-5' : 'lg:grid-cols-4'
           )}
         >
-          {features.map((feature) => (
-            <div
-              key={feature.title}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col items-start gap-4"
-            >
-              {/* İkon dairesi */}
+          <RevealGroup stagger={80} itemClassName="h-full">
+            {features.map((feature) => (
               <div
-                className={cn(
-                  'w-16 h-16 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0',
-                  BRAND.colors.primaryLight
-                )}
+                key={feature.title}
+                className="group h-full bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-start gap-4"
               >
-                {feature.icon}
-              </div>
+                {/* İkon dairesi */}
+                <div
+                  className={cn(
+                    'icon-pop w-16 h-16 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0',
+                    BRAND.colors.primaryLight
+                  )}
+                >
+                  {feature.icon}
+                </div>
 
-              {/* İçerik */}
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-1">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {feature.desc}
-                </p>
+                {/* İçerik */}
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {feature.desc}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </RevealGroup>
         </div>
       </div>
     </section>

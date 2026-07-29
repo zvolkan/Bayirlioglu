@@ -362,8 +362,8 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
             <div className="flex md:hidden items-center gap-2 py-3">
               <button
                 onClick={clearTypeFilter}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  pillAllActive ? pillActive : pillInactive
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-300 ease-out active:scale-95 ${
+                  pillAllActive ? `${pillActive} scale-105 shadow-sm` : `${pillInactive} hover:scale-105`
                 }`}
               >
                 Tümü
@@ -398,8 +398,8 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
             <div className="hidden md:flex flex-wrap items-center gap-2 py-3">
               <button
                 onClick={clearTypeFilter}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  pillAllActive ? pillActive : pillInactive
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-300 ease-out active:scale-95 ${
+                  pillAllActive ? `${pillActive} scale-105 shadow-sm` : `${pillInactive} hover:scale-105`
                 }`}
               >
                 Tümü
@@ -410,8 +410,8 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                   <button
                     key={pill.name}
                     onClick={() => setTypeFilter(pill.name)}
-                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap ${
-                      isActive ? pillActive : pillInactive
+                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-300 ease-out whitespace-nowrap active:scale-95 ${
+                      isActive ? `${pillActive} scale-105 shadow-sm` : `${pillInactive} hover:scale-105`
                     }`}
                   >
                     {pill.icon && <span>{pill.icon}</span>}
@@ -490,6 +490,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
             </aside>
             <div className="flex-1">
               <ProductGrid
+                key={`${activeKullanim}|${activeCategory}|${activeType}`}
                 products={filtered}
                 brandKey={brandKey}
                 brandLabels={productBrandLabels}
@@ -508,6 +509,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
         {/* Hiyerarşik düzen */}
         {hasHierarchy && (
           <ProductGrid
+            key={`${activeKullanim}|${activeCategory}|${activeType}`}
             products={filtered}
             brandKey={brandKey}
             brandLabels={productBrandLabels}
@@ -569,7 +571,7 @@ function ProductGrid({
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-      {products.map((product) => {
+      {products.map((product, index) => {
         const disc = discount(product)
         const displayPrice = product.salePrice ?? product.price
         const primaryImg = product.images?.find((i) => i.isPrimary)?.url ?? ''
@@ -578,7 +580,8 @@ function ProductGrid({
         return (
           <div
             key={product.slug}
-            className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col"
+            style={{ animationDelay: `${Math.min(index, 12) * 45}ms` }}
+            className="anim-fade-up group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1.5 hover:border-gray-200 transition-all duration-300 flex flex-col"
           >
             {/* Görsel */}
             <Link href={`/${brandKey}/urunler/${product.slug}`}>
@@ -588,7 +591,7 @@ function ProductGrid({
                   alt={product.name}
                   fallback={product.category.icon || '📦'}
                   fill
-                  className="object-contain p-5 group-hover:scale-105 transition-transform duration-300"
+                  className="object-contain p-5 group-hover:scale-110 group-hover:-rotate-1 transition-transform duration-500 ease-out"
                   sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
                 />
                 {disc && (
@@ -628,7 +631,7 @@ function ProductGrid({
                 </div>
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className={`w-full ${accentBg} ${accentHover} text-white text-sm py-2.5 rounded-xl font-semibold transition-colors`}
+                  className={`btn-press w-full ${accentBg} ${accentHover} text-white text-sm py-2.5 rounded-xl font-semibold`}
                 >
                   Sepete Ekle
                 </button>

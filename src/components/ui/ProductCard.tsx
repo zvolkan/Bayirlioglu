@@ -50,7 +50,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
   return (
     <article
       className={cn(
-        'bg-white rounded-2xl shadow-sm hover:shadow-lg overflow-hidden transition-all duration-300 group',
+        'bg-white rounded-2xl shadow-sm hover:shadow-xl overflow-hidden group hover-lift h-full flex flex-col',
         className
       )}
     >
@@ -63,7 +63,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
             alt={primaryImage.alt || product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300">
@@ -86,9 +86,12 @@ export default function ProductCard({ product, className }: ProductCardProps) {
           </div>
         )}
 
+        {/* Hover'da görselin üstüne inen yumuşak karartma */}
+        <span className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
         {/* İndirim badge — sağ üst */}
         {discountPercent > 0 && (
-          <span className="absolute top-2 right-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+          <span className="absolute top-2 right-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm transition-transform duration-300 group-hover:scale-110">
             %-{discountPercent}
           </span>
         )}
@@ -98,9 +101,10 @@ export default function ProductCard({ product, className }: ProductCardProps) {
           onClick={handleToggleFavorite}
           className={cn(
             'absolute top-2 left-2 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm',
-            'flex items-center justify-center shadow-sm transition-all duration-200',
-            isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500',
-            'opacity-0 group-hover:opacity-100 focus:opacity-100'
+            'flex items-center justify-center shadow-sm transition-all duration-300',
+            'hover:scale-110 active:scale-95',
+            isFavorite ? 'text-red-500 scale-110' : 'text-gray-400 hover:text-red-500',
+            'opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 focus:opacity-100 focus:translate-y-0'
           )}
           aria-label={isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle'}
           aria-pressed={isFavorite}
@@ -135,7 +139,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
       </Link>
 
       {/* ─── İÇERİK ───────────────────────────────────────────────────── */}
-      <div className="p-4 flex flex-col gap-2">
+      <div className="p-4 flex flex-col gap-2 flex-1">
         {/* Kategori */}
         <p className="text-xs text-gray-400 uppercase tracking-wide truncate">
           {product.category.name}
@@ -179,7 +183,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
         </div>
 
         {/* Fiyat satırı */}
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-baseline gap-2 mt-auto pt-1">
           {hasDiscount ? (
             <>
               <span className="text-sm text-gray-400 line-through">
@@ -201,9 +205,8 @@ export default function ProductCard({ product, className }: ProductCardProps) {
           onClick={handleAddToCart}
           disabled={isOutOfStock}
           className={cn(
-            'w-full rounded-xl py-2.5 px-4 text-sm font-semibold text-white',
-            'transition-all duration-200 shadow-sm',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
+            'btn-press w-full rounded-xl py-2.5 px-4 text-sm font-semibold text-white shadow-sm',
+            'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0',
             BRAND.colors.accentPrimary
           )}
         >

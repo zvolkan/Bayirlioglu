@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
+import Reveal from '@/components/ui/Reveal'
+import RevealGroup from '@/components/ui/RevealGroup'
+import AnimatedCounter from '@/components/ui/AnimatedCounter'
 
 export const metadata: Metadata = {
   title: 'Bayırlıoğlu Grup — ALB Tarım & Alb Su Teknolojileri',
@@ -63,29 +66,29 @@ export default function HomePage() {
         <div className="relative z-10 container-main w-full py-20">
           <div className="max-w-3xl mx-auto text-center">
             {/* Logo mark */}
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-center mb-6 anim-scale-in">
               <Image
                 src="/images/logo-mark-white.svg"
                 alt="Bayırlıoğlu"
                 width={72}
                 height={72}
-                className="w-16 h-16 sm:w-20 sm:h-20 object-contain opacity-90"
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain opacity-90 float-soft"
               />
             </div>
 
             {/* Kuruluş yılı rozeti */}
-            <span className="inline-flex items-center gap-2 bg-white/8 border border-white/15 text-white/75 text-sm px-4 py-1.5 rounded-full mb-8 font-medium">
+            <span className="anim-fade-up anim-delay-150 inline-flex items-center gap-2 bg-white/8 border border-white/15 text-white/75 text-sm px-4 py-1.5 rounded-full mb-8 font-medium">
               <span className="w-2 h-2 rounded-full bg-stone-400 animate-pulse" />
               Türkiye&apos;de 20+ Yıllık Deneyim
             </span>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-6">
+            <h1 className="anim-fade-up anim-delay-200 text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-6">
               Bayırlıoğlu
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-stone-200 to-stone-400">
+              <span className="gradient-pan block text-transparent bg-clip-text bg-gradient-to-r from-white via-stone-200 to-stone-400">
                 Grup
               </span>
             </h1>
-            <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed mb-10">
+            <p className="anim-fade-up anim-delay-300 text-lg sm:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed mb-10">
               Tarımdan teknolojiye, su arıtmadan enerji çözümlerine kadar iki güçlü markamızla
               Türkiye&apos;nin her köşesine hizmet veriyoruz.
             </p>
@@ -94,29 +97,29 @@ export default function HomePage() {
             <div className="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
               <Link
                 href="/alb-tarim"
-                className="group relative flex flex-col items-center gap-3 bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white rounded-2xl p-7 transition-all duration-300 shadow-xl hover:shadow-green-600/40 hover:-translate-y-1"
+                className="anim-fade-up anim-delay-400 arrow-slide group relative flex flex-col items-center gap-3 bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white rounded-2xl p-7 transition-all duration-300 shadow-xl hover:shadow-green-600/40 hover:-translate-y-1.5 hover:scale-[1.02]"
               >
-                <span className="text-4xl">🌱</span>
+                <span className="text-4xl icon-pop">🌱</span>
                 <div>
                   <p className="font-black text-xl">ALB Tarım</p>
                   <p className="text-green-100/80 text-sm mt-1">Gübre · Sulama · Tarım İlaçları</p>
                 </div>
-                <span className="mt-2 text-sm font-semibold flex items-center gap-1 text-green-100 group-hover:gap-2 transition-all">
-                  Keşfet →
+                <span className="mt-2 text-sm font-semibold flex items-center gap-1.5 text-green-100">
+                  Keşfet <span className="arrow">→</span>
                 </span>
               </Link>
 
               <Link
                 href="/alb-su-aritma"
-                className="group relative flex flex-col items-center gap-3 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl p-7 transition-all duration-300 shadow-xl hover:shadow-blue-600/40 hover:-translate-y-1"
+                className="anim-fade-up anim-delay-500 arrow-slide group relative flex flex-col items-center gap-3 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl p-7 transition-all duration-300 shadow-xl hover:shadow-blue-600/40 hover:-translate-y-1.5 hover:scale-[1.02]"
               >
-                <span className="text-4xl">💧</span>
+                <span className="text-4xl icon-pop">💧</span>
                 <div>
                   <p className="font-black text-xl">Alb Su Teknolojileri</p>
                   <p className="text-blue-100/80 text-sm mt-1">Su Arıtma · Klima · Elektronik</p>
                 </div>
-                <span className="mt-2 text-sm font-semibold flex items-center gap-1 text-blue-100 group-hover:gap-2 transition-all">
-                  Keşfet →
+                <span className="mt-2 text-sm font-semibold flex items-center gap-1.5 text-blue-100">
+                  Keşfet <span className="arrow">→</span>
                 </span>
               </Link>
             </div>
@@ -131,12 +134,17 @@ export default function HomePage() {
       <section className="py-14 bg-white border-b border-gray-100">
         <div className="container-main">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
-            {STATS.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="text-3xl sm:text-4xl font-black text-gray-900">{s.value}</p>
-                <p className="text-sm text-gray-500 mt-1 font-medium">{s.label}</p>
-              </div>
-            ))}
+            <RevealGroup stagger={110} variant="up">
+              {STATS.map((s) => (
+                <div key={s.label} className="text-center">
+                  <AnimatedCounter
+                    value={s.value}
+                    className="block text-3xl sm:text-4xl font-black text-gray-900 tabular-nums"
+                  />
+                  <p className="text-sm text-gray-500 mt-1 font-medium">{s.label}</p>
+                </div>
+              ))}
+            </RevealGroup>
           </div>
         </div>
       </section>
@@ -146,7 +154,7 @@ export default function HomePage() {
         <div className="container-main">
           <div className="grid lg:grid-cols-2 gap-14 items-center">
             {/* Metin */}
-            <div>
+            <Reveal variant="left">
               <p className="text-stone-600 font-bold uppercase text-sm tracking-widest mb-3">
                 Kurumsal
               </p>
@@ -174,31 +182,33 @@ export default function HomePage() {
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
                   href="/alb-tarim/hakkimizda"
-                  className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors"
+                  className="btn-press inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm"
                 >
                   🌱 ALB Tarım Hakkında
                 </Link>
                 <Link
                   href="/alb-su-aritma/hakkimizda"
-                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors"
+                  className="btn-press inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm"
                 >
                   💧 Alb Su Hakkında
                 </Link>
               </div>
-            </div>
+            </Reveal>
 
             {/* Fotoğraf galerisi placeholder */}
             <div className="grid grid-cols-2 gap-3">
-              {GALLERY_ITEMS.map((item) => (
-                <div
-                  key={item.label}
-                  className={`${item.aspect} rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 relative overflow-hidden flex items-end p-3`}
-                >
-                  {/* GÖRSEL: /public/images/gallery/${item.label.toLowerCase().replace(/ /g, '-')}.jpg */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                  <p className="relative text-white text-xs font-semibold">{item.label}</p>
-                </div>
-              ))}
+              <RevealGroup variant="scale" stagger={100} baseDelay={120}>
+                {GALLERY_ITEMS.map((item) => (
+                  <div
+                    key={item.label}
+                    className={`${item.aspect} img-zoom hover-lift rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 relative overflow-hidden flex items-end p-3`}
+                  >
+                    {/* GÖRSEL: /public/images/gallery/${item.label.toLowerCase().replace(/ /g, '-')}.jpg */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    <p className="relative text-white text-xs font-semibold">{item.label}</p>
+                  </div>
+                ))}
+              </RevealGroup>
             </div>
           </div>
         </div>
@@ -207,19 +217,20 @@ export default function HomePage() {
       {/* ── MARKALARIMIZ ── */}
       <section className="py-20 bg-white">
         <div className="container-main">
-          <div className="text-center mb-14">
+          <Reveal className="text-center mb-14">
             <p className="text-stone-600 font-bold uppercase text-sm tracking-widest mb-3">
               Markalarımız
             </p>
             <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
               İki Güçlü Marka, Tek Güvenilir Çatı
             </h2>
-          </div>
+          </Reveal>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* ALB Tarım */}
-            <div className="group rounded-3xl border border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-8 hover:shadow-xl hover:shadow-green-100 transition-all duration-300">
-              <div className="w-14 h-14 rounded-2xl bg-green-600 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+            <Reveal variant="up" className="h-full">
+            <div className="group h-full hover-lift rounded-3xl border border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-8 hover:shadow-xl hover:shadow-green-100">
+              <div className="w-14 h-14 rounded-2xl bg-green-600 flex items-center justify-center text-3xl mb-6 icon-pop">
                 🌱
               </div>
               <h3 className="text-2xl font-black text-gray-900 mb-3">ALB Tarım</h3>
@@ -238,15 +249,17 @@ export default function HomePage() {
               </ul>
               <Link
                 href="/alb-tarim"
-                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+                className="btn-press arrow-slide inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-semibold"
               >
-                ALB Tarım&apos;ı Keşfet →
+                ALB Tarım&apos;ı Keşfet <span className="arrow">→</span>
               </Link>
             </div>
+            </Reveal>
 
             {/* Alb Su Teknolojileri */}
-            <div className="group rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-cyan-50 p-8 hover:shadow-xl hover:shadow-blue-100 transition-all duration-300">
-              <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+            <Reveal variant="up" delay={120} className="h-full">
+            <div className="group h-full hover-lift rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-cyan-50 p-8 hover:shadow-xl hover:shadow-blue-100">
+              <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-3xl mb-6 icon-pop">
                 💧
               </div>
               <h3 className="text-2xl font-black text-gray-900 mb-3">Alb Su Teknolojileri</h3>
@@ -265,11 +278,12 @@ export default function HomePage() {
               </ul>
               <Link
                 href="/alb-su-aritma"
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+                className="btn-press arrow-slide inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold"
               >
-                Alb Su&apos;yu Keşfet →
+                Alb Su&apos;yu Keşfet <span className="arrow">→</span>
               </Link>
             </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -277,31 +291,33 @@ export default function HomePage() {
       {/* ── DEĞERLERİMİZ ── */}
       <section className="py-20 bg-gray-900">
         <div className="container-main">
-          <div className="text-center mb-14">
+          <Reveal className="text-center mb-14">
             <p className="text-stone-400 font-bold uppercase text-sm tracking-widest mb-3">
               Felsefemiz
             </p>
             <h2 className="text-3xl sm:text-4xl font-black text-white">Değerlerimiz</h2>
-          </div>
+          </Reveal>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {VALUES.map((v) => (
-              <div
-                key={v.title}
-                className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors"
-              >
-                <div className="text-3xl mb-4">{v.icon}</div>
-                <h3 className="font-bold text-white text-lg mb-2">{v.title}</h3>
-                <p className="text-white/60 text-sm leading-relaxed">{v.desc}</p>
-              </div>
-            ))}
+            <RevealGroup stagger={90} itemClassName="h-full">
+              {VALUES.map((v) => (
+                <div
+                  key={v.title}
+                  className="group h-full bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:-translate-y-1.5"
+                >
+                  <div className="text-3xl mb-4 icon-pop">{v.icon}</div>
+                  <h3 className="font-bold text-white text-lg mb-2">{v.title}</h3>
+                  <p className="text-white/60 text-sm leading-relaxed">{v.desc}</p>
+                </div>
+              ))}
+            </RevealGroup>
           </div>
         </div>
       </section>
 
       {/* ── İLETİŞİM CTA ── */}
       <section className="py-20 bg-white">
-        <div className="container-main text-center">
+        <Reveal className="container-main text-center">
           <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">
             Bizimle İletişime Geçin
           </h2>
@@ -311,18 +327,18 @@ export default function HomePage() {
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               href="/alb-tarim/iletisim"
-              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+              className="btn-press inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-semibold"
             >
               🌱 ALB Tarım İletişim
             </Link>
             <Link
               href="/alb-su-aritma/iletisim"
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+              className="btn-press inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold"
             >
               💧 Alb Su İletişim
             </Link>
           </div>
-        </div>
+        </Reveal>
       </section>
     </div>
   )

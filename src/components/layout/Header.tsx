@@ -142,16 +142,26 @@ export default function Header() {
           isHeroPage && !scrolled ? 'border-white/15' : 'border-white/10'
         }`}>
           <div className="container-main">
-            <div className="flex items-center justify-between h-14 sm:h-16">
+            <div
+              className={`flex items-center justify-between transition-[height] duration-500 ease-out ${
+                scrolled ? 'h-12 sm:h-14' : 'h-14 sm:h-16'
+              }`}
+            >
 
               {/* LOGO */}
-              <Link href="/" className="flex items-center flex-shrink-0" onClick={() => setMenuOpen(false)}>
+              <Link
+                href="/"
+                className="flex items-center flex-shrink-0 transition-transform duration-300 hover:scale-105 active:scale-95"
+                onClick={() => setMenuOpen(false)}
+              >
                 <Image
                   src="/images/logo-mark-white.svg"
                   alt="Bayırlıoğlu"
                   width={44}
                   height={44}
-                  className="w-9 h-9 sm:w-10 sm:h-10 object-contain"
+                  className={`object-contain transition-all duration-500 ease-out ${
+                    scrolled ? 'w-8 h-8 sm:w-9 sm:h-9' : 'w-9 h-9 sm:w-10 sm:h-10'
+                  }`}
                   priority
                 />
               </Link>
@@ -235,7 +245,8 @@ export default function Header() {
                   >
                     <Link
                       href={item.href}
-                      className={`text-white/70 ${navHover} text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 hover:bg-white/8 whitespace-nowrap`}
+                      data-active={pathname === item.href}
+                      className={`link-underline text-white/70 ${navHover} text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 hover:bg-white/8 whitespace-nowrap`}
                     >
                       {item.label}
                       {item.children && (
@@ -253,7 +264,7 @@ export default function Header() {
                     {/* Dropdown paneli — JS kontrollü, gap sorunu yok */}
                     {item.children && (
                       <div
-                        className={`absolute top-full left-0 z-50 pt-2 min-w-[13rem] transition-all duration-200 ${
+                        className={`absolute top-full left-0 z-50 pt-2 min-w-[13rem] transition-all duration-300 ${
                           activeDropdown === item.label
                             ? 'opacity-100 pointer-events-auto'
                             : 'opacity-0 pointer-events-none'
@@ -263,8 +274,10 @@ export default function Header() {
                       >
                         {/* pt-2 → görünmez köprü: mouse gap'ten geçerken dropdown açık kalır */}
                         <div
-                          className={`bg-gray-900 border border-white/12 rounded-2xl shadow-2xl shadow-black/50 py-2 transition-transform duration-200 ${
-                            activeDropdown === item.label ? 'translate-y-0' : '-translate-y-1'
+                          className={`bg-gray-900 border border-white/12 rounded-2xl shadow-2xl shadow-black/50 py-2 origin-top transition-all duration-300 ease-out ${
+                            activeDropdown === item.label
+                              ? 'translate-y-0 scale-100'
+                              : '-translate-y-2 scale-[0.97]'
                           }`}
                         >
                           {item.children.map((child) => (
@@ -272,9 +285,9 @@ export default function Header() {
                               key={child.label}
                               href={child.href}
                               onClick={() => setActiveDropdown(null)}
-                              className={`flex items-center gap-2.5 text-white/75 ${navHover} text-sm px-4 py-2.5 transition-colors duration-150 hover:bg-white/8`}
+                              className={`group/item flex items-center gap-2.5 text-white/75 ${navHover} text-sm px-4 py-2.5 transition-all duration-200 hover:bg-white/8 hover:pl-5`}
                             >
-                              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dropdownDot}`} />
+                              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-transform duration-200 group-hover/item:scale-150 ${dropdownDot}`} />
                               {child.label}
                             </Link>
                           ))}
