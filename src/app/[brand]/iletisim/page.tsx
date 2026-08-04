@@ -99,7 +99,7 @@ export default function IletisimPage() {
               {
                 icon: '📧',
                 title: 'E-posta',
-                lines: [isAlbSu ? 'info@albtekno.com.tr' : 'info@albtarim.com.tr'],
+                lines: [isAlbSu ? 'albsu@bayirlioglu.com' : 'albtarim@bayirlioglu.com'],
               },
               {
                 icon: '📍',
