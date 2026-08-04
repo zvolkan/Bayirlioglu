@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { BRANDS } from '@/lib/constants'
 import { useCart } from '@/hooks/useCart'
+import { useCartStore } from '@/store/cartStore'
 import type { BrandKey } from '@/lib/types'
 import UserMenuButton from '@/components/layout/UserMenuButton'
 import MobileUserSection from '@/components/layout/MobileUserSection'
@@ -33,6 +34,9 @@ export default function Header() {
   const pathname = usePathname()
   const router = useRouter()
   const { getTotalItems } = useCart()
+  // Sepet localStorage'dan okunmadan rozet basılmaz — sunucu 0, istemci N
+  // render edip hydration uyumsuzluğu üretiyordu.
+  const cartHydrated = useCartStore((s) => s.hasHydrated)
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -43,7 +47,7 @@ export default function Header() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const dropdownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const cartCount = getTotalItems()
+  const cartCount = cartHydrated ? getTotalItems() : 0
 
   // Aktif marka belirle
   const activeBrandKey: BrandKey | null =

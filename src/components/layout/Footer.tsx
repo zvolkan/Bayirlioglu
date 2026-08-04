@@ -198,12 +198,36 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* YASAL KÜNYE — e-ticaret sitelerinde zorunlu */}
+      <div className="border-t border-white/10 py-5">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <div className="text-gray-600 text-xs leading-relaxed space-y-1">
+            {/* DOLDURULACAK: Ticaret unvanı, MERSİS ve vergi bilgileri resmi
+                kayıtlardaki hâliyle yazılmalıdır. */}
+            <p>
+              <span className="text-gray-500">Ticaret Unvanı:</span> Bayırlıoğlu Grup
+              {' · '}
+              <span className="text-gray-500">Vergi Dairesi / No:</span> —
+              {' · '}
+              <span className="text-gray-500">MERSİS No:</span> —
+            </p>
+            <p>
+              <span className="text-gray-500">Adres:</span> Saçkan Kavşağı Doğusu
+              Savcı-Şok Market Yanı, Yeşilyurt, Akdeniz Cd. No:20/22, 33640 Anamur / Mersin
+            </p>
+            <p className="text-gray-600">
+              Bu site ETBİS&apos;e kayıtlıdır.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* ALT BANT */}
       <div className="border-t border-white/10 py-6">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
             <p className="text-gray-500 text-sm">
-              © 2026 Bayırlıoğlu Grup. Tüm hakları saklıdır.
+              © {new Date().getFullYear()} Bayırlıoğlu Grup. Tüm hakları saklıdır.
             </p>
             <p className="text-gray-600 text-xs">
               ALB Tarım &amp; Alb Su Teknolojileri

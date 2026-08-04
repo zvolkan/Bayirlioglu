@@ -113,8 +113,10 @@ export async function createSignedUploadUrl(fileName: string) {
     .replace(/^\.+/, '')
     .slice(0, 120)
 
-  if (!safeName || !/\.(jpg|jpeg|png|webp|avif|gif|svg)$/i.test(safeName)) {
-    throw new Error('Geçersiz dosya adı veya desteklenmeyen uzantı')
+  // SVG kabul edilmez: Storage aynı origin'den servis edilirse SVG içine
+  // gömülü script depolanmış XSS'e dönüşebilir.
+  if (!safeName || !/\.(jpg|jpeg|png|webp|avif)$/i.test(safeName)) {
+    throw new Error('Yalnızca JPG, PNG, WEBP ve AVIF görselleri yüklenebilir.')
   }
 
   return getSignedUploadUrl(safeName)
@@ -172,6 +174,108 @@ export async function getProductForEdit(id: string) {
   })
 }
 
+
+// ─── ÜRÜN FORMU DOĞRULAMA ────────────────────────────────────────────────────
+
+interface ProductInput {
+  slug: string
+  name: string
+  categoryId: number
+  brandId: number
+  price: number
+  salePrice: number | null
+  stockQuantity: number
+  unit: string
+  sku: string | null
+  description: string
+  shortDescription: string
+  isActive: boolean
+  isFeatured: boolean
+  productBrand: string | null
+}
+
+/**
+ * Form verisini doğrular.
+ *
+ * Eskiden `parseFloat(formData.get('price'))` doğrudan Prisma'ya gidiyordu;
+ * boş veya geçersiz girdide NaN oluşup "Invalid value" hatasıyla admin genel
+ * hata sayfasına düşüyordu.
+ */
+function parseProductForm(formData: FormData): ProductInput {
+  const num = (key: string): number => {
+    const raw = (formData.get(key) as string | null)?.trim()
+    const value = Number(raw)
+    return Number.isFinite(value) ? value : NaN
+  }
+
+  const slug = ((formData.get('slug') as string) ?? '').trim().toLowerCase()
+  const name = ((formData.get('name') as string) ?? '').trim()
+  const categoryId = num('categoryId')
+  const brandId = num('brandId')
+  const price = num('price')
+  const salePriceRaw = (formData.get('salePrice') as string | null)?.trim()
+  const stockRaw = (formData.get('stockQuantity') as string | null)?.trim()
+
+  if (!name || name.length < 2) throw new Error('Ürün adı en az 2 karakter olmalıdır.')
+  if (name.length > 255) throw new Error('Ürün adı çok uzun (en fazla 255 karakter).')
+
+  if (!slug) throw new Error('Slug (URL adı) zorunludur.')
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    throw new Error('Slug yalnızca küçük harf, rakam ve tire içerebilir (örn. "taban-gubresi").')
+  }
+
+  if (!Number.isInteger(categoryId) || categoryId <= 0) throw new Error('Geçerli bir alt kategori seçin.')
+  if (!Number.isInteger(brandId) || brandId <= 0) throw new Error('Geçerli bir marka seçin.')
+
+  if (!Number.isFinite(price) || price < 0) throw new Error('Geçerli bir fiyat girin.')
+  if (price > 9_999_999) throw new Error('Fiyat çok yüksek.')
+
+  let salePrice: number | null = null
+  if (salePriceRaw) {
+    const value = Number(salePriceRaw)
+    if (!Number.isFinite(value) || value < 0) throw new Error('Geçerli bir indirimli fiyat girin.')
+    if (value >= price) throw new Error('İndirimli fiyat, normal fiyattan düşük olmalıdır.')
+    salePrice = value
+  }
+
+  const stockQuantity = stockRaw ? Number(stockRaw) : 0
+  if (!Number.isInteger(stockQuantity) || stockQuantity < 0) {
+    throw new Error('Stok adedi 0 veya daha büyük bir tam sayı olmalıdır.')
+  }
+
+  return {
+    slug,
+    name,
+    categoryId,
+    brandId,
+    price,
+    salePrice,
+    stockQuantity,
+    unit: ((formData.get('unit') as string) || 'adet').slice(0, 50),
+    sku: ((formData.get('sku') as string) || '').trim().slice(0, 100) || null,
+    description: ((formData.get('description') as string) || '').slice(0, 20000),
+    shortDescription: ((formData.get('shortDescription') as string) || '').slice(0, 1000),
+    isActive: formData.get('isActive') === 'true',
+    isFeatured: formData.get('isFeatured') === 'true',
+    productBrand: ((formData.get('productBrand') as string) || '').trim().slice(0, 100) || null,
+  }
+}
+
+/** Prisma'nın benzersizlik/ilişki hatalarını okunabilir mesaja çevirir */
+function friendlyPrismaError(error: unknown): string {
+  const code = (error as { code?: string })?.code
+  const target = ((error as { meta?: { target?: string[] } })?.meta?.target ?? []).join(', ')
+
+  if (code === 'P2002') {
+    if (target.includes('slug')) return 'Bu slug başka bir üründe kullanılıyor. Farklı bir slug girin.'
+    if (target.includes('sku')) return 'Bu SKU başka bir üründe kullanılıyor.'
+    return 'Bu değer başka bir kayıtta kullanılıyor.'
+  }
+  if (code === 'P2003') return 'Seçilen kategori veya marka bulunamadı.'
+  if (code === 'P2025') return 'Kayıt bulunamadı.'
+  return 'İşlem tamamlanamadı. Lütfen bilgileri kontrol edip tekrar deneyin.'
+}
+
 // ─── CREATE ───────────────────────────────────────────────────────────────────
 
 export async function createProduct(formData: FormData) {
@@ -181,51 +285,30 @@ export async function createProduct(formData: FormData) {
   let imageUrl = formData.get('imageUrl') as string | null
 
   // Dosya yükleme
+  const input = parseProductForm(formData)
+
   if (imageFile && imageFile.size > 0) {
-    const ext = imageFile.name.split('.').pop()
-    const slug = (formData.get('slug') as string) || `urun-${Date.now()}`
-    const fileName = `${slug}.${ext}`
-    imageUrl = await uploadProductImage(imageFile, fileName)
+    const ext = (imageFile.name.split('.').pop() ?? 'jpg').replace(/[^a-zA-Z0-9]/g, '')
+    imageUrl = await uploadProductImage(imageFile, `${input.slug}.${ext}`)
   }
 
-  const slug = formData.get('slug') as string
-  const name = formData.get('name') as string
-  const categoryId = parseInt(formData.get('categoryId') as string)
-  const brandId = parseInt(formData.get('brandId') as string)
-  const price = parseFloat(formData.get('price') as string)
-  const salePrice = formData.get('salePrice') ? parseFloat(formData.get('salePrice') as string) : null
-  const stockQuantity = parseInt(formData.get('stockQuantity') as string) || 0
-  const unit = (formData.get('unit') as string) || 'adet'
-  const sku = (formData.get('sku') as string) || null
-  const description = (formData.get('description') as string) || ''
-  const shortDescription = (formData.get('shortDescription') as string) || ''
-  const isActive = formData.get('isActive') === 'true'
-  const isFeatured = formData.get('isFeatured') === 'true'
-  const productBrand = (formData.get('productBrand') as string) || null
-
-  const product = await prisma.product.create({
-    data: {
-      slug,
-      name,
-      categoryId,
-      brandId,
-      price,
-      salePrice,
-      stockQuantity,
-      unit,
-      sku,
-      description,
-      shortDescription,
-      isActive,
-      isFeatured,
-      productBrand,
-      images: imageUrl
-        ? {
-            create: [{ url: imageUrl, altText: name, isPrimary: true, sortOrder: 0 }],
-          }
-        : undefined,
-    },
-  })
+  let product: { id: string }
+  try {
+    product = await prisma.product.create({
+      data: {
+        ...input,
+        images: imageUrl
+          ? {
+              create: [{ url: imageUrl, altText: input.name, isPrimary: true, sortOrder: 0 }],
+            }
+          : undefined,
+      },
+      select: { id: true },
+    })
+  } catch (error) {
+    console.error('[admin] ürün oluşturulamadı:', error)
+    throw new Error(friendlyPrismaError(error))
+  }
 
   // Teknik özellikler
   const specsRaw = formData.get('specs') as string
@@ -263,53 +346,25 @@ export async function updateProduct(id: string, formData: FormData) {
   let imageUrl = formData.get('imageUrl') as string | null
   const replaceImage = formData.get('replaceImage') === 'true'
 
+  const input = parseProductForm(formData)
+
   if (imageFile && imageFile.size > 0) {
-    const ext = imageFile.name.split('.').pop()
-    const slug = (formData.get('slug') as string) || id
-    const fileName = `${slug}.${ext}`
-    imageUrl = await uploadProductImage(imageFile, fileName)
+    const ext = (imageFile.name.split('.').pop() ?? 'jpg').replace(/[^a-zA-Z0-9]/g, '')
+    imageUrl = await uploadProductImage(imageFile, `${input.slug}.${ext}`)
   }
 
-  const slug = formData.get('slug') as string
-  const name = formData.get('name') as string
-  const categoryId = parseInt(formData.get('categoryId') as string)
-  const brandId = parseInt(formData.get('brandId') as string)
-  const price = parseFloat(formData.get('price') as string)
-  const salePrice = formData.get('salePrice') ? parseFloat(formData.get('salePrice') as string) : null
-  const stockQuantity = parseInt(formData.get('stockQuantity') as string) || 0
-  const unit = (formData.get('unit') as string) || 'adet'
-  const sku = (formData.get('sku') as string) || null
-  const description = (formData.get('description') as string) || ''
-  const shortDescription = (formData.get('shortDescription') as string) || ''
-  const isActive = formData.get('isActive') === 'true'
-  const isFeatured = formData.get('isFeatured') === 'true'
-  const productBrand = (formData.get('productBrand') as string) || null
-
-  await prisma.product.update({
-    where: { id },
-    data: {
-      slug,
-      name,
-      categoryId,
-      brandId,
-      price,
-      salePrice,
-      stockQuantity,
-      unit,
-      sku,
-      description,
-      shortDescription,
-      isActive,
-      isFeatured,
-      productBrand,
-    },
-  })
+  try {
+    await prisma.product.update({ where: { id }, data: input })
+  } catch (error) {
+    console.error('[admin] ürün güncellenemedi:', id, error)
+    throw new Error(friendlyPrismaError(error))
+  }
 
   // Görsel güncelle
   if (imageUrl && replaceImage) {
     await prisma.productImage.deleteMany({ where: { productId: id } })
     await prisma.productImage.create({
-      data: { productId: id, url: imageUrl, altText: name, isPrimary: true, sortOrder: 0 },
+      data: { productId: id, url: imageUrl, altText: input.name, isPrimary: true, sortOrder: 0 },
     })
   }
 
@@ -343,21 +398,63 @@ export async function updateProduct(id: string, formData: FormData) {
 
 // ─── DELETE ───────────────────────────────────────────────────────────────────
 
-export async function deleteProduct(id: string) {
+export type DeleteProductResult =
+  | { ok: true; archived: false }
+  | { ok: true; archived: true; orderCount: number }
+  | { ok: false; error: string }
+
+/**
+ * Ürünü siler.
+ *
+ * Siparişi olan ürün SİLİNEMEZ (OrderItem yabancı anahtarı engeller ve geçmiş
+ * siparişlerin bozulmaması gerekir) — bu durumda ürün pasife alınır (arşivlenir).
+ *
+ * Eskiden görseller silme denemesinden ÖNCE Storage'dan kaldırılıyordu; yabancı
+ * anahtar hatası verince ürün DB'de kalıyor ama görselleri yok oluyordu.
+ */
+export async function deleteProduct(id: string): Promise<DeleteProductResult> {
   await requireAdmin()
 
-  // Storage'dan görselleri de sil (Supabase Storage)
-  const images = await prisma.productImage.findMany({ where: { productId: id } })
-  for (const img of images) {
-    // Sadece Supabase Storage URL'lerini sil (public/ içindekiler değil)
-    if (img.url.includes('supabase')) {
-      const fileName = img.url.split('/').pop()
-      if (fileName) await deleteProductImage(fileName).catch(() => {})
-    }
+  // Önce siparişte kullanılmış mı bak — görsellere dokunmadan
+  const orderCount = await prisma.orderItem.count({ where: { productId: id } })
+
+  if (orderCount > 0) {
+    // Geçmiş siparişleri korumak için sil değil, arşivle
+    await prisma.product.update({
+      where: { id },
+      data: { isActive: false, isFeatured: false },
+    })
+    revalidatePath('/admin/urunler')
+    revalidatePath('/alb-tarim/urunler')
+    revalidatePath('/alb-su-aritma/urunler')
+    return { ok: true, archived: true, orderCount }
   }
 
-  await prisma.product.delete({ where: { id } })
-  revalidatePath('/admin/urunler')
+  try {
+    // Önce kaydı sil; başarılıysa görselleri temizle
+    const images = await prisma.productImage.findMany({ where: { productId: id } })
+
+    await prisma.product.delete({ where: { id } })
+
+    for (const img of images) {
+      // Sadece Supabase Storage URL'lerini sil (public/ içindekiler değil)
+      if (img.url.includes('supabase')) {
+        const fileName = img.url.split('/').pop()
+        if (fileName) await deleteProductImage(fileName).catch(() => {})
+      }
+    }
+
+    revalidatePath('/admin/urunler')
+    revalidatePath('/alb-tarim/urunler')
+    revalidatePath('/alb-su-aritma/urunler')
+    return { ok: true, archived: false }
+  } catch (error) {
+    console.error('[admin] ürün silinemedi:', id, error)
+    return {
+      ok: false,
+      error: 'Ürün silinemedi. Başka bir kayıtla ilişkili olabilir; pasife almayı deneyin.',
+    }
+  }
 }
 
 // ─── TOGGLE ───────────────────────────────────────────────────────────────────

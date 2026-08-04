@@ -119,3 +119,17 @@ WHERE table_name = 'orders'
 SELECT 'yeni tablolar' AS kontrol, COUNT(*) AS adet
 FROM information_schema.tables
 WHERE table_name IN ('favorites','contact_messages','dealer_applications');
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- EK: Mesafeli satış sözleşmesi onay kaydı (yasal ispat)
+-- Bu bölümü de aynı şekilde bir kez çalıştırın.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS contract_accepted_at TIMESTAMP(3);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS contract_ip          VARCHAR(64);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS contract_version     VARCHAR(20);
+
+SELECT 'sözleşme onay sütunları' AS kontrol, COUNT(*) AS adet
+FROM information_schema.columns
+WHERE table_name = 'orders'
+  AND column_name IN ('contract_accepted_at','contract_ip','contract_version');

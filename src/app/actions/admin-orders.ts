@@ -4,7 +4,7 @@ import { cookies, headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { prisma, type TransactionClient } from '@/lib/db'
 import { verifyAdminToken } from '@/lib/admin-auth'
-import { refundPayment, cancelPayment } from '@/lib/iyzico'
+import { processRefund } from '@/lib/refund'
 
 /**
  * Admin sipariş yönetimi.
@@ -42,6 +42,20 @@ const VALID_STATUSES: OrderStatus[] = [
   'DELIVERED',
   'CANCELLED',
   'REFUNDED',
+]
+
+/**
+ * Elle seçilebilen durumlar. REFUNDED listede YOK: iade, para gerçekten iade
+ * edilmeden işaretlenirse geri alınamaz bir tutarsızlık oluşuyordu. İade
+ * yalnızca `refundOrder` akışından geçer.
+ */
+const MANUAL_STATUSES: OrderStatus[] = [
+  'PENDING',
+  'CONFIRMED',
+  'PROCESSING',
+  'SHIPPED',
+  'DELIVERED',
+  'CANCELLED',
 ]
 
 // ─── Listeleme ───────────────────────────────────────────────────────────────
@@ -114,8 +128,12 @@ export async function getOrderCountsByStatus() {
 export async function updateOrderStatus(orderId: string, status: string) {
   await requireAdmin()
 
-  if (!VALID_STATUSES.includes(status as OrderStatus)) {
-    throw new Error('Geçersiz sipariş durumu')
+  if (!MANUAL_STATUSES.includes(status as OrderStatus)) {
+    throw new Error(
+      status === 'REFUNDED'
+        ? 'İade işlemi durum menüsünden yapılamaz. "Siparişi İade Et" butonunu kullanın.'
+        : 'Geçersiz sipariş durumu',
+    )
   }
 
   const data: Record<string, unknown> = { status }
@@ -181,86 +199,27 @@ export type RefundResult = { ok: true; message: string } | { ok: false; error: s
  * Siparişi iade eder: iyzico'ya iade isteği gönderir, stokları geri yükler ve
  * siparişi REFUNDED yapar.
  */
-export async function refundOrder(orderId: string): Promise<RefundResult> {
+export async function refundOrder(
+  orderId: string,
+  options?: { force?: boolean; reason?: string },
+): Promise<RefundResult> {
   await requireAdmin()
-
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    select: {
-      id: true,
-      status: true,
-      paymentStatus: true,
-      paymentId: true,
-      totalAmount: true,
-      stockReduced: true,
-      items: { select: { productId: true, quantity: true } },
-    },
-  })
-
-  if (!order) return { ok: false, error: 'Sipariş bulunamadı.' }
-  if (order.status === 'REFUNDED') return { ok: false, error: 'Bu sipariş zaten iade edilmiş.' }
-  if (order.paymentStatus !== 'paid') {
-    return { ok: false, error: 'Bu sipariş için tahsil edilmiş bir ödeme yok.' }
-  }
 
   const headerList = await headers()
   const ip = (headerList.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
 
-  let gatewayMessage = 'Ödeme sağlayıcısına iade isteği gönderilemedi — elle kontrol edin.'
-
-  if (order.paymentId) {
-    try {
-      // Önce iptal (aynı gün), olmazsa iade
-      const cancelled = await cancelPayment({
-        paymentId: order.paymentId,
-        conversationId: order.id,
-        ip,
-      })
-
-      if (cancelled?.status === 'success') {
-        gatewayMessage = 'Ödeme iptal edildi (aynı gün iptali).'
-      } else {
-        const refunded = await refundPayment({
-          paymentTransactionId: order.paymentId,
-          price: Number(order.totalAmount).toFixed(2),
-          conversationId: order.id,
-          ip,
-        })
-        gatewayMessage =
-          refunded?.status === 'success'
-            ? 'İade talebi ödeme sağlayıcısına iletildi.'
-            : `İade başarısız: ${refunded?.errorMessage ?? 'bilinmeyen hata'} — elle kontrol edin.`
-      }
-    } catch (error) {
-      console.error('[admin] iade hatası:', orderId, error)
-    }
-  }
-
-  // Stokları geri yükle + siparişi işaretle
-  await prisma.$transaction(async (tx: TransactionClient) => {
-    if (order.stockReduced) {
-      for (const item of order.items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stockQuantity: { increment: item.quantity } },
-        })
-      }
-    }
-
-    await tx.order.update({
-      where: { id: order.id },
-      data: {
-        status: 'REFUNDED',
-        paymentStatus: 'refunded',
-        stockReduced: false,
-      },
-    })
+  const result = await processRefund({
+    orderId,
+    ip,
+    force: options?.force,
+    reason: options?.reason,
   })
 
   revalidatePath('/admin/siparisler')
   revalidatePath(`/admin/siparisler/${orderId}`)
 
-  return { ok: true, message: gatewayMessage }
+  if (!result.ok) return { ok: false, error: result.error }
+  return { ok: true, message: result.message }
 }
 
 // ─── Form kayıtları ──────────────────────────────────────────────────────────

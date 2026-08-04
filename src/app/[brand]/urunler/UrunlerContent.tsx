@@ -237,6 +237,12 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
   const clearAll = () => router.push('?')
 
   const handleAddToCart = (product: Product) => {
+    // Tükenmiş ürün sepete eklenemez — eskiden kontrol yoktu ve tükenmiş ürün
+    // defalarca eklenip ödeme aşamasında sunucu tarafından reddediliyordu.
+    if (product.stock === 0) {
+      toast.error(`${product.name} şu anda tükendi.`)
+      return
+    }
     addItem(product, 1)
     toast.success(`${product.name} sepete eklendi`)
   }
@@ -631,9 +637,14 @@ function ProductGrid({
                 </div>
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className={`btn-press w-full ${accentBg} ${accentHover} text-white text-sm py-2.5 rounded-xl font-semibold`}
+                  disabled={product.stock === 0}
+                  className={`btn-press w-full ${
+                    product.stock === 0
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : `${accentBg} ${accentHover} text-white`
+                  } text-sm py-2.5 rounded-xl font-semibold disabled:hover:translate-y-0`}
                 >
-                  Sepete Ekle
+                  {product.stock === 0 ? 'Tükendi' : 'Sepete Ekle'}
                 </button>
               </div>
             </div>

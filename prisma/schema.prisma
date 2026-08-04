@@ -247,6 +247,11 @@ model Order {
   // Stok bir kez düşülsün diye (tekrarlanan callback koruması)
   stockReduced  Boolean     @default(false) @map("stock_reduced")
 
+  // Mesafeli satış sözleşmesi / ön bilgilendirme onayı — yasal ispat
+  contractAcceptedAt DateTime? @map("contract_accepted_at")
+  contractIp         String?   @map("contract_ip") @db.VarChar(64)
+  contractVersion    String?   @map("contract_version") @db.VarChar(20)
+
   notes         String?     @db.Text
   adminNote     String?     @map("admin_note") @db.Text
   paymentMethod String?     @map("payment_method") @db.VarChar(50)

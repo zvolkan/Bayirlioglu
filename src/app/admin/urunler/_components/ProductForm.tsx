@@ -57,6 +57,7 @@ export default function ProductForm({
   submitLabel = 'Kaydet',
 }: ProductFormProps) {
   const [isPending, startTransition] = useTransition()
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   // ── Website markası (ALB Tarım / ALB Su Arıtma) ──────────────────────────
   const [selectedBrandId, setSelectedBrandId] = useState<number>(
@@ -260,8 +261,32 @@ export default function ProductForm({
       formData.set('replaceImage', manualUrl ? 'true' : 'false')
     }
 
+    setSubmitError(null)
+
     startTransition(async () => {
-      await action(formData)
+      try {
+        await action(formData)
+      } catch (err) {
+        // Başarılı kayıt redirect() ile biter; Next bunu özel bir hata olarak
+        // fırlatır ve yeniden fırlatılması gerekir, yoksa yönlendirme çalışmaz.
+        if (
+          err &&
+          typeof err === 'object' &&
+          'digest' in err &&
+          typeof (err as { digest?: unknown }).digest === 'string' &&
+          (err as { digest: string }).digest.startsWith('NEXT_REDIRECT')
+        ) {
+          throw err
+        }
+
+        const message =
+          err instanceof Error && err.message
+            ? err.message
+            : 'Kayıt sırasında bir hata oluştu. Lütfen bilgileri kontrol edin.'
+
+        setSubmitError(message)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
     })
   }
 
@@ -269,6 +294,14 @@ export default function ProductForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+
+      {/* Sunucudan dönen doğrulama hatası */}
+      {submitError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+          <span className="font-semibold">Kaydedilemedi: </span>
+          {submitError}
+        </div>
+      )}
 
       {/* ── Temel Bilgiler ── */}
       <section className="bg-white rounded-xl shadow-sm p-6 space-y-5">

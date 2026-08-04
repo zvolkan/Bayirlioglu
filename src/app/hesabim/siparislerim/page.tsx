@@ -193,7 +193,7 @@ export default async function SiparislerimPage() {
                         {/* Left actions */}
                         <div className="flex flex-wrap gap-2 items-center">
                           {cancellable && (
-                            <CancelOrderButton orderId={order.id} />
+                            <CancelOrderButton orderId={order.id} isPaid={order.paymentStatus === 'paid'} />
                           )}
                           {shipped && (
                             <Link

@@ -111,6 +111,7 @@ Cayma hakkı ve iade işlemleri için: ${SITE_EMAIL}`
 
 export default function CheckoutClient({ addresses }: Props) {
   const items = useCartStore((s: { items: import('@/lib/types').CartItem[] }) => s.items)
+  const cartHydrated = useCartStore((s: { hasHydrated: boolean }) => s.hasHydrated)
   // Sepet, ödeme başarılı sayfasında temizlenir (ClearCart bileşeni)
 
   const subtotalRaw = items.reduce(
@@ -128,6 +129,16 @@ export default function CheckoutClient({ addresses }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+
+  // Sepet localStorage'dan okunana kadar bekle — aksi hâlde sunucu "Sepetiniz
+  // boş" render edip istemcide dolu sepete atlıyor (hydration uyumsuzluğu).
+  if (!cartHydrated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="w-10 h-10 border-[3px] border-gray-200 border-t-gray-800 rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   // Empty cart guard
   if (items.length === 0) {
@@ -184,7 +195,7 @@ export default function CheckoutClient({ addresses }: Props) {
       const res = await fetch('/api/odeme/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cartItems, addressData, brandKey }),
+        body: JSON.stringify({ cartItems, addressData, brandKey, contractApproved }),
       })
 
       const data = await res.json()

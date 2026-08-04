@@ -1,5 +1,8 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import ClearCart from './_components/ClearCart'
+import { prisma } from '@/lib/db'
+import { createClient } from '@/lib/supabase/server'
 
 import type { Metadata } from 'next'
 
@@ -16,9 +19,38 @@ type Props = {
 export default async function BasariliPage({ searchParams }: Props) {
   const { siparis } = await searchParams
 
+  // Sipariş gerçekten var mı ve bu kullanıcıya mı ait?
+  // Eskiden URL'i bilen herkes "Ödemeniz tamamlandı" ekranını görüyor ve
+  // sayfayı açan herkesin sepeti (kendi siparişi olmasa bile) siliniyordu.
+  let verified: { id: string; totalAmount: unknown; paymentStatus: string | null } | null = null
+
+  if (siparis) {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (user) {
+      verified = await prisma.order
+        .findFirst({
+          where: { id: siparis, userId: user.id },
+          select: { id: true, totalAmount: true, paymentStatus: true },
+        })
+        .catch(() => null)
+    }
+  }
+
+  // Doğrulanamayan sipariş → ana sayfaya
+  if (siparis && !verified) {
+    redirect('/')
+  }
+
+  const isPaid = verified?.paymentStatus === 'paid'
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-      <ClearCart />
+      {/* Sepet yalnızca doğrulanmış siparişten sonra temizlenir */}
+      {verified && <ClearCart />}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 max-w-md w-full text-center">
 
         {/* Checkmark */}
@@ -28,11 +60,11 @@ export default async function BasariliPage({ searchParams }: Props) {
           </svg>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Siparişiniz Alındı!
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Siparişiniz Alındı!</h1>
         <p className="text-gray-500 text-sm mb-6">
-          Ödemeniz başarıyla tamamlandı. Siparişiniz en kısa sürede hazırlanıp kargoya verilecektir.
+          {isPaid
+            ? 'Ödemeniz başarıyla tamamlandı. Siparişiniz en kısa sürede hazırlanıp kargoya verilecektir.'
+            : 'Siparişiniz oluşturuldu. Ödeme doğrulaması tamamlandığında bilgilendirileceksiniz.'}
         </p>
 
         {siparis && (

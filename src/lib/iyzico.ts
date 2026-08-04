@@ -60,22 +60,26 @@ export function retrieveCheckoutForm(token: string, conversationId: string): Pro
 }
 
 /**
- * Ödeme iadesi (tam iade).
- * Sipariş iptal/iade edildiğinde çağrılmalı — aksi hâlde müşterinin parası
- * iade edilmiyordu.
+ * Ödeme iadesi — v2 API (tüm ödemeyi tek seferde iade eder).
+ *
+ * DİKKAT: v1 `/payment/refund` uç noktası `paymentTransactionId` bekler; bu,
+ * sepet KALEMİ bazındaki işlem kimliğidir ve `paymentId` ile AYNI DEĞİLDİR.
+ * Yanlışlıkla `paymentId` gönderilirse iyzico "işlem bulunamadı" döner ve para
+ * asla iade edilmez. v2 uç noktası (`/v2/payment/refund`) doğrudan `paymentId`
+ * ile çalıştığı ve tüm ödemeyi kapsadığı için onu kullanıyoruz.
  */
 export function refundPayment(params: {
-  paymentTransactionId: string
+  paymentId: string
   price: string
   conversationId: string
   ip?: string
 }): Promise<any> {
   return new Promise((resolve, reject) => {
-    getClient().refund.create(
+    getClient().refundV2.create(
       {
         locale: 'tr',
         conversationId: params.conversationId,
-        paymentTransactionId: params.paymentTransactionId,
+        paymentId: params.paymentId,
         price: params.price,
         currency: 'TRY',
         ip: params.ip ?? '127.0.0.1',

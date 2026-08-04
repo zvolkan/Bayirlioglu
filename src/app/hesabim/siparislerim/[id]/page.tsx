@@ -292,7 +292,7 @@ export default async function SiparisDetayPage({ params }: Props) {
                   Sipariş henüz hazırlanmaya başlanmadı. İptal edebilirsiniz.
                 </p>
               </div>
-              <CancelOrderButton orderId={order.id} />
+              <CancelOrderButton orderId={order.id} isPaid={order.paymentStatus === 'paid'} />
             </div>
           </div>
         )}

@@ -62,7 +62,36 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const related = await getRelatedProducts(product.category.id, brandKey, slug)
 
+  // Google'da fiyat/stok zengin sonucu için yapılandırılmış veri
+  const primaryImage = product.images.find((i) => i.isPrimary)?.url ?? product.images[0]?.url
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.shortDescription || product.description || product.name,
+    sku: product.sku || undefined,
+    brand: { '@type': 'Brand', name: product.productBrand || cfg.name },
+    category: product.category.name,
+    ...(primaryImage ? { image: [primaryImage] } : {}),
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'TRY',
+      price: (product.salePrice ?? product.price).toFixed(2),
+      availability:
+        product.stock > 0
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock',
+      itemCondition: 'https://schema.org/NewCondition',
+      seller: { '@type': 'Organization', name: 'Bayırlıoğlu Grup' },
+    },
+  }
+
   return (
+    <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+    />
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-100 py-4">
@@ -286,5 +315,6 @@ export default async function ProductDetailPage({ params }: Props) {
         )}
       </div>
     </div>
+    </>
   )
 }

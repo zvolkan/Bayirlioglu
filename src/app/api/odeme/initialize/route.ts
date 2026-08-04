@@ -6,6 +6,9 @@ import { initializeCheckoutForm } from '@/lib/iyzico'
 import { calculateTotals, money } from '@/lib/checkout'
 import { getSiteUrl } from '@/lib/site-url'
 
+/** Sözleşme metinleri değiştiğinde artırılmalı — hangi sürümün onaylandığı kaydedilir */
+const CONTRACT_VERSION = '2026-08'
+
 interface IncomingItem {
   id?: unknown
   quantity?: unknown
@@ -28,14 +31,28 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Giriş yapmanız gerekiyor.' }, { status: 401 })
 
-  let body: { cartItems?: IncomingItem[]; addressData?: Record<string, string>; brandKey?: string }
+  let body: {
+    cartItems?: IncomingItem[]
+    addressData?: Record<string, string>
+    brandKey?: string
+    contractApproved?: boolean
+  }
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Geçersiz istek.' }, { status: 400 })
   }
 
-  const { cartItems, addressData, brandKey } = body
+  const { cartItems, addressData, brandKey, contractApproved } = body
+
+  // Mesafeli satış sözleşmesi onayı sunucuda da zorunlu — istemci kontrolü
+  // atlanabilir ve onay kaydı yasal ispat için gerekli.
+  if (contractApproved !== true) {
+    return NextResponse.json(
+      { error: 'Devam etmek için ön bilgilendirme ve mesafeli satış sözleşmesini onaylamalısınız.' },
+      { status: 400 },
+    )
+  }
 
   if (!Array.isArray(cartItems) || cartItems.length === 0) {
     return NextResponse.json({ error: 'Sepet boş.' }, { status: 400 })
@@ -117,7 +134,11 @@ export async function POST(req: NextRequest) {
     validated.push({ id: product.id, name: product.name, unitPrice, quantity })
   }
 
-  const subtotalRaw = validated.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0)
+  // Satır toplamlarını ÖNCE yuvarla, sonra topla. Böylece iyzico'ya gönderilen
+  // basketItems fiyatlarının toplamı ara toplamla kuruşu kuruşuna eşleşir;
+  // aksi hâlde kayan nokta yuvarlaması 1 kuruşluk fark yaratıp isteği bozabilir.
+  const lineTotals = validated.map((i) => money(i.unitPrice * i.quantity))
+  const subtotalRaw = lineTotals.reduce((sum, value) => sum + value, 0)
   const { subtotal, shippingFee, total } = calculateTotals(subtotalRaw)
 
   if (total <= 0) {
@@ -191,23 +212,27 @@ export async function POST(req: NextRequest) {
       shipDistrict: String(addr.district),
       shipCity: String(addr.city),
       shipPostalCode: addr.postalCode ? String(addr.postalCode) : null,
+      // Sözleşme onayı — tarih, IP ve metin sürümü uyuşmazlık hâlinde ispat oluşturur
+      contractAcceptedAt: new Date(),
+      contractIp: ip.slice(0, 64),
+      contractVersion: CONTRACT_VERSION,
       items: {
-        create: validated.map((item) => ({
+        create: validated.map((item, index) => ({
           productId: item.id,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
-          totalPrice: money(item.unitPrice * item.quantity),
+          totalPrice: lineTotals[index],
         })),
       },
     },
   })
 
-  const basketItems = validated.map((item) => ({
+  const basketItems = validated.map((item, index) => ({
     id: item.id,
     name: item.name.slice(0, 100),
     category1: 'Ürün',
     itemType: 'PHYSICAL',
-    price: money(item.unitPrice * item.quantity).toFixed(2),
+    price: lineTotals[index].toFixed(2),
   }))
 
   if (shippingFee > 0) {
@@ -225,7 +250,10 @@ export async function POST(req: NextRequest) {
   const request = {
     locale: 'tr',
     conversationId: order.id,
-    price: subtotal.toFixed(2),
+    // iyzico kuralı: `price`, basketItems fiyatlarının TOPLAMINA eşit olmalı.
+    // basketItems'a kargo kalemi de eklendiği için burada `total` kullanılır;
+    // `subtotal` yazılırsa kargolu (500 TL altı) her sipariş reddedilir.
+    price: total.toFixed(2),
     paidPrice: total.toFixed(2),
     currency: 'TRY',
     basketId: order.id,

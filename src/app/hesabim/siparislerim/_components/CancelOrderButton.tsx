@@ -2,9 +2,17 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 import { cancelOrder } from '@/app/actions/orders'
 
-export default function CancelOrderButton({ orderId }: { orderId: string }) {
+export default function CancelOrderButton({
+  orderId,
+  isPaid = false,
+}: {
+  orderId: string
+  /** Ödemesi alınmış sipariş — iptal edilince para iade edilir */
+  isPaid?: boolean
+}) {
   const [step, setStep] = useState<'idle' | 'confirm' | 'loading'>('idle')
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -13,7 +21,15 @@ export default function CancelOrderButton({ orderId }: { orderId: string }) {
     setStep('loading')
     setError(null)
     try {
-      await cancelOrder(orderId)
+      const result = await cancelOrder(orderId)
+
+      if (!result.ok) {
+        setError(result.error)
+        setStep('idle')
+        return
+      }
+
+      toast.success(result.message, { duration: 7000 })
       router.refresh()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Bir hata oluştu.')
@@ -23,8 +39,12 @@ export default function CancelOrderButton({ orderId }: { orderId: string }) {
 
   if (step === 'confirm') {
     return (
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-500">Emin misiniz?</span>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-gray-500">
+          {isPaid
+            ? 'İptal edilecek ve ödemeniz iade edilecek. Emin misiniz?'
+            : 'Emin misiniz?'}
+        </span>
         <button
           onClick={handleCancel}
           className="text-xs px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold transition-colors"

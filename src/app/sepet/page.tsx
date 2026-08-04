@@ -1,17 +1,82 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
 import { useCart } from '@/hooks/useCart'
+import { useCartStore } from '@/store/cartStore'
 import { formatPrice, cn } from '@/lib/utils'
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ArrowLeft, Package } from 'lucide-react'
 import { KARGO_LIMIT as CARGO_THRESHOLD, calculateTotals } from '@/lib/checkout'
+import { getFreshCartData } from '@/app/actions/cart'
 
 export default function SepetPage() {
   const { items, removeItem, updateQuantity, getTotalPrice } = useCart()
+  const hasHydrated = useCartStore((s) => s.hasHydrated)
+  const syncWithServer = useCartStore((s) => s.syncWithServer)
+  const syncedRef = useRef(false)
+
+  // Sepeti sunucudaki güncel fiyat/stok ile tazele.
+  // Sepet localStorage'da kalıcı olduğu için fiyat değişse bile eski fiyat
+  // gösteriliyordu; ödeme ekranında farklı tutar çıkıyordu.
+  useEffect(() => {
+    if (!hasHydrated || syncedRef.current) return
+
+    const ids = useCartStore.getState().items.map((i) => i.product.id)
+    if (ids.length === 0) return
+
+    syncedRef.current = true
+
+    getFreshCartData(ids)
+      .then((fresh) => {
+        if (fresh.length === 0) return
+        const { removed, priceChanged } = syncWithServer(fresh)
+
+        if (removed.length > 0) {
+          toast.error(
+            removed.length === 1
+              ? `${removed[0]} artık satışta değil, sepetinizden çıkarıldı.`
+              : `${removed.length} ürün artık satışta değil, sepetinizden çıkarıldı.`,
+            { duration: 6000 },
+          )
+        }
+        if (priceChanged.length > 0) {
+          toast(
+            priceChanged.length === 1
+              ? `${priceChanged[0]} ürününün fiyatı güncellendi.`
+              : `${priceChanged.length} üründe fiyat güncellendi.`,
+            { icon: 'ℹ️', duration: 6000 },
+          )
+        }
+      })
+      .catch(() => {
+        /* sessiz geç — sepet yine de kullanılabilir */
+      })
+  }, [hasHydrated, syncWithServer])
 
   // Tutar hesabı tek kaynaktan (src/lib/checkout.ts) — ödeme sayfası ve sipariş
   // detayı da aynı fonksiyonu kullanır, böylece rakamlar birbirini tutar.
   const { subtotal, shippingFee: cargoFee, total } = calculateTotals(getTotalPrice())
+
+  // localStorage okunana kadar iskelet göster — aksi hâlde sunucuda "Sepetiniz
+  // boş" render edilip istemcide dolu sepete atlıyor (hydration uyumsuzluğu).
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container-main">
+          <div className="h-8 w-40 bg-gray-200 rounded-lg skeleton mb-6" />
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-4">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="h-32 bg-white rounded-2xl border border-gray-200 skeleton" />
+              ))}
+            </div>
+            <div className="h-64 bg-white rounded-2xl border border-gray-200 skeleton" />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (items.length === 0) {
     return (
