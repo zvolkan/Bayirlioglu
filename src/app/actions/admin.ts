@@ -364,12 +364,34 @@ export async function updateProduct(id: string, formData: FormData) {
     throw new Error(friendlyPrismaError(error))
   }
 
-  // Görsel güncelle
+  // Kapak görselini güncelle.
+  //
+  // Önceden burada `deleteMany` ile ürünün TÜM görselleri siliniyordu. Çoklu
+  // görsel desteğiyle birlikte bu, formu her kaydedişte galerinin silinmesi
+  // anlamına gelirdi. Artık yalnızca kapak değiştirilir; diğer görseller kalır.
   if (imageUrl && replaceImage) {
-    await prisma.productImage.deleteMany({ where: { productId: id } })
-    await prisma.productImage.create({
-      data: { productId: id, url: imageUrl, altText: input.name, isPrimary: true, sortOrder: 0 },
+    const current = await prisma.productImage.findFirst({
+      where: { productId: id, isPrimary: true },
+      select: { id: true, url: true },
     })
+
+    if (current) {
+      if (current.url !== imageUrl) {
+        await prisma.productImage.update({
+          where: { id: current.id },
+          data: { url: imageUrl, altText: input.name },
+        })
+        // Storage'daki eski dosyayı temizle (public/ içindekilere dokunma)
+        if (current.url.includes('supabase')) {
+          const fileName = current.url.split('/').pop()
+          if (fileName) await deleteProductImage(fileName).catch(() => {})
+        }
+      }
+    } else {
+      await prisma.productImage.create({
+        data: { productId: id, url: imageUrl, altText: input.name, isPrimary: true, sortOrder: 0 },
+      })
+    }
   }
 
   // Teknik özellikler: sil + yeniden oluştur

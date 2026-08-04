@@ -48,6 +48,12 @@ interface ProductFormProps {
     images?: ImageRecord[]
   }
   submitLabel?: string
+  /**
+   * Düzenleme ekranında görseller ayrı `ImageManager` bileşeniyle yönetiliyor
+   * (çoklu görsel). Bu durumda formdaki tek görsel alanı gizlenir — aksi halde
+   * form kaydedildiğinde tek görsel diğerlerinin yerine geçerdi.
+   */
+  hideImageSection?: boolean
 }
 
 export default function ProductForm({
@@ -56,6 +62,7 @@ export default function ProductForm({
   action,
   defaultValues = {},
   submitLabel = 'Kaydet',
+  hideImageSection = false,
 }: ProductFormProps) {
   const [isPending, startTransition] = useTransition()
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -556,6 +563,7 @@ export default function ProductForm({
       </section>
 
       {/* ── Görsel ── */}
+      {!hideImageSection && (
       <section className="bg-white rounded-xl shadow-sm p-6 space-y-4">
         <h2 className="font-semibold text-gray-800 text-base border-b pb-3">Ürün Görseli</h2>
 
@@ -634,6 +642,7 @@ export default function ProductForm({
           </div>
         </div>
       </section>
+      )}
 
       {/* ── Teknik Özellikler ── */}
       <section className="bg-white rounded-xl shadow-sm p-6 space-y-4">

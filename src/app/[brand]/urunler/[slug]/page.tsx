@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import ProductImage from '@/components/product/ProductImage'
+import ProductGallery from '@/components/product/ProductGallery'
 import { BRANDS } from '@/lib/constants'
 import { getProductBySlug, getRelatedProducts } from '@/lib/queries/products'
 import { shouldShowRating } from '@/lib/reviews'
@@ -59,7 +60,11 @@ export default async function ProductDetailPage({ params }: Props) {
   const discount = product.salePrice
     ? Math.round((1 - product.salePrice / product.price) * 100)
     : null
-  const primaryImg = product.images?.find((i) => i.isPrimary) ?? product.images?.[0]
+  // Kapak önce gelsin; sorgu zaten isPrimary'e göre sıralıyor ama veri elle
+  // düzenlenmişse (SQL, seed) sıra bozulabiliyor.
+  const galleryImages = [...(product.images ?? [])].sort(
+    (a, b) => Number(b.isPrimary) - Number(a.isPrimary),
+  )
 
   const related = await getRelatedProducts(product.category.id, brandKey, slug)
 
@@ -122,28 +127,26 @@ export default async function ProductDetailPage({ params }: Props) {
         {/* ── Ürün Ana Bölüm ── */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="grid md:grid-cols-2 gap-0">
-            {/* Görsel */}
-            <div className="bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center min-h-72 md:min-h-[480px] relative overflow-hidden">
-              <ProductImage
-                src={primaryImg?.url ?? ''}
-                alt={primaryImg?.alt || product.name}
-                fallback={product.category.icon || '📦'}
-                fill
-                className="object-contain p-6"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-              />
-              {discount && (
-                <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full z-10">
-                  -%{discount}
-                </div>
-              )}
-              {product.isFeatured && !discount && (
-                <div className={`absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full z-10 ${badgeBg}`}>
-                  Öne Çıkan
-                </div>
-              )}
-            </div>
+            {/* Görseller */}
+            <ProductGallery
+              images={galleryImages}
+              productName={product.name}
+              fallback={product.category.icon || '📦'}
+              badge={
+                <>
+                  {discount && (
+                    <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full z-10">
+                      -%{discount}
+                    </div>
+                  )}
+                  {product.isFeatured && !discount && (
+                    <div className={`absolute top-4 right-4 text-xs font-bold px-3 py-1 rounded-full z-10 ${badgeBg}`}>
+                      Öne Çıkan
+                    </div>
+                  )}
+                </>
+              }
+            />
 
             {/* Bilgi */}
             <div className="p-4 sm:p-8 flex flex-col">

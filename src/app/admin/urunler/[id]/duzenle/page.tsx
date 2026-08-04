@@ -5,7 +5,9 @@ import {
   getProductForEdit,
   updateProduct,
 } from '@/app/actions/admin'
+import { getProductImages } from '@/app/actions/product-images'
 import ProductForm from '../../_components/ProductForm'
+import ImageManager from '../../_components/ImageManager'
 
 export default async function DuzenleUrunPage({
   params,
@@ -20,6 +22,8 @@ export default async function DuzenleUrunPage({
   ])
 
   if (!product) notFound()
+
+  const images = await getProductImages(product.id)
 
   const brands = rawBrands.map((b) => ({ id: b.id, key: b.key, name: b.name }))
   const categories = rawCategories.map((c) => ({
@@ -47,11 +51,19 @@ export default async function DuzenleUrunPage({
         <p className="text-sm text-gray-500 mt-0.5 font-mono">{product.slug}</p>
       </div>
 
+      {/* Görseller formdan bağımsız yönetiliyor — anında kaydedilir */}
+      <ImageManager
+        productId={product.id}
+        productName={product.name}
+        initialImages={images}
+      />
+
       <ProductForm
         brands={brands}
         categories={categories}
         action={handleUpdate}
         submitLabel="Değişiklikleri Kaydet"
+        hideImageSection
         defaultValues={{
           id: product.id,
           name: product.name,
