@@ -133,3 +133,69 @@ SELECT 'sözleşme onay sütunları' AS kontrol, COUNT(*) AS adet
 FROM information_schema.columns
 WHERE table_name = 'orders'
   AND column_name IN ('contract_accepted_at','contract_ip','contract_version');
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- EK 2: Ürün bazlı KDV + fatura bilgileri
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Ürün bazlı KDV oranı. Varsayılan %20; gübre/tohum gibi ürünleri admin
+-- panelinden %1 veya %10 olarak işaretleyin.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS vat_rate INTEGER NOT NULL DEFAULT 20;
+
+-- Sipariş anındaki KDV — ürün oranı sonradan değişse de geçmiş fatura bozulmaz
+ALTER TABLE order_items ADD COLUMN IF NOT EXISTS vat_rate   INTEGER NOT NULL DEFAULT 20;
+ALTER TABLE order_items ADD COLUMN IF NOT EXISTS vat_amount NUMERIC(10,2);
+
+-- Fatura bilgileri (e-arşiv için zorunlu)
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS invoice_type       VARCHAR(20);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS invoice_title      VARCHAR(200);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS invoice_tax_id     VARCHAR(20);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS invoice_tax_office VARCHAR(100);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS invoice_email      VARCHAR(255);
+
+SELECT 'KDV + fatura sütunları' AS kontrol, COUNT(*) AS adet
+FROM information_schema.columns
+WHERE (table_name = 'products'    AND column_name = 'vat_rate')
+   OR (table_name = 'order_items' AND column_name IN ('vat_rate','vat_amount'))
+   OR (table_name = 'orders'      AND column_name LIKE 'invoice_%');
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- EK 3: Ürün listesi performans indeksleri
+-- Filtreleme/sıralama artık veritabanında yapılıyor; bu indeksler olmadan
+-- katalog büyüdükçe sorgular yavaşlar.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Marka + aktiflik + öne çıkan (varsayılan sıralama)
+CREATE INDEX IF NOT EXISTS products_brand_active_featured_idx
+  ON products (brand_id, is_active, is_featured DESC, created_at DESC);
+
+-- Fiyata göre sıralama ve fiyat aralığı filtresi
+CREATE INDEX IF NOT EXISTS products_brand_active_price_idx
+  ON products (brand_id, is_active, price);
+
+-- Kategori filtresi
+CREATE INDEX IF NOT EXISTS products_category_active_idx
+  ON products (category_id, is_active);
+
+-- Ürün markası filtresi (TİMAC AGRO, HAIFA vb.)
+CREATE INDEX IF NOT EXISTS products_product_brand_idx
+  ON products (product_brand);
+
+-- Stok filtresi
+CREATE INDEX IF NOT EXISTS products_stock_idx
+  ON products (stock_quantity);
+
+-- Metin araması: büyük/küçük harf duyarsız LIKE için trigram indeksi.
+-- pg_trgm uzantısı Supabase'de mevcuttur.
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE INDEX IF NOT EXISTS products_name_trgm_idx
+  ON products USING gin (name gin_trgm_ops);
+
+CREATE INDEX IF NOT EXISTS products_short_desc_trgm_idx
+  ON products USING gin (short_description gin_trgm_ops);
+
+SELECT 'ürün indeksleri' AS kontrol, COUNT(*) AS adet
+FROM pg_indexes
+WHERE tablename = 'products'
+  AND indexname LIKE 'products_%_idx';

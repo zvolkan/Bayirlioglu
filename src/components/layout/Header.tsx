@@ -122,12 +122,14 @@ export default function Header() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    if (searchQuery.trim()) {
-      const base = activeBrandKey ? `/${activeBrandKey}` : '/alb-tarim'
-      router.push(`${base}/urunler?arama=${encodeURIComponent(searchQuery.trim())}`)
-      setSearchOpen(false)
-      setSearchQuery('')
-    }
+    const term = searchQuery.trim()
+    if (term.length < 2) return
+
+    // Arama sunucuda yapılır; sonuç sayfası filtreleri sıfırdan kurar
+    const base = activeBrandKey ? `/${activeBrandKey}` : '/alb-tarim'
+    router.push(`${base}/urunler?arama=${encodeURIComponent(term)}`)
+    setSearchOpen(false)
+    setSearchQuery('')
   }
 
   const navPrefix = activeBrandKey ? `/${activeBrandKey}` : ''

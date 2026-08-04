@@ -1,0 +1,285 @@
+import { prisma } from '@/lib/db'
+import type { Product, Category, BrandKey } from '@/lib/types'
+
+/**
+ * Sunucu tarafı ürün arama, filtreleme ve sayfalama.
+ *
+ * Eskiden `getProductsByBrand` markanın TÜM ürünlerini (görsel, teknik özellik
+ * ve etiket ilişkileriyle birlikte) tek seferde çekiyor, filtreleme ve sıralama
+ * tarayıcıda yapılıyordu. Katalog birkaç yüz ürüne çıktığında liste sayfası
+ * hem çok yavaşlıyor hem de veritabanını gereksiz yoruyordu.
+ *
+ * Artık her şey SQL tarafında: filtreler `WHERE`, sıralama `ORDER BY`,
+ * sayfalama `LIMIT/OFFSET`. Liste görünümü için gereksiz ilişkiler (specs,
+ * tags) hiç çekilmiyor.
+ */
+
+export type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'newest' | 'name'
+
+export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'featured', label: 'Öne Çıkanlar' },
+  { value: 'price-asc', label: 'Fiyat: Düşükten Yükseğe' },
+  { value: 'price-desc', label: 'Fiyat: Yüksekten Düşüğe' },
+  { value: 'newest', label: 'En Yeniler' },
+  { value: 'name', label: 'İsme Göre (A-Z)' },
+]
+
+export const PAGE_SIZE = 24
+
+export interface ProductSearchOptions {
+  brandKey: BrandKey
+  /** Kök kategori slug'ı (kullanim) — alt ağacın tamamı dahil edilir */
+  rootSlug?: string
+  /** Ürün tipi ADI — markalar arası ortak isimle filtreler (İthal ürünler için) */
+  typeName?: string
+  /** Geriye dönük: doğrudan kategori slug'ı */
+  categorySlug?: string
+  /** Serbest metin arama */
+  search?: string
+  /** Ürün markası (TİMAC AGRO, HAIFA vb.) */
+  productBrand?: string
+  minPrice?: number
+  maxPrice?: number
+  inStockOnly?: boolean
+  sort?: SortOption
+  page?: number
+  pageSize?: number
+}
+
+export interface ProductSearchResult {
+  products: Product[]
+  total: number
+  page: number
+  pageCount: number
+  /** Filtre arayüzünü beslemek için — mevcut markadaki tüm seçenekler */
+  facets: {
+    productBrands: string[]
+    priceRange: { min: number; max: number }
+  }
+}
+
+/** Liste görünümü için yeterli olan minimum ilişki seti */
+const LIST_INCLUDE = {
+  brand: { select: { key: true } },
+  category: {
+    select: { id: true, name: true, slug: true, icon: true, sortOrder: true, parentId: true },
+  },
+  images: { where: { isPrimary: true }, take: 1, select: { url: true, altText: true } },
+} as const
+
+type ListRow = {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  shortDescription: string | null
+  price: unknown
+  salePrice: unknown
+  sku: string | null
+  unit: string
+  stockQuantity: number
+  isFeatured: boolean
+  isActive: boolean
+  rating: unknown
+  reviewCount: number
+  productBrand: string | null
+  createdAt: Date
+  updatedAt: Date
+  brand: { key: string }
+  category: {
+    id: number
+    name: string
+    slug: string
+    icon: string | null
+    sortOrder: number
+    parentId: number | null
+  }
+  images: { url: string; altText: string | null }[]
+}
+
+function toListProduct(row: ListRow): Product {
+  const category: Category = {
+    id: row.category.id,
+    name: row.category.name,
+    slug: row.category.slug,
+    icon: row.category.icon ?? undefined,
+    brand: row.brand.key as BrandKey,
+    sortOrder: row.category.sortOrder,
+    parentId: row.category.parentId ?? undefined,
+  }
+
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    description: row.description ?? '',
+    shortDescription: row.shortDescription ?? '',
+    price: Number(row.price),
+    salePrice: row.salePrice != null ? Number(row.salePrice) : undefined,
+    brand: row.brand.key as BrandKey,
+    category,
+    productBrand: row.productBrand ?? undefined,
+    sku: row.sku ?? '',
+    unit: row.unit,
+    stock: row.stockQuantity,
+    isFeatured: row.isFeatured,
+    isActive: row.isActive,
+    rating: Number(row.rating),
+    reviewCount: row.reviewCount,
+    images: row.images.map((img) => ({
+      url: img.url,
+      alt: img.altText ?? row.name,
+      isPrimary: true,
+    })),
+    specs: [],
+    tags: [],
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  }
+}
+
+/** Bir kök kategorinin tüm alt kategorilerinin id'lerini toplar (3 seviye) */
+async function collectDescendantIds(rootSlug: string, brandKey: string): Promise<number[] | null> {
+  const all = await prisma.category.findMany({
+    where: { brand: { key: brandKey }, isActive: true },
+    select: { id: true, slug: true, parentId: true },
+  })
+
+  const root = all.find((c: { slug: string }) => c.slug === rootSlug)
+  if (!root) return null
+
+  const ids = new Set<number>([root.id])
+  let grew = true
+
+  // Derinlik sınırsız — ağaç büyüse de çalışır
+  while (grew) {
+    grew = false
+    for (const cat of all) {
+      if (cat.parentId != null && ids.has(cat.parentId) && !ids.has(cat.id)) {
+        ids.add(cat.id)
+        grew = true
+      }
+    }
+  }
+
+  return [...ids]
+}
+
+function buildOrderBy(sort: SortOption) {
+  switch (sort) {
+    case 'price-asc':
+      return [{ price: 'asc' as const }]
+    case 'price-desc':
+      return [{ price: 'desc' as const }]
+    case 'newest':
+      return [{ createdAt: 'desc' as const }]
+    case 'name':
+      return [{ name: 'asc' as const }]
+    default:
+      return [{ isFeatured: 'desc' as const }, { createdAt: 'desc' as const }]
+  }
+}
+
+export async function searchProducts(
+  options: ProductSearchOptions,
+): Promise<ProductSearchResult> {
+  const {
+    brandKey,
+    rootSlug,
+    typeName,
+    categorySlug,
+    search,
+    productBrand,
+    minPrice,
+    maxPrice,
+    inStockOnly,
+    sort = 'featured',
+    page = 1,
+    pageSize = PAGE_SIZE,
+  } = options
+
+  const safePage = Math.max(1, Math.floor(page))
+  const safePageSize = Math.min(96, Math.max(1, Math.floor(pageSize)))
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = { brand: { key: brandKey }, isActive: true }
+
+  // Kök kategori → alt ağacın tamamı
+  if (rootSlug) {
+    const ids = await collectDescendantIds(rootSlug, brandKey)
+    if (ids && ids.length > 0) where.categoryId = { in: ids }
+  }
+
+  // Ürün tipi adı (markalar arası) — kök filtresiyle birlikte çalışır
+  if (typeName) {
+    where.category = { ...(where.category ?? {}), name: typeName }
+  } else if (categorySlug) {
+    where.category = { ...(where.category ?? {}), slug: categorySlug }
+  }
+
+  if (productBrand) {
+    where.productBrand = { equals: productBrand, mode: 'insensitive' }
+  }
+
+  if (inStockOnly) {
+    where.stockQuantity = { gt: 0 }
+  }
+
+  if (typeof minPrice === 'number' || typeof maxPrice === 'number') {
+    where.price = {
+      ...(typeof minPrice === 'number' ? { gte: minPrice } : {}),
+      ...(typeof maxPrice === 'number' ? { lte: maxPrice } : {}),
+    }
+  }
+
+  const term = search?.trim()
+  if (term) {
+    where.OR = [
+      { name: { contains: term, mode: 'insensitive' } },
+      { shortDescription: { contains: term, mode: 'insensitive' } },
+      { description: { contains: term, mode: 'insensitive' } },
+      { sku: { contains: term, mode: 'insensitive' } },
+      { productBrand: { contains: term, mode: 'insensitive' } },
+    ]
+  }
+
+  const [rows, total, brandRows, priceAgg] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      include: LIST_INCLUDE,
+      orderBy: buildOrderBy(sort),
+      skip: (safePage - 1) * safePageSize,
+      take: safePageSize,
+    }),
+    prisma.product.count({ where }),
+    // Filtre arayüzü için marka listesi — filtrelerden bağımsız, markanın tamamı
+    prisma.product.findMany({
+      where: { brand: { key: brandKey }, isActive: true, productBrand: { not: null } },
+      select: { productBrand: true },
+      distinct: ['productBrand'],
+      orderBy: { productBrand: 'asc' },
+    }),
+    prisma.product.aggregate({
+      where: { brand: { key: brandKey }, isActive: true },
+      _min: { price: true },
+      _max: { price: true },
+    }),
+  ])
+
+  return {
+    products: (rows as ListRow[]).map(toListProduct),
+    total,
+    page: safePage,
+    pageCount: Math.max(1, Math.ceil(total / safePageSize)),
+    facets: {
+      productBrands: brandRows
+        .map((r: { productBrand: string | null }) => r.productBrand)
+        .filter((v: string | null): v is string => Boolean(v))
+        .sort((a: string, b: string) => a.localeCompare(b, 'tr')),
+      priceRange: {
+        min: Math.floor(Number(priceAgg._min.price ?? 0)),
+        max: Math.ceil(Number(priceAgg._max.price ?? 0)),
+      },
+    },
+  }
+}

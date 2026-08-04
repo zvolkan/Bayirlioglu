@@ -1,108 +1,109 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useMemo, useState, useTransition } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import ProductImage from '@/components/product/ProductImage'
 import { BRANDS } from '@/lib/constants'
 import { useCartStore } from '@/store/cartStore'
+import { SORT_OPTIONS, type SortOption } from '@/lib/queries/product-search'
 import type { BrandKey, Product, Category } from '@/lib/types'
 import { toast } from 'react-hot-toast'
-
-const SORT_OPTIONS = [
-  { value: 'featured', label: 'Öne Çıkanlar' },
-  { value: 'price-asc', label: 'Fiyat: Düşükten Yükseğe' },
-  { value: 'price-desc', label: 'Fiyat: Yüksekten Düşüğe' },
-  { value: 'newest', label: 'En Yeniler' },
-]
 
 // Pill için ortak tip (ALB L1 ve İthal L2 aynı şekle gelir)
 type TypePill = { name: string; icon: string | null; sortOrder: number }
 
 interface Props {
   brandKey: BrandKey
-  initialProducts: Product[]
-  initialCategories: Category[]
+  /** Sunucuda filtrelenmiş, sıralanmış ve sayfalanmış ürünler */
+  products: Product[]
+  categories: Category[]
+  total: number
+  page: number
+  pageCount: number
+  facets: {
+    productBrands: string[]
+    priceRange: { min: number; max: number }
+  }
+  sort: SortOption
 }
 
-export default function UrunlerContent({ brandKey, initialProducts, initialCategories }: Props) {
+export default function UrunlerContent({
+  brandKey,
+  products,
+  categories,
+  total,
+  page,
+  pageCount,
+  facets,
+  sort,
+}: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const pathname = usePathname()
   const addItem = useCartStore((s) => s.addItem)
+  const [isPending, startTransition] = useTransition()
 
   const isAlbSu = brandKey === 'alb-su-aritma'
   const cfg = BRANDS[brandKey] ?? BRANDS['alb-tarim']
 
   // ── URL parametreleri ─────────────────────────────────────────────────────
   const activeKullanim = searchParams.get('kullanim') ?? ''
-  const activeCategory = searchParams.get('kategori') ?? ''   // geriye dönük uyumluluk
-  const activeType     = searchParams.get('type')     ?? ''   // ürün tipi adı (tüm modlarda)
-  const searchQuery    = searchParams.get('arama')    ?? ''
-  const [sort, setSort] = useState('featured')
+  const activeCategory = searchParams.get('kategori') ?? '' // geriye dönük uyumluluk
+  const activeType = searchParams.get('type') ?? ''
+  const activeBrandFilter = searchParams.get('marka') ?? ''
+  const searchQuery = searchParams.get('arama') ?? ''
+  const minPrice = searchParams.get('min') ?? ''
+  const maxPrice = searchParams.get('max') ?? ''
+  const inStockOnly = searchParams.get('stokta') === '1'
 
   // ── Renk sistemi ─────────────────────────────────────────────────────────
-  const accentText   = isAlbSu ? 'text-blue-600'    : 'text-green-700'
-  const accentBg     = isAlbSu ? 'bg-blue-600'       : 'bg-green-600'
-  const accentHover  = isAlbSu ? 'hover:bg-blue-500' : 'hover:bg-green-500'
+  const accentText = isAlbSu ? 'text-blue-600' : 'text-green-700'
+  const accentBg = isAlbSu ? 'bg-blue-600' : 'bg-green-600'
+  const accentHover = isAlbSu ? 'hover:bg-blue-500' : 'hover:bg-green-500'
   const accentBorder = isAlbSu ? 'border-b-blue-600' : 'border-b-green-600'
-  const accentLight  = isAlbSu ? 'bg-blue-50/60'     : 'bg-green-50/60'
-  const accentTag    = isAlbSu ? 'text-blue-500'     : 'text-green-600'
-  const pillActive   = isAlbSu
+  const accentLight = isAlbSu ? 'bg-blue-50/60' : 'bg-green-50/60'
+  const accentTag = isAlbSu ? 'text-blue-500' : 'text-green-600'
+  const pillActive = isAlbSu
     ? 'bg-blue-600 hover:bg-blue-500 text-white border-transparent shadow-sm'
     : 'bg-green-600 hover:bg-green-500 text-white border-transparent shadow-sm'
-  const pillInactive = 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:text-gray-800'
+  const pillInactive =
+    'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:text-gray-800'
 
   // ── Kategori haritaları ───────────────────────────────────────────────────
-  const catById = useMemo(
-    () => new Map(initialCategories.map((c) => [c.id, c])),
-    [initialCategories],
-  )
-  const catBySlug = useMemo(
-    () => new Map(initialCategories.map((c) => [c.slug, c])),
-    [initialCategories],
-  )
+  const catById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories])
+  const catBySlug = useMemo(() => new Map(categories.map((c) => [c.slug, c])), [categories])
 
-  // L0: kök kategoriler (parentId = null)
-  const rootCategories = useMemo(
-    () => initialCategories.filter((c) => c.parentId == null),
-    [initialCategories],
-  )
+  const rootCategories = useMemo(() => categories.filter((c) => c.parentId == null), [categories])
 
-  // L1: kök kategorilerin doğrudan çocukları
   const level1Categories = useMemo(
     () =>
-      initialCategories.filter((c) => {
+      categories.filter((c) => {
         if (c.parentId == null) return false
         return catById.get(c.parentId)?.parentId == null
       }),
-    [initialCategories, catById],
+    [categories, catById],
   )
 
-  // L2: L1 kategorilerin doğrudan çocukları
   const level2Categories = useMemo(
     () =>
-      initialCategories.filter((c) => {
+      categories.filter((c) => {
         if (c.parentId == null) return false
         const parent = catById.get(c.parentId)
         if (!parent || parent.parentId == null) return false
         return catById.get(parent.parentId)?.parentId == null
       }),
-    [initialCategories, catById],
+    [categories, catById],
   )
 
   const hasHierarchy = rootCategories.length > 0
-
-  // Aktif kök kategori
   const activeRootCat = useMemo(
     () => rootCategories.find((c) => c.slug === activeKullanim) ?? null,
     [rootCategories, activeKullanim],
   )
-
-  // İthal modu mu?
   const isIthal = activeRootCat?.slug === 'ithal-urunler'
 
   // ── Pill şeridi ───────────────────────────────────────────────────────────
-  // ALB ürün tipi pill'leri — activeRootCat'tan bağımsız, ALB kök slug'ından hesaplanır
   const albTypePills = useMemo((): TypePill[] => {
     const albRoot = rootCategories.find((c) => c.slug === 'alb-tarim-urunleri')
     if (!albRoot) return []
@@ -112,7 +113,6 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
       .map((c) => ({ name: c.name, icon: c.icon ?? null, sortOrder: c.sortOrder }))
   }, [rootCategories, level1Categories])
 
-  // İthal ürün tipi pill'leri — L2 kategorilerinden isim bazlı tekilleştirme
   const ithalTypePills = useMemo((): TypePill[] => {
     const ithalRoot = rootCategories.find((c) => c.slug === 'ithal-urunler')
     if (!ithalRoot) return []
@@ -122,8 +122,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
     level2Categories
       .filter((c) => {
         if (c.parentId == null) return false
-        const parent = catById.get(c.parentId) // brand L1
-        return parent?.parentId === ithalId
+        return catById.get(c.parentId)?.parentId === ithalId
       })
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .forEach((c) => {
@@ -135,110 +134,76 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
     return Array.from(seen.values()).sort((a, b) => a.sortOrder - b.sortOrder)
   }, [rootCategories, level2Categories, catById])
 
-  // Aktif pill şeridi: İthal → ithalTypePills, diğer tüm modlar (Tümü + ALB) → albTypePills
   const activePills = isIthal ? ithalTypePills : albTypePills
 
   // ── Ürün kartı marka etiketi ──────────────────────────────────────────────
-  const getProductBrandLabel = (productCatSlug: string): string => {
-    const cat = catBySlug.get(productCatSlug)
-    if (!cat) return ''
-    if (cat.parentId == null) return cat.name
-    const parent = catById.get(cat.parentId)
-    if (!parent) return cat.name
-    if (parent.parentId == null) return 'ALB Tarım'
-    return parent.name
-  }
-
   const productBrandLabels = useMemo(() => {
+    const label = (catSlug: string): string => {
+      const cat = catBySlug.get(catSlug)
+      if (!cat) return ''
+      if (cat.parentId == null) return cat.name
+      const parent = catById.get(cat.parentId)
+      if (!parent) return cat.name
+      if (parent.parentId == null) return 'ALB Tarım'
+      return parent.name
+    }
+
     const map = new Map<string, string>()
-    initialProducts.forEach((p) => {
-      const label = p.productBrand?.trim() || getProductBrandLabel(p.category.slug)
-      map.set(p.slug, label)
+    products.forEach((p) => {
+      map.set(p.slug, p.productBrand?.trim() || label(p.category.slug))
     })
     return map
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialProducts, catBySlug, catById])
+  }, [products, catBySlug, catById])
 
-  // ── Ürün filtreleme ───────────────────────────────────────────────────────
+  // ── URL yönetimi ──────────────────────────────────────────────────────────
 
-  const isInAncestor = (productCatSlug: string, ancestorId: number): boolean => {
-    let cat = catBySlug.get(productCatSlug)
-    while (cat) {
-      if (cat.id === ancestorId) return true
-      cat = cat.parentId != null ? catById.get(cat.parentId) : undefined
+  /**
+   * Parametreleri BİRLEŞTİREREK günceller. Eskiden her filtre değişiminde
+   * URLSearchParams sıfırdan kuruluyor ve diğer filtreler siliniyordu.
+   * Filtre değişince sayfa 1'e döner.
+   */
+  const updateParams = (patch: Record<string, string | null>, resetPage = true) => {
+    const sp = new URLSearchParams(searchParams.toString())
+
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === null || value === '') sp.delete(key)
+      else sp.set(key, value)
     }
-    return false
+
+    if (resetPage) sp.delete('sayfa')
+
+    const qs = sp.toString()
+    startTransition(() => {
+      router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    })
   }
 
-  const filtered = useMemo(() => {
-    let list = [...initialProducts]
+  // Kök kategori değişince tip filtresi anlamını yitirir → temizlenir
+  const setKullanim = (slug: string) => updateParams({ kullanim: slug || null, type: null, kategori: null })
+  const setTypeFilter = (typeName: string) => updateParams({ type: typeName || null, kategori: null })
+  const clearTypeFilter = () => updateParams({ type: null, kategori: null })
+  const clearAll = () => startTransition(() => router.push(pathname, { scroll: false }))
 
-    // 1. Kök kategori filtresi (Tümü modunda atlanır)
-    if (activeKullanim && activeRootCat) {
-      list = list.filter((p) => isInAncestor(p.category.slug, activeRootCat.id))
-    }
-
-    // 2. Ürün tipi filtresi — isim bazlı, tüm modlarda çalışır (Tümü dahil)
-    if (activeType) {
-      list = list.filter((p) => {
-        const cat = catBySlug.get(p.category.slug)
-        return cat?.name === activeType
-      })
-    } else if (!isIthal && activeCategory) {
-      // Geriye dönük uyumluluk: eski slug bazlı ALB filtresi
-      list = list.filter((p) => p.category.slug === activeCategory)
-    }
-
-    // 3. Arama
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.description?.toLowerCase().includes(q) ||
-          p.shortDescription?.toLowerCase().includes(q),
-      )
-    }
-
-    // 4. Sıralama
-    switch (sort) {
-      case 'price-asc':  return [...list].sort((a, b) => a.price - b.price)
-      case 'price-desc': return [...list].sort((a, b) => b.price - a.price)
-      case 'newest':     return [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      default:           return [...list].sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialProducts, catBySlug, catById, activeKullanim, activeRootCat?.id, isIthal, activeType, activeCategory, searchQuery, sort])
-
-  // ── URL yardımcıları ──────────────────────────────────────────────────────
-
-  const setKullanim = (slug: string) => {
-    const sp = new URLSearchParams()
-    if (slug) sp.set('kullanim', slug)
-    router.push(`?${sp.toString()}`)
+  const goToPage = (next: number) => {
+    updateParams({ sayfa: next > 1 ? String(next) : null }, false)
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  // Ürün tipi filtresi: tüm modlarda çalışır, mevcut kullanim değerini korur
-  const setTypeFilter = (typeName: string) => {
-    const sp = new URLSearchParams()
-    if (activeKullanim) sp.set('kullanim', activeKullanim)
-    if (typeName) sp.set('type', typeName)
-    router.push(`?${sp.toString()}`)
+  // ── Fiyat aralığı (yerel giriş, uygulanınca URL'e yazılır) ───────────────
+  const [priceInputs, setPriceInputs] = useState({ min: minPrice, max: maxPrice })
+
+  const applyPriceFilter = () => {
+    const min = priceInputs.min.trim()
+    const max = priceInputs.max.trim()
+    if (min && max && Number(min) > Number(max)) {
+      toast.error('En düşük fiyat, en yüksek fiyattan büyük olamaz.')
+      return
+    }
+    updateParams({ min: min || null, max: max || null })
   }
 
-  // Tip filtresini temizle (kullanim'ı koru)
-  const clearTypeFilter = () => {
-    const sp = new URLSearchParams()
-    if (activeKullanim) sp.set('kullanim', activeKullanim)
-    router.push(`?${sp.toString()}`)
-  }
-
-  // Tüm filtreleri temizle
-  const clearAll = () => router.push('?')
-
+  // ── Sepet ─────────────────────────────────────────────────────────────────
   const handleAddToCart = (product: Product) => {
-    // Tükenmiş ürün sepete eklenemez — eskiden kontrol yoktu ve tükenmiş ürün
-    // defalarca eklenip ödeme aşamasında sunucu tarafından reddediliyordu.
     if (product.stock === 0) {
       toast.error(`${product.name} şu anda tükendi.`)
       return
@@ -250,24 +215,41 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
   const discount = (product: Product) =>
     product.salePrice ? Math.round((1 - product.salePrice / product.price) * 100) : null
 
-  // Pill "Tümü" aktif mi?
   const pillAllActive = !activeType && !activeCategory
 
-  // Breadcrumb etiketi
   const activeCategoryLabel = useMemo(() => {
     if (activeType) return activeType
-    if (activeCategory) {
-      return albTypePills.find((p) => p.name === activeCategory)?.name ?? null
-    }
+    if (activeCategory) return catBySlug.get(activeCategory)?.name ?? null
     if (activeRootCat) return activeRootCat.name
     return null
-  }, [activeType, activeCategory, activeRootCat, albTypePills])
+  }, [activeType, activeCategory, activeRootCat, catBySlug])
+
+  // Aktif filtre rozetleri
+  const activeFilters = useMemo(() => {
+    const list: { label: string; clear: () => void }[] = []
+    if (searchQuery)
+      list.push({ label: `Arama: "${searchQuery}"`, clear: () => updateParams({ arama: null }) })
+    if (activeBrandFilter)
+      list.push({ label: activeBrandFilter, clear: () => updateParams({ marka: null }) })
+    if (minPrice || maxPrice) {
+      list.push({
+        label: `${minPrice || '0'} – ${maxPrice || '∞'} ₺`,
+        clear: () => {
+          setPriceInputs({ min: '', max: '' })
+          updateParams({ min: null, max: null })
+        },
+      })
+    }
+    if (inStockOnly)
+      list.push({ label: 'Stokta olanlar', clear: () => updateParams({ stokta: null }) })
+    return list
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, activeBrandFilter, minPrice, maxPrice, inStockOnly, searchParams])
 
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       {/* ─── Başlık + breadcrumb ─────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-100 py-6">
         <div className="container-main">
@@ -288,9 +270,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">
               {activeCategoryLabel ?? `${cfg.name} Ürünleri`}
             </h1>
-            <p className="text-sm text-gray-400 hidden sm:block shrink-0">
-              {filtered.length} ürün
-            </p>
+            <p className="text-sm text-gray-400 hidden sm:block shrink-0">{total} ürün</p>
           </div>
         </div>
       </div>
@@ -299,11 +279,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
       {hasHierarchy && (
         <div className="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-[0_1px_4px_rgba(0,0,0,.06)]">
           <div className="container-main">
-            <div
-              role="tablist"
-              className="flex items-stretch overflow-x-auto scrollbar-hide -mb-px"
-            >
-              {/* Tümü */}
+            <div role="tablist" className="flex items-stretch overflow-x-auto scrollbar-hide -mb-px">
               <button
                 role="tab"
                 aria-selected={!activeKullanim}
@@ -349,7 +325,9 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                       )}
                     </button>
                     {idx < rootCategories.length - 1 && (
-                      <span aria-hidden className="self-center text-gray-200 select-none px-1">|</span>
+                      <span aria-hidden className="self-center text-gray-200 select-none px-1">
+                        |
+                      </span>
                     )}
                   </div>
                 )
@@ -359,12 +337,11 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
         </div>
       )}
 
-      {/* ─── Ürün tipi pill şeridi — her zaman gösterilir ────────────────── */}
+      {/* ─── Ürün tipi pill şeridi ───────────────────────────────────────── */}
       {hasHierarchy && activePills.length > 0 && (
         <div className={`${accentLight} border-b border-gray-100`}>
           <div className="container-main">
-
-            {/* ── Mobil: Tümü + dropdown ── */}
+            {/* Mobil */}
             <div className="flex md:hidden items-center gap-2 py-3">
               <button
                 onClick={clearTypeFilter}
@@ -382,6 +359,7 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                     if (!val) clearTypeFilter()
                     else setTypeFilter(val)
                   }}
+                  aria-label="Ürün tipi"
                   className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-gray-400 cursor-pointer"
                 >
                   <option value="">Kategori Seç</option>
@@ -393,14 +371,17 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                 </select>
                 <svg
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none"
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
 
-            {/* ── Desktop: sarmalayan pill'ler ── */}
+            {/* Masaüstü */}
             <div className="hidden md:flex flex-wrap items-center gap-2 py-3">
               <button
                 onClick={clearTypeFilter}
@@ -426,78 +407,159 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                 )
               })}
             </div>
-
           </div>
         </div>
       )}
 
       {/* ─── Ana içerik ──────────────────────────────────────────────────── */}
       <div className="container-main py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* ── Filtre paneli ── */}
+          <aside className="lg:w-60 flex-shrink-0">
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 lg:sticky lg:top-24 space-y-6">
+              {/* Ürün markası */}
+              {facets.productBrands.length > 0 && (
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-3 text-xs uppercase tracking-widest">
+                    Ürün Markası
+                  </h3>
+                  <div className="space-y-1 max-h-56 overflow-y-auto scrollbar-hide">
+                    <button
+                      onClick={() => updateParams({ marka: null })}
+                      className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                        !activeBrandFilter
+                          ? `${accentBg} text-white font-semibold`
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      Tümü
+                    </button>
+                    {facets.productBrands.map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => updateParams({ marka: brand })}
+                        className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                          activeBrandFilter === brand
+                            ? `${accentBg} text-white font-semibold`
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {brand}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-        {/* Sıralama + sayım */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-sm text-gray-500">
-            {activeCategoryLabel && (
-              <span className={`font-semibold ${accentText}`}>{activeCategoryLabel} · </span>
-            )}
-            {filtered.length} ürün listeleniyor
-          </p>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:border-gray-400"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Flat düzen (hiyerarşi yok) */}
-        {!hasHierarchy && (
-          <div className="flex flex-col lg:flex-row gap-8">
-            <aside className="hidden lg:block w-56 flex-shrink-0">
-              <div className="bg-white rounded-2xl border border-gray-100 p-4 sticky top-24">
+              {/* Fiyat aralığı */}
+              <div>
                 <h3 className="font-bold text-gray-900 mb-3 text-xs uppercase tracking-widest">
-                  Kategoriler
+                  Fiyat Aralığı
                 </h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    value={priceInputs.min}
+                    onChange={(e) => setPriceInputs((p) => ({ ...p, min: e.target.value }))}
+                    placeholder={String(facets.priceRange.min)}
+                    aria-label="En düşük fiyat"
+                    className="w-full min-w-0 px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                  />
+                  <span className="text-gray-300">–</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    value={priceInputs.max}
+                    onChange={(e) => setPriceInputs((p) => ({ ...p, max: e.target.value }))}
+                    placeholder={String(facets.priceRange.max)}
+                    aria-label="En yüksek fiyat"
+                    className="w-full min-w-0 px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gray-400"
+                  />
+                </div>
+                <button
+                  onClick={applyPriceFilter}
+                  className={`btn-press w-full text-white text-sm font-semibold py-2 rounded-lg ${accentBg} ${accentHover}`}
+                >
+                  Uygula
+                </button>
+              </div>
+
+              {/* Stok */}
+              <div>
+                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={inStockOnly}
+                    onChange={(e) => updateParams({ stokta: e.target.checked ? '1' : null })}
+                    className="w-4 h-4 rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700">Sadece stokta olanlar</span>
+                </label>
+              </div>
+
+              {(activeFilters.length > 0 || activeKullanim || activeType) && (
                 <button
                   onClick={clearAll}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors mb-1 ${
-                    !activeCategory
-                      ? `${accentBg} ${accentHover} text-white font-semibold`
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
+                  className="w-full text-sm text-gray-500 hover:text-gray-900 underline underline-offset-2 pt-1"
                 >
-                  Tüm Ürünler
+                  Tüm filtreleri temizle
                 </button>
-                {initialCategories.map((cat) => (
+              )}
+            </div>
+          </aside>
+
+          {/* ── Liste ── */}
+          <div className="flex-1 min-w-0">
+            {/* Sıralama + sayım */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <p className="text-sm text-gray-500">
+                {activeCategoryLabel && (
+                  <span className={`font-semibold ${accentText}`}>{activeCategoryLabel} · </span>
+                )}
+                {total} ürün
+                {pageCount > 1 && (
+                  <span className="text-gray-400">
+                    {' '}
+                    (sayfa {page}/{pageCount})
+                  </span>
+                )}
+              </p>
+              <select
+                value={sort}
+                onChange={(e) => updateParams({ sirala: e.target.value })}
+                aria-label="Sıralama"
+                className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:border-gray-400"
+              >
+                {SORT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Aktif filtre rozetleri */}
+            {activeFilters.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 mb-5">
+                {activeFilters.map((filter) => (
                   <button
-                    key={cat.slug}
-                    onClick={() => setTypeFilter(cat.name)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between mb-1 ${
-                      activeCategory === cat.slug
-                        ? `${accentBg} ${accentHover} text-white font-semibold`
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
+                    key={filter.label}
+                    onClick={filter.clear}
+                    className="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full hover:border-gray-400 transition-colors"
                   >
-                    <span className="flex items-center gap-2">
-                      {cat.icon && <span>{cat.icon}</span>}
-                      <span>{cat.name}</span>
-                    </span>
-                    {cat.productCount != null && (
-                      <span className={`text-xs ${activeCategory === cat.slug ? 'text-white/70' : 'text-gray-400'}`}>
-                        {cat.productCount}
-                      </span>
-                    )}
+                    {filter.label}
+                    <span className="text-gray-400 text-sm leading-none">×</span>
                   </button>
                 ))}
               </div>
-            </aside>
-            <div className="flex-1">
+            )}
+
+            <div className={isPending ? 'opacity-50 transition-opacity duration-200' : ''}>
               <ProductGrid
-                key={`${activeKullanim}|${activeCategory}|${activeType}`}
-                products={filtered}
+                products={products}
                 brandKey={brandKey}
                 brandLabels={productBrandLabels}
                 accentBg={accentBg}
@@ -509,27 +571,82 @@ export default function UrunlerContent({ brandKey, initialProducts, initialCateg
                 clearAll={clearAll}
               />
             </div>
-          </div>
-        )}
 
-        {/* Hiyerarşik düzen */}
-        {hasHierarchy && (
-          <ProductGrid
-            key={`${activeKullanim}|${activeCategory}|${activeType}`}
-            products={filtered}
-            brandKey={brandKey}
-            brandLabels={productBrandLabels}
-            accentBg={accentBg}
-            accentHover={accentHover}
-            accentText={accentText}
-            accentTag={accentTag}
-            discount={discount}
-            handleAddToCart={handleAddToCart}
-            clearAll={clearAll}
-          />
-        )}
+            {/* Sayfalama */}
+            {pageCount > 1 && (
+              <Pagination page={page} pageCount={pageCount} onChange={goToPage} accentBg={accentBg} />
+            )}
+          </div>
+        </div>
       </div>
     </div>
+  )
+}
+
+// ─── Sayfalama ────────────────────────────────────────────────────────────────
+
+function Pagination({
+  page,
+  pageCount,
+  onChange,
+  accentBg,
+}: {
+  page: number
+  pageCount: number
+  onChange: (page: number) => void
+  accentBg: string
+}) {
+  // Geniş listelerde sayfa numaralarını kısalt: 1 … 4 5 6 … 20
+  const pages: (number | '…')[] = []
+  const spread = 1 // aktif sayfanın iki yanında gösterilecek sayfa adedi
+
+  for (let i = 1; i <= pageCount; i++) {
+    if (i === 1 || i === pageCount || (i >= page - spread && i <= page + spread)) {
+      pages.push(i)
+    } else if (pages[pages.length - 1] !== '…') {
+      pages.push('…')
+    }
+  }
+
+  return (
+    <nav aria-label="Sayfalama" className="flex items-center justify-center gap-1.5 mt-10">
+      <button
+        onClick={() => onChange(page - 1)}
+        disabled={page <= 1}
+        className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        ← Önceki
+      </button>
+
+      {pages.map((p, i) =>
+        p === '…' ? (
+          <span key={`gap-${i}`} className="px-2 text-gray-400 select-none">
+            …
+          </span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => onChange(p)}
+            aria-current={p === page ? 'page' : undefined}
+            className={`min-w-[38px] px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              p === page
+                ? `${accentBg} text-white`
+                : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-400'
+            }`}
+          >
+            {p}
+          </button>
+        ),
+      )}
+
+      <button
+        onClick={() => onChange(page + 1)}
+        disabled={page >= pageCount}
+        className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 hover:border-gray-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        Sonraki →
+      </button>
+    </nav>
   )
 }
 
@@ -564,7 +681,7 @@ function ProductGrid({
     return (
       <div className="text-center py-24">
         <p className="text-5xl mb-4">🔍</p>
-        <p className="text-gray-500 font-medium text-lg">Bu kategoride ürün bulunamadı</p>
+        <p className="text-gray-500 font-medium text-lg">Bu filtrelerle ürün bulunamadı</p>
         <button
           onClick={clearAll}
           className={`mt-5 ${accentText} underline underline-offset-2 text-sm font-medium`}
@@ -576,12 +693,13 @@ function ProductGrid({
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
       {products.map((product, index) => {
         const disc = discount(product)
         const displayPrice = product.salePrice ?? product.price
         const primaryImg = product.images?.find((i) => i.isPrimary)?.url ?? ''
         const brandLabel = brandLabels.get(product.slug) || product.category.name
+        const isOutOfStock = product.stock === 0
 
         return (
           <div
@@ -606,8 +724,15 @@ function ProductGrid({
                   </span>
                 )}
                 {product.isFeatured && !disc && (
-                  <span className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full text-white z-10 shadow-sm ${accentBg}`}>
+                  <span
+                    className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full text-white z-10 shadow-sm ${accentBg}`}
+                  >
                     ⭐ Öne Çıkan
+                  </span>
+                )}
+                {isOutOfStock && (
+                  <span className="absolute bottom-2.5 left-2.5 bg-gray-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
+                    Tükendi
                   </span>
                 )}
               </div>
@@ -615,8 +740,9 @@ function ProductGrid({
 
             {/* İçerik */}
             <div className="p-4 flex flex-col flex-1">
-              {/* Marka adı (yeşil küçük etiket) */}
-              <p className={`text-[10px] font-bold uppercase tracking-widest ${accentTag} mb-1 truncate`}>
+              <p
+                className={`text-[10px] font-bold uppercase tracking-widest ${accentTag} mb-1 truncate`}
+              >
                 {brandLabel}
               </p>
               <Link href={`/${brandKey}/urunler/${product.slug}`}>
@@ -637,14 +763,14 @@ function ProductGrid({
                 </div>
                 <button
                   onClick={() => handleAddToCart(product)}
-                  disabled={product.stock === 0}
-                  className={`btn-press w-full ${
-                    product.stock === 0
+                  disabled={isOutOfStock}
+                  className={`btn-press w-full text-sm py-2.5 rounded-xl font-semibold disabled:hover:translate-y-0 ${
+                    isOutOfStock
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       : `${accentBg} ${accentHover} text-white`
-                  } text-sm py-2.5 rounded-xl font-semibold disabled:hover:translate-y-0`}
+                  }`}
                 >
-                  {product.stock === 0 ? 'Tükendi' : 'Sepete Ekle'}
+                  {isOutOfStock ? 'Tükendi' : 'Sepete Ekle'}
                 </button>
               </div>
             </div>
