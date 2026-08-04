@@ -126,6 +126,12 @@ export default function CheckoutClient({ addresses }: Props) {
     addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id ?? ''
   )
   const [contractApproved, setContractApproved] = useState(false)
+
+  // Fatura bilgisi — e-arşiv fatura için zorunlu
+  const [invoiceType, setInvoiceType] = useState<'bireysel' | 'kurumsal'>('bireysel')
+  const [invoiceTitle, setInvoiceTitle] = useState('')
+  const [invoiceTaxId, setInvoiceTaxId] = useState('')
+  const [invoiceTaxOffice, setInvoiceTaxOffice] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -165,6 +171,24 @@ export default function CheckoutClient({ addresses }: Props) {
       setError('Lütfen bir teslimat adresi seçin.')
       return
     }
+    if (invoiceType === 'kurumsal') {
+      if (invoiceTitle.trim().length < 2) {
+        setError('Fatura için ticaret unvanı girin.')
+        return
+      }
+      if (invoiceTaxId.replace(/\D/g, '').length !== 10) {
+        setError('Vergi kimlik numarası 10 haneli olmalıdır.')
+        return
+      }
+      if (invoiceTaxOffice.trim().length < 2) {
+        setError('Vergi dairesi bilgisi girin.')
+        return
+      }
+    } else if (invoiceTaxId && invoiceTaxId.replace(/\D/g, '').length !== 11) {
+      setError('TC kimlik numarası 11 haneli olmalıdır.')
+      return
+    }
+
     if (!contractApproved) {
       setError('Devam etmek için sözleşmeleri onaylamanız gerekiyor.')
       return
@@ -195,7 +219,18 @@ export default function CheckoutClient({ addresses }: Props) {
       const res = await fetch('/api/odeme/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cartItems, addressData, brandKey, contractApproved }),
+        body: JSON.stringify({
+          cartItems,
+          addressData,
+          brandKey,
+          contractApproved,
+          invoice: {
+            type: invoiceType,
+            title: invoiceTitle,
+            taxId: invoiceTaxId,
+            taxOffice: invoiceTaxOffice,
+          },
+        }),
       })
 
       const data = await res.json()
@@ -282,6 +317,105 @@ export default function CheckoutClient({ addresses }: Props) {
                   >
                     + Yeni adres ekle
                   </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Fatura Bilgileri */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <h2 className="font-semibold text-gray-900 mb-1">Fatura Bilgileri</h2>
+              <p className="text-xs text-gray-500 mb-5">
+                Faturanız e-arşiv olarak düzenlenip e-posta adresinize gönderilir.
+              </p>
+
+              <div className="flex gap-2 mb-5">
+                {(['bireysel', 'kurumsal'] as const).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setInvoiceType(type)}
+                    className={`btn-press flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                      invoiceType === type
+                        ? 'bg-gray-900 text-white border-gray-900'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    {type === 'bireysel' ? 'Bireysel' : 'Kurumsal'}
+                  </button>
+                ))}
+              </div>
+
+              {invoiceType === 'kurumsal' ? (
+                <div className="space-y-3">
+                  <div>
+                    <label
+                      htmlFor="invoiceTitle"
+                      className="block text-sm font-medium text-gray-700 mb-1.5"
+                    >
+                      Ticaret Unvanı *
+                    </label>
+                    <input
+                      id="invoiceTitle"
+                      value={invoiceTitle}
+                      onChange={(e) => setInvoiceTitle(e.target.value)}
+                      placeholder="Örn: Yılmaz Tarım Ürünleri Ltd. Şti."
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label
+                        htmlFor="invoiceTaxId"
+                        className="block text-sm font-medium text-gray-700 mb-1.5"
+                      >
+                        Vergi No (10 hane) *
+                      </label>
+                      <input
+                        id="invoiceTaxId"
+                        inputMode="numeric"
+                        maxLength={10}
+                        value={invoiceTaxId}
+                        onChange={(e) => setInvoiceTaxId(e.target.value.replace(/\D/g, ''))}
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="invoiceTaxOffice"
+                        className="block text-sm font-medium text-gray-700 mb-1.5"
+                      >
+                        Vergi Dairesi *
+                      </label>
+                      <input
+                        id="invoiceTaxOffice"
+                        value={invoiceTaxOffice}
+                        onChange={(e) => setInvoiceTaxOffice(e.target.value)}
+                        placeholder="Örn: Anamur"
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label
+                    htmlFor="invoiceTckn"
+                    className="block text-sm font-medium text-gray-700 mb-1.5"
+                  >
+                    TC Kimlik No{' '}
+                    <span className="font-normal text-gray-400">(11 hane, isteğe bağlı)</span>
+                  </label>
+                  <input
+                    id="invoiceTckn"
+                    inputMode="numeric"
+                    maxLength={11}
+                    value={invoiceTaxId}
+                    onChange={(e) => setInvoiceTaxId(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  />
+                  <p className="text-xs text-gray-400 mt-1.5">
+                    Boş bırakırsanız fatura ad-soyad bilgisiyle düzenlenir.
+                  </p>
                 </div>
               )}
             </div>

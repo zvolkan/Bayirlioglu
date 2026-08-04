@@ -7,6 +7,7 @@ import toast from 'react-hot-toast'
 import { cn, formatPrice, calculateDiscount } from '@/lib/utils'
 import { BRAND } from '@/lib/constants'
 import { useCartStore } from '@/store/cartStore'
+import { shouldShowRating } from '@/lib/reviews'
 import { toggleFavorite } from '@/app/actions/favorites'
 import type { Product } from '@/lib/types'
 
@@ -176,31 +177,33 @@ export default function ProductCard({
           {product.name}
         </Link>
 
-        {/* Rating — sarı yıldızlar */}
-        <div className="flex items-center gap-1">
-          <div className="flex items-center gap-0.5">
-            {Array.from({ length: 5 }, (_, i) => (
-              <svg
-                key={i}
-                className={cn(
-                  'w-4 h-4',
-                  i < Math.round(product.rating)
-                    ? 'fill-yellow-400 stroke-yellow-400'
-                    : 'fill-gray-200 stroke-gray-300'
-                )}
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                strokeWidth="1"
-                aria-hidden="true"
-              >
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
-            ))}
+        {/* Rating — gerçek yorum sistemi kurulana kadar gizli */}
+        {shouldShowRating(product.reviewCount) && (
+          <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
+              {Array.from({ length: 5 }, (_, i) => (
+                <svg
+                  key={i}
+                  className={cn(
+                    'w-4 h-4',
+                    i < Math.round(product.rating)
+                      ? 'fill-yellow-400 stroke-yellow-400'
+                      : 'fill-gray-200 stroke-gray-300'
+                  )}
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1"
+                  aria-hidden="true"
+                >
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                </svg>
+              ))}
+            </div>
+            {product.reviewCount > 0 && (
+              <span className="text-xs text-gray-400">({product.reviewCount} yorum)</span>
+            )}
           </div>
-          {product.reviewCount > 0 && (
-            <span className="text-xs text-gray-400">({product.reviewCount} yorum)</span>
-          )}
-        </div>
+        )}
 
         {/* Fiyat satırı */}
         <div className="flex items-baseline gap-2 mt-auto pt-1">

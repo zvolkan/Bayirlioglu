@@ -86,6 +86,10 @@ model Product {
   // Ürün markası (TİMAC AGRO, HAIFA, ALB TARIM, FERTIVAL vb.)
   productBrand     String?  @map("product_brand") @db.VarChar(100)
 
+  // KDV oranı (%). Gübrede %1 veya %10, cihazda %20 olabilir.
+  // Fiyatlar KDV DAHİL girilir; bu oran fatura matrahını ayrıştırmak için.
+  vatRate          Int      @default(20) @map("vat_rate")
+
   // Değerlendirme (ortalama — review tablosu hazır değil iken burada tutuyoruz)
   rating           Decimal  @default(0) @map("rating") @db.Decimal(3, 1)
   reviewCount      Int      @default(0) @map("review_count")
@@ -252,6 +256,13 @@ model Order {
   contractIp         String?   @map("contract_ip") @db.VarChar(64)
   contractVersion    String?   @map("contract_version") @db.VarChar(20)
 
+  // Fatura bilgileri — e-arşiv fatura için zorunlu
+  invoiceType     String?  @map("invoice_type") @db.VarChar(20)   // "bireysel" | "kurumsal"
+  invoiceTitle    String?  @map("invoice_title") @db.VarChar(200) // kurumsal: ticaret unvanı
+  invoiceTaxId    String?  @map("invoice_tax_id") @db.VarChar(20) // TCKN (11) veya VKN (10)
+  invoiceTaxOffice String? @map("invoice_tax_office") @db.VarChar(100)
+  invoiceEmail    String?  @map("invoice_email") @db.VarChar(255)
+
   notes         String?     @db.Text
   adminNote     String?     @map("admin_note") @db.Text
   paymentMethod String?     @map("payment_method") @db.VarChar(50)
@@ -338,6 +349,10 @@ model OrderItem {
   quantity   Int
   unitPrice  Decimal @map("unit_price") @db.Decimal(10, 2)
   totalPrice Decimal @map("total_price") @db.Decimal(10, 2)
+
+  // Sipariş anındaki KDV oranı — ürünün oranı sonradan değişse de fatura bozulmaz
+  vatRate    Int     @default(20) @map("vat_rate")
+  vatAmount  Decimal? @map("vat_amount") @db.Decimal(10, 2)
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])

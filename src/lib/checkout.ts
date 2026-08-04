@@ -18,6 +18,21 @@ export function calculateShipping(subtotal: number): number {
   return subtotal >= KARGO_LIMIT ? 0 : KARGO_UCRETI
 }
 
+/**
+ * KDV DAHİL bir tutardan KDV'yi ayrıştırır.
+ * Fiyatlar KDV dahil girildiği için matrah = tutar / (1 + oran/100).
+ *
+ * Örn. 120 TL, %20 → matrah 100, KDV 20.
+ */
+export function extractVat(grossAmount: number, vatRatePercent: number) {
+  const rate = Number.isFinite(vatRatePercent) ? Math.max(0, vatRatePercent) : 0
+  const net = money(grossAmount / (1 + rate / 100))
+  return { net, vat: money(grossAmount - net), rate }
+}
+
+/** Türkiye'de geçerli KDV oranları */
+export const VAT_RATES = [1, 10, 20] as const
+
 export interface OrderTotals {
   subtotal: number
   shippingFee: number

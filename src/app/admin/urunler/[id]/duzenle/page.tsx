@@ -66,6 +66,7 @@ export default async function DuzenleUrunPage({
           brandId: product.brandId,
           categoryId: product.categoryId,
           productBrand: product.productBrand ?? undefined,
+          vatRate: product.vatRate ?? 20,
           isActive: product.isActive,
           isFeatured: product.isFeatured,
           specs: product.specs.map((s) => ({

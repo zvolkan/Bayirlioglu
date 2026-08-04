@@ -41,6 +41,7 @@ interface ProductFormProps {
     brandId?: number
     categoryId?: number
     productBrand?: string        // ← YENİ
+    vatRate?: number
     isActive?: boolean
     isFeatured?: boolean
     specs?: Spec[]
@@ -445,6 +446,25 @@ export default function ProductForm({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="urun-adi"
             />
+          </div>
+
+          {/* KDV Oranı */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              KDV Oranı *
+              <span className="ml-1.5 text-xs font-normal text-gray-400">
+                (fiyat KDV dahil girilir)
+              </span>
+            </label>
+            <select
+              name="vatRate"
+              defaultValue={String(defaultValues.vatRate ?? 20)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="1">%1 — Temel gıda, bazı tarım girdileri</option>
+              <option value="10">%10 — Gübre, tohum, yem vb.</option>
+              <option value="20">%20 — Genel oran</option>
+            </select>
           </div>
 
           {/* SKU */}

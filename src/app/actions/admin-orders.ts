@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { prisma, type TransactionClient } from '@/lib/db'
 import { verifyAdminToken } from '@/lib/admin-auth'
 import { processRefund } from '@/lib/refund'
+import { notifyOrderShipped } from '@/lib/email/notify'
 
 /**
  * Admin sipariş yönetimi.
@@ -173,6 +174,9 @@ export async function updateOrderShipping(
       shippedAt: new Date(),
     },
   })
+
+  // Müşteriye takip numarasını gönder
+  await notifyOrderShipped(orderId)
 
   revalidatePath('/admin/siparisler')
   revalidatePath(`/admin/siparisler/${orderId}`)

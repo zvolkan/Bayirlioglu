@@ -4,6 +4,7 @@ import Link from 'next/link'
 import ProductImage from '@/components/product/ProductImage'
 import { BRANDS } from '@/lib/constants'
 import { getProductBySlug, getRelatedProducts } from '@/lib/queries/products'
+import { shouldShowRating } from '@/lib/reviews'
 import type { BrandKey } from '@/lib/types'
 import AddToCartButton from '@/components/product/AddToCartButton'
 
@@ -153,17 +154,24 @@ export default async function ProductDetailPage({ params }: Props) {
                 {product.name}
               </h1>
 
-              {/* Değerlendirme */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span key={i} className={i < Math.round(product.rating) ? 'text-yellow-400' : 'text-gray-300'}>
-                      ★
-                    </span>
-                  ))}
+              {/* Değerlendirme — gerçek yorum sistemi kurulana kadar gizli */}
+              {shouldShowRating(product.reviewCount) && (
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <span
+                        key={i}
+                        className={i < Math.round(product.rating) ? 'text-yellow-400' : 'text-gray-300'}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {product.rating} ({product.reviewCount} değerlendirme)
+                  </span>
                 </div>
-                <span className="text-sm text-gray-500">{product.rating} ({product.reviewCount} değerlendirme)</span>
-              </div>
+              )}
 
               {/* Fiyat */}
               <div className="flex items-end gap-3 mb-6 pb-6 border-b border-gray-100">

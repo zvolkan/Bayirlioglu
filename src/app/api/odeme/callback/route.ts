@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { retrieveCheckoutForm } from '@/lib/iyzico'
 import { prisma, type TransactionClient } from '@/lib/db'
 import { getSiteUrl } from '@/lib/site-url'
+import { notifyOrderConfirmed } from '@/lib/email/notify'
 
 /**
  * iyzico ödeme geri dönüşü.
@@ -192,6 +193,9 @@ export async function POST(req: NextRequest) {
         })
         .catch(() => {})
     }
+
+    // Sipariş onay e-postası — başarısız olsa bile akışı durdurmaz
+    await notifyOrderConfirmed(order.id)
 
     return redirectGet(`${siteUrl}/odeme/basarili?siparis=${order.id}`)
   } catch (err) {

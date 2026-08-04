@@ -1,0 +1,319 @@
+import { SITE_CONFIG } from '@/lib/constants'
+import { getSiteUrl } from '@/lib/site-url'
+
+/**
+ * E-posta şablonları.
+ *
+ * Tablo tabanlı düzen kullanılıyor — Outlook ve Gmail dahil tüm istemcilerde
+ * güvenilir şekilde render edilen tek yöntem. Flexbox/grid e-postada çalışmaz.
+ */
+
+function money(value: number): string {
+  return value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function layout(title: string, bodyHtml: string): string {
+  const siteUrl = getSiteUrl()
+  return `<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>${escapeHtml(title)}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#18181b;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
+
+        <tr><td style="background:#18181b;padding:20px 28px;">
+          <p style="margin:0;color:#ffffff;font-size:17px;font-weight:700;letter-spacing:.02em;">Bayırlıoğlu Grup</p>
+        </td></tr>
+
+        <tr><td style="padding:28px;">
+          ${bodyHtml}
+        </td></tr>
+
+        <tr><td style="background:#fafafa;border-top:1px solid #e4e4e7;padding:20px 28px;">
+          <p style="margin:0 0 6px;font-size:12px;color:#71717a;line-height:1.6;">
+            ${escapeHtml(SITE_CONFIG.address)}
+          </p>
+          <p style="margin:0;font-size:12px;color:#71717a;">
+            <a href="${siteUrl}" style="color:#3f3f46;text-decoration:none;">${escapeHtml(
+              siteUrl.replace(/^https?:\/\//, ''),
+            )}</a>
+            &nbsp;·&nbsp; ${escapeHtml(SITE_CONFIG.phone)}
+            &nbsp;·&nbsp; ${escapeHtml(SITE_CONFIG.email)}
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+function button(href: string, label: string): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:20px 0;">
+    <tr><td style="background:#18181b;border-radius:12px;">
+      <a href="${href}" style="display:inline-block;padding:12px 24px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;">${escapeHtml(
+        label,
+      )}</a>
+    </td></tr>
+  </table>`
+}
+
+export interface OrderEmailItem {
+  name: string
+  quantity: number
+  unit: string
+  totalPrice: number
+}
+
+export interface OrderEmailData {
+  orderId: string
+  customerName: string
+  items: OrderEmailItem[]
+  subtotal: number
+  shippingFee: number
+  total: number
+  shipFullName: string
+  shipPhone: string
+  shipLine1: string
+  shipLine2?: string | null
+  shipDistrict: string
+  shipCity: string
+}
+
+function itemRows(items: OrderEmailItem[]): string {
+  return items
+    .map(
+      (item) => `<tr>
+        <td style="padding:10px 0;border-bottom:1px solid #f4f4f5;font-size:14px;">
+          ${escapeHtml(item.name)}
+          <span style="display:block;color:#a1a1aa;font-size:12px;margin-top:2px;">
+            ${item.quantity} ${escapeHtml(item.unit)}
+          </span>
+        </td>
+        <td align="right" style="padding:10px 0;border-bottom:1px solid #f4f4f5;font-size:14px;white-space:nowrap;">
+          ${money(item.totalPrice)}
+        </td>
+      </tr>`,
+    )
+    .join('')
+}
+
+function totalsRows(data: OrderEmailData): string {
+  return `
+    <tr>
+      <td style="padding:10px 0 4px;font-size:14px;color:#71717a;">Ara Toplam</td>
+      <td align="right" style="padding:10px 0 4px;font-size:14px;">${money(data.subtotal)}</td>
+    </tr>
+    <tr>
+      <td style="padding:4px 0;font-size:14px;color:#71717a;">Kargo</td>
+      <td align="right" style="padding:4px 0;font-size:14px;">${
+        data.shippingFee === 0 ? 'Ücretsiz' : money(data.shippingFee)
+      }</td>
+    </tr>
+    <tr>
+      <td style="padding:12px 0 0;border-top:2px solid #18181b;font-size:15px;font-weight:700;">
+        Toplam <span style="font-weight:400;color:#a1a1aa;font-size:12px;">(KDV dahil)</span>
+      </td>
+      <td align="right" style="padding:12px 0 0;border-top:2px solid #18181b;font-size:16px;font-weight:700;">
+        ${money(data.total)}
+      </td>
+    </tr>`
+}
+
+function addressBlock(data: OrderEmailData): string {
+  return `<div style="background:#fafafa;border-radius:12px;padding:16px;margin-top:24px;">
+    <p style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#a1a1aa;font-weight:600;">
+      Teslimat Adresi
+    </p>
+    <p style="margin:0;font-size:14px;line-height:1.7;color:#3f3f46;">
+      ${escapeHtml(data.shipFullName)}<br />
+      ${escapeHtml(data.shipPhone)}<br />
+      ${escapeHtml(data.shipLine1)}${data.shipLine2 ? ', ' + escapeHtml(data.shipLine2) : ''}<br />
+      ${escapeHtml(data.shipDistrict)} / ${escapeHtml(data.shipCity)}
+    </p>
+  </div>`
+}
+
+// ─── 1. Sipariş onayı ────────────────────────────────────────────────────────
+
+export function orderConfirmationEmail(data: OrderEmailData) {
+  const siteUrl = getSiteUrl()
+
+  const html = layout(
+    'Siparişiniz Alındı',
+    `
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz alındı 🎉</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
+      Merhaba ${escapeHtml(data.customerName)}, ödemeniz başarıyla tamamlandı.
+      Siparişiniz hazırlanmaya alındı; kargoya verildiğinde takip numarasını
+      e-posta ile göndereceğiz.
+    </p>
+
+    <p style="margin:0 0 4px;font-size:12px;color:#a1a1aa;">SİPARİŞ NUMARASI</p>
+    <p style="margin:0 0 20px;font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:600;">
+      ${escapeHtml(data.orderId)}
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      ${itemRows(data.items)}
+      ${totalsRows(data)}
+    </table>
+
+    ${addressBlock(data)}
+    ${button(`${siteUrl}/hesabim/siparislerim`, 'Siparişimi Görüntüle')}
+
+    <p style="margin:16px 0 0;font-size:12px;color:#a1a1aa;line-height:1.7;">
+      Cayma hakkınız ve iade koşulları için
+      <a href="${siteUrl}/iade-politikasi" style="color:#3f3f46;">iade politikamıza</a>
+      göz atabilirsiniz.
+    </p>
+  `,
+  )
+
+  const text = [
+    `Siparişiniz alındı — ${data.orderId}`,
+    '',
+    ...data.items.map((i) => `${i.name} × ${i.quantity} ${i.unit} — ${money(i.totalPrice)}`),
+    '',
+    `Ara toplam: ${money(data.subtotal)}`,
+    `Kargo: ${data.shippingFee === 0 ? 'Ücretsiz' : money(data.shippingFee)}`,
+    `Toplam: ${money(data.total)} (KDV dahil)`,
+    '',
+    `Siparişleriniz: ${siteUrl}/hesabim/siparislerim`,
+  ].join('\n')
+
+  return { subject: `Siparişiniz alındı — ${data.orderId.slice(-8).toUpperCase()}`, html, text }
+}
+
+// ─── 2. Kargo bildirimi ──────────────────────────────────────────────────────
+
+export function orderShippedEmail(params: {
+  orderId: string
+  customerName: string
+  carrier: string
+  trackingNumber: string
+  trackingUrl?: string | null
+}) {
+  const siteUrl = getSiteUrl()
+
+  const html = layout(
+    'Siparişiniz Kargoya Verildi',
+    `
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz yola çıktı 🚚</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
+      Merhaba ${escapeHtml(params.customerName)}, siparişiniz kargoya teslim edildi.
+    </p>
+
+    <div style="background:#fafafa;border-radius:12px;padding:16px;">
+      <p style="margin:0 0 6px;font-size:12px;color:#a1a1aa;">KARGO FİRMASI</p>
+      <p style="margin:0 0 14px;font-size:15px;font-weight:600;">${escapeHtml(params.carrier)}</p>
+      <p style="margin:0 0 6px;font-size:12px;color:#a1a1aa;">TAKİP NUMARASI</p>
+      <p style="margin:0;font-family:ui-monospace,Menlo,monospace;font-size:15px;font-weight:700;">
+        ${escapeHtml(params.trackingNumber)}
+      </p>
+    </div>
+
+    ${
+      params.trackingUrl
+        ? button(params.trackingUrl, 'Kargoyu Takip Et')
+        : button(`${siteUrl}/siparis-takibi`, 'Sipariş Takibi')
+    }
+
+    <p style="margin:16px 0 0;font-size:12px;color:#a1a1aa;">
+      Sipariş No: ${escapeHtml(params.orderId)}
+    </p>
+  `,
+  )
+
+  const text = [
+    'Siparişiniz kargoya verildi.',
+    `Kargo firması: ${params.carrier}`,
+    `Takip numarası: ${params.trackingNumber}`,
+    params.trackingUrl ? `Takip: ${params.trackingUrl}` : `${siteUrl}/siparis-takibi`,
+    `Sipariş No: ${params.orderId}`,
+  ].join('\n')
+
+  return { subject: 'Siparişiniz kargoya verildi', html, text }
+}
+
+// ─── 3. İptal / iade ─────────────────────────────────────────────────────────
+
+export function orderRefundedEmail(params: {
+  orderId: string
+  customerName: string
+  amount: number
+  reason?: string
+}) {
+  const html = layout(
+    'Siparişiniz İptal Edildi',
+    `
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz iptal edildi</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
+      Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
+        params.orderId,
+      )} numaralı siparişiniz iptal edildi ve
+      <strong>${money(params.amount)}</strong> tutarındaki ödemeniz iade işlemine alındı.
+    </p>
+
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px;">
+      <p style="margin:0;font-size:14px;color:#92400e;line-height:1.7;">
+        İade tutarının kartınıza yansıması bankanıza bağlı olarak
+        <strong>1-7 iş günü</strong> sürebilir.
+      </p>
+    </div>
+
+    ${params.reason ? `<p style="margin:16px 0 0;font-size:13px;color:#71717a;">Not: ${escapeHtml(params.reason)}</p>` : ''}
+  `,
+  )
+
+  const text = [
+    `${params.orderId} numaralı siparişiniz iptal edildi.`,
+    `İade tutarı: ${money(params.amount)}`,
+    'Kartınıza yansıması 1-7 iş günü sürebilir.',
+  ].join('\n')
+
+  return { subject: 'Siparişiniz iptal edildi', html, text }
+}
+
+// ─── 4. Yöneticiye yeni sipariş bildirimi ────────────────────────────────────
+
+export function adminNewOrderEmail(data: OrderEmailData) {
+  const siteUrl = getSiteUrl()
+
+  const html = layout(
+    'Yeni Sipariş',
+    `
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Yeni sipariş geldi</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#52525b;">
+      ${escapeHtml(data.customerName)} — <strong>${money(data.total)}</strong>
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      ${itemRows(data.items)}
+    </table>
+
+    ${addressBlock(data)}
+    ${button(`${siteUrl}/admin/siparisler/${data.orderId}`, 'Siparişi Aç')}
+  `,
+  )
+
+  return {
+    subject: `Yeni sipariş: ${money(data.total)} — ${data.customerName}`,
+    html,
+    text: `Yeni sipariş ${data.orderId} — ${money(data.total)} — ${data.customerName}`,
+  }
+}

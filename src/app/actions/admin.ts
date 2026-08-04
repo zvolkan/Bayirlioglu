@@ -192,6 +192,7 @@ interface ProductInput {
   isActive: boolean
   isFeatured: boolean
   productBrand: string | null
+  vatRate: number
 }
 
 /**
@@ -258,6 +259,9 @@ function parseProductForm(formData: FormData): ProductInput {
     isActive: formData.get('isActive') === 'true',
     isFeatured: formData.get('isFeatured') === 'true',
     productBrand: ((formData.get('productBrand') as string) || '').trim().slice(0, 100) || null,
+    vatRate: [1, 10, 20].includes(Number(formData.get('vatRate')))
+      ? Number(formData.get('vatRate'))
+      : 20,
   }
 }
 

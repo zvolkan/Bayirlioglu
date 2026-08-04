@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
 import { initializeCheckoutForm } from '@/lib/iyzico'
-import { calculateTotals, money } from '@/lib/checkout'
+import { calculateTotals, money, extractVat } from '@/lib/checkout'
 import { getSiteUrl } from '@/lib/site-url'
 
 /** Sözleşme metinleri değiştiğinde artırılmalı — hangi sürümün onaylandığı kaydedilir */
@@ -36,6 +36,13 @@ export async function POST(req: NextRequest) {
     addressData?: Record<string, string>
     brandKey?: string
     contractApproved?: boolean
+    invoice?: {
+      type?: string
+      title?: string
+      taxId?: string
+      taxOffice?: string
+      email?: string
+    }
   }
   try {
     body = await req.json()
@@ -43,7 +50,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Geçersiz istek.' }, { status: 400 })
   }
 
-  const { cartItems, addressData, brandKey, contractApproved } = body
+  const { cartItems, addressData, brandKey, contractApproved, invoice } = body
 
   // Mesafeli satış sözleşmesi onayı sunucuda da zorunlu — istemci kontrolü
   // atlanabilir ve onay kaydı yasal ispat için gerekli.
@@ -91,6 +98,7 @@ export async function POST(req: NextRequest) {
       stockQuantity: true,
       isActive: true,
       brandId: true,
+      vatRate: true,
     },
   })
 
@@ -101,7 +109,13 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const validated: { id: string; name: string; unitPrice: number; quantity: number }[] = []
+  const validated: {
+    id: string
+    name: string
+    unitPrice: number
+    quantity: number
+    vatRate: number
+  }[] = []
 
   for (const product of products) {
     const quantity = requested.get(product.id)!
@@ -131,7 +145,13 @@ export async function POST(req: NextRequest) {
     }
 
     const unitPrice = Number(product.salePrice ?? product.price)
-    validated.push({ id: product.id, name: product.name, unitPrice, quantity })
+    validated.push({
+      id: product.id,
+      name: product.name,
+      unitPrice,
+      quantity,
+      vatRate: typeof product.vatRate === 'number' ? product.vatRate : 20,
+    })
   }
 
   // Satır toplamlarını ÖNCE yuvarla, sonra topla. Böylece iyzico'ya gönderilen
@@ -140,6 +160,12 @@ export async function POST(req: NextRequest) {
   const lineTotals = validated.map((i) => money(i.unitPrice * i.quantity))
   const subtotalRaw = lineTotals.reduce((sum, value) => sum + value, 0)
   const { subtotal, shippingFee, total } = calculateTotals(subtotalRaw)
+
+  // Fatura için KDV matrahını ayrıştır (fiyatlar KDV dahil girilir)
+  const lineVats = validated.map((item, index) => extractVat(lineTotals[index], item.vatRate).vat)
+  // Kargo ücreti %20 KDV'ye tabidir
+  const shippingVat = shippingFee > 0 ? extractVat(shippingFee, 20).vat : 0
+  const taxAmount = money(lineVats.reduce((sum, v) => sum + v, 0) + shippingVat)
 
   if (total <= 0) {
     return NextResponse.json({ error: 'Sipariş tutarı geçersiz.' }, { status: 400 })
@@ -175,6 +201,27 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // ── Fatura bilgisi ───────────────────────────────────────────────────────
+  const invoiceType = invoice?.type === 'kurumsal' ? 'kurumsal' : 'bireysel'
+  const taxId = (invoice?.taxId ?? '').replace(/\D/g, '')
+
+  if (invoiceType === 'kurumsal') {
+    if (!invoice?.title || invoice.title.trim().length < 2) {
+      return NextResponse.json({ error: 'Fatura için ticaret unvanı gerekli.' }, { status: 400 })
+    }
+    if (taxId.length !== 10) {
+      return NextResponse.json(
+        { error: 'Vergi kimlik numarası 10 haneli olmalıdır.' },
+        { status: 400 },
+      )
+    }
+    if (!invoice?.taxOffice || invoice.taxOffice.trim().length < 2) {
+      return NextResponse.json({ error: 'Vergi dairesi bilgisi gerekli.' }, { status: 400 })
+    }
+  } else if (taxId && taxId.length !== 11) {
+    return NextResponse.json({ error: 'TC kimlik numarası 11 haneli olmalıdır.' }, { status: 400 })
+  }
+
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } })
   const contactName = String(addr.fullName).trim()
   const nameParts = contactName.split(/\s+/)
@@ -204,6 +251,7 @@ export async function POST(req: NextRequest) {
       paymentStatus: 'pending',
       subtotal,
       shippingFee,
+      taxAmount,
       totalAmount: total,
       shipFullName: contactName,
       shipPhone: String(addr.phone ?? ''),
@@ -216,12 +264,20 @@ export async function POST(req: NextRequest) {
       contractAcceptedAt: new Date(),
       contractIp: ip.slice(0, 64),
       contractVersion: CONTRACT_VERSION,
+      invoiceType,
+      invoiceTitle: invoiceType === 'kurumsal' ? invoice!.title!.trim().slice(0, 200) : null,
+      invoiceTaxId: taxId || null,
+      invoiceTaxOffice:
+        invoiceType === 'kurumsal' ? (invoice?.taxOffice ?? '').trim().slice(0, 100) : null,
+      invoiceEmail: (invoice?.email ?? user.email ?? '').trim().slice(0, 255) || null,
       items: {
         create: validated.map((item, index) => ({
           productId: item.id,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           totalPrice: lineTotals[index],
+          vatRate: item.vatRate,
+          vatAmount: lineVats[index],
         })),
       },
     },
@@ -291,7 +347,7 @@ export async function POST(req: NextRequest) {
 
     if (result.status !== 'success') {
       console.error('[odeme] iyzico başlatma hatası:', result.errorCode, result.errorMessage)
-      await prisma.order.delete({ where: { id: order.id } }).catch((e) => {
+      await prisma.order.delete({ where: { id: order.id } }).catch((e: unknown) => {
         console.error('[odeme] öksüz sipariş silinemedi:', order.id, e)
       })
       return NextResponse.json(
@@ -308,7 +364,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ token: result.token, orderId: order.id })
   } catch (err) {
     console.error('[odeme] iyzico bağlantı hatası:', err)
-    await prisma.order.delete({ where: { id: order.id } }).catch((e) => {
+    await prisma.order.delete({ where: { id: order.id } }).catch((e: unknown) => {
       console.error('[odeme] öksüz sipariş silinemedi:', order.id, e)
     })
     return NextResponse.json(
