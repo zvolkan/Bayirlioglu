@@ -150,7 +150,7 @@ export const SITE_CONFIG = {
   name: BRAND.name,
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
   phone: '+90 544 414 22 54',
-  email: 'info@albgrup.com.tr',
+  email: 'info@bayirlioglu.com',
   address:
     'SAÇKAN KAVŞAĞI DOĞUSU SAVCI-ŞOK MARKET YANI, Yeşilyurt, Akdeniz Cd. NO:20/22, 33640 Anamur/Mersin',
   mapsUrl:

@@ -222,6 +222,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'TC kimlik numarası 11 haneli olmalıdır.' }, { status: 400 })
   }
 
+  // iyzico `buyer.identityNumber` alanını zorunlu tutuyor; gönderilmezse
+  // "identityNumber gönderilmesi zorunludur" hatasıyla ödeme hiç başlamıyor.
+  // Kurumsal faturada vergi kimlik no, bireyselde TC kimlik no kullanılır.
+  // Müşteri TC'sini girmediyse iyzico'nun kendi örneklerinde kullandığı
+  // dolgu değer gönderilir — e-arşiv fatura ad-soyad ve adresle kesilebildiği
+  // için bu bilgi yasal olarak zorunlu değil, iyzico'nun format zorunluluğu.
+  const identityNumber = taxId || '11111111111'
+
   const dbUser = await prisma.user.findUnique({ where: { id: user.id } })
   const contactName = String(addr.fullName).trim()
   const nameParts = contactName.split(/\s+/)
@@ -320,6 +328,7 @@ export async function POST(req: NextRequest) {
       id: user.id,
       name: firstName,
       surname: lastName,
+      identityNumber,
       gsmNumber: gsm,
       email: user.email!,
       registrationAddress: addrLine,
@@ -334,7 +343,9 @@ export async function POST(req: NextRequest) {
       address: addrLine,
     },
     billingAddress: {
-      contactName,
+      // Kurumsal faturada muhatap kişi değil, ticaret unvanıdır
+      contactName:
+        invoiceType === 'kurumsal' ? invoice!.title!.trim().slice(0, 200) : contactName,
       city: String(addr.city),
       country: 'Turkey',
       address: addrLine,
