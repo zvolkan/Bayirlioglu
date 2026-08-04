@@ -3,9 +3,12 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useCartStore } from '@/store/cartStore'
+import { KARGO_LIMIT, calculateTotals } from '@/lib/checkout'
+import { SITE_CONFIG } from '@/lib/constants'
 
-const KARGO_LIMIT = 500
-const KARGO_UCRETI = 29.90
+// Sözleşme metinlerinde kullanılacak gerçek alan adı ve iletişim bilgileri
+const SITE_DOMAIN = SITE_CONFIG.url.replace(/^https?:\/\//, '').replace(/\/+$/, '')
+const SITE_EMAIL = SITE_CONFIG.email
 
 type SavedAddress = {
   id: string
@@ -39,13 +42,14 @@ const ON_BILGILENDIRME = `ÖN BİLGİLENDİRME FORMU
 Ön Bilgilendirme Formu ve Sözleşme'nin uygulanmasında ve yorumlanmasında aşağıda yazılı terimler karşılarındaki yazılı açıklamaları ifade edeceklerdir.
 
 ALICI: Mal veya Hizmeti ticari veya mesleki olmayan amaçlarla edinen, kullanan veya yararlanan gerçek kişiyi,
-SATICI: Bayırlıoğlu Grup (bayirlioglu-6rv9.vercel.app) üzerinden satış yapan firmayı,
-SİTE: bayirlioglu-6rv9.vercel.app adresini,
+SATICI: Bayırlıoğlu Grup (${SITE_DOMAIN}) üzerinden satış yapan firmayı,
+SİTE: ${SITE_DOMAIN} adresini,
 
 3. SATICI BİLGİLERİ
 Ticaret Unvanı: Bayırlıoğlu Grup
-E-posta: info@bayirlioglu.com
-Web Adresi: bayirlioglu-6rv9.vercel.app
+E-posta: ${SITE_EMAIL}
+Web Adresi: ${SITE_DOMAIN}
+Adres: ${SITE_CONFIG.address}
 
 4. TEMEL ÖZELLİKLER
 Mal veya Hizmetin temel nitelikleri Site'de yayınlanan ürün/hizmet sayfalarında belirtilmektedir. Kampanya süresince geçerli olan satış fiyatı Siparişinizi verdiğiniz tarihteki fiyattır.
@@ -64,12 +68,12 @@ const MESAFELI_SATIS = `MESAFELİ SATIŞ SÖZLEŞMESİ
 SATICI:
 Ticaret Unvanı: Bayırlıoğlu Grup
 Adres: Anamur, Mersin
-E-posta: info@bayirlioglu.com
+E-posta: ${SITE_EMAIL}
 
 ALICI: Sipariş sırasında beyan edilen ad-soyad, adres ve iletişim bilgilerine sahip kişi.
 
 2. KONU
-İşbu Sözleşme, Alıcının, Satıcı'ya ait bayirlioglu-6rv9.vercel.app internet sitesinden elektronik ortamda siparişini verdiği ürünlerin satışı ve teslimatına ilişkin olarak 6502 sayılı Tüketicinin Korunması Hakkındaki Kanun ve Mesafeli Sözleşmelere Dair Yönetmelik hükümleri gereğince tarafların hak ve yükümlülüklerini düzenlemektedir.
+İşbu Sözleşme, Alıcının, Satıcı'ya ait ${SITE_DOMAIN} internet sitesinden elektronik ortamda siparişini verdiği ürünlerin satışı ve teslimatına ilişkin olarak 6502 sayılı Tüketicinin Korunması Hakkındaki Kanun ve Mesafeli Sözleşmelere Dair Yönetmelik hükümleri gereğince tarafların hak ve yükümlülüklerini düzenlemektedir.
 
 3. ÜRÜN BİLGİLERİ
 Malın/Ürünün temel özellikleri (türü, miktarı, marka/modeli, rengi, adedi) Satıcı'ya ait internet sitesinde yayınlanmaktadır. Kampanya tarihine kadar geçerli olan satış fiyatı sipariş formunda belirtilmektedir.
@@ -101,21 +105,21 @@ Cayma Hakkı Kullanılabilecek Ürünleri Nasıl İade Ederim?
 4. İadeniz onaylandıktan sonra ödemeniz 3-7 iş günü içinde iade edilir.
 
 İletişim
-Cayma hakkı ve iade işlemleri için: info@bayirlioglu.com`
+Cayma hakkı ve iade işlemleri için: ${SITE_EMAIL}`
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function CheckoutClient({ addresses }: Props) {
   const items = useCartStore((s: { items: import('@/lib/types').CartItem[] }) => s.items)
-  const clearCart = useCartStore((s: { clearCart: () => void }) => s.clearCart)
+  // Sepet, ödeme başarılı sayfasında temizlenir (ClearCart bileşeni)
 
-  const subtotal = items.reduce(
+  const subtotalRaw = items.reduce(
     (sum: number, item: import('@/lib/types').CartItem) =>
       sum + (item.product.salePrice ?? item.product.price) * item.quantity,
     0
   )
-  const cargoFee = subtotal >= KARGO_LIMIT ? 0 : KARGO_UCRETI
-  const total = parseFloat((subtotal + cargoFee).toFixed(2))
+  // Sepet, ödeme ve sunucu aynı hesabı kullanır
+  const { subtotal, shippingFee: cargoFee, total } = calculateTotals(subtotalRaw)
 
   const [selectedAddressId, setSelectedAddressId] = useState<string>(
     addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id ?? ''

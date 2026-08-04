@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import toast from 'react-hot-toast'
+import { submitDealerApplication } from '@/app/actions/forms'
 import Link from 'next/link'
 import { TURKISH_CITIES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
@@ -88,8 +89,25 @@ export default function BayiBasvuruPage() {
   })
 
   const onSubmit = async (data: FormData) => {
-    await new Promise((r) => setTimeout(r, 1500))
-    console.log('Bayi başvurusu:', data)
+    const result = await submitDealerApplication({
+      companyName: data.companyName,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: data.phone,
+      city: data.city,
+      district: data.district,
+      brandInterest: data.brand,
+      businessType: data.businessType,
+      annualRevenue: data.annualRevenue,
+      message: data.message,
+    })
+
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+
     toast.success('Başvurunuz alındı! En kısa sürede size dönüş yapacağız.')
     setSubmitted(true)
     reset()

@@ -8,6 +8,7 @@ import toast, { Toaster } from 'react-hot-toast'
 import { SITE_CONFIG, GROUP_WHATSAPP } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { Phone, Mail, MapPin, Clock, MessageCircle, Send, User, ChevronDown } from 'lucide-react'
+import { submitContactMessage } from '@/app/actions/forms'
 
 const contactSchema = z.object({
   firstName: z.string().min(2, 'Ad en az 2 karakter olmalıdır'),
@@ -42,15 +43,27 @@ function ContactForm() {
 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    // Mesaj artık veritabanına kaydediliyor (eskiden console.log'a gidiyordu)
+    const result = await submitContactMessage({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: data.phone,
+      subject: SUBJECTS.find((s) => s.value === data.subject)?.label ?? data.subject,
+      message: data.message,
+    })
+
     setIsSubmitting(false)
+
+    if (!result.ok) {
+      toast.error(result.error, { duration: 5000 })
+      return
+    }
+
     toast.success('Mesajınız başarıyla gönderildi! En kısa sürede sizinle iletişime geçeceğiz.', {
       duration: 5000,
-      style: {
-        borderRadius: '10px',
-        background: '#333',
-        color: '#fff',
-      },
+      style: { borderRadius: '10px', background: '#333', color: '#fff' },
     })
     reset()
   }

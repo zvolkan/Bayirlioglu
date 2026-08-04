@@ -1,6 +1,14 @@
 import Link from 'next/link'
 import ClearCart from './_components/ClearCart'
 
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Siparişiniz Alındı | Bayırlıoğlu Grup',
+  robots: { index: false, follow: false },
+}
+
+
 type Props = {
   searchParams: Promise<{ siparis?: string }>
 }

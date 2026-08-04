@@ -1,26 +1,85 @@
 'use server'
 
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { uploadProductImage, deleteProductImage, getSignedUploadUrl } from '@/lib/supabase-admin'
+import { createAdminToken, verifyAdminToken, timingSafeEqual } from '@/lib/admin-auth'
+import { safeInternalPath } from '@/lib/safe-redirect'
 
 const ADMIN_COOKIE = 'admin_session'
 const COOKIE_MAX_AGE = 60 * 60 * 8 // 8 saat
 
+// ─── YETKİ KONTROLÜ ──────────────────────────────────────────────────────────
+
+/**
+ * Her admin server action'ının BAŞINDA çağrılmalı.
+ *
+ * Middleware yalnızca yol (pathname) bazlı koruma yapar; server action'lar ise
+ * herhangi bir herkese açık sayfaya POST edilerek çağrılabilir. Dolayısıyla
+ * yetki kontrolünün action'ın kendi içinde olması şart.
+ */
+async function requireAdmin(): Promise<void> {
+  const cookieStore = await cookies()
+  const token = cookieStore.get(ADMIN_COOKIE)?.value
+  if (!(await verifyAdminToken(token))) {
+    throw new Error('Yetkisiz erişim: admin oturumu gerekli')
+  }
+}
+
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
+
+// Basit brute-force yavaşlatma. Sunucusuz ortamda örnek başına tutulur —
+// tek başına yeterli değildir ama otomatik denemeleri belirgin şekilde zorlaştırır.
+const MAX_ATTEMPTS = 5
+const ATTEMPT_WINDOW_MS = 15 * 60 * 1000
+const loginAttempts = new Map<string, { count: number; firstAt: number }>()
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now()
+  const record = loginAttempts.get(key)
+
+  if (!record || now - record.firstAt > ATTEMPT_WINDOW_MS) {
+    loginAttempts.set(key, { count: 1, firstAt: now })
+    return true
+  }
+  record.count += 1
+  return record.count <= MAX_ATTEMPTS
+}
 
 export async function adminLogin(formData: FormData) {
   const password = formData.get('password') as string
-  const redirectTo = (formData.get('redirect') as string) || '/admin/urunler'
+  const redirectTo = safeInternalPath(formData.get('redirect') as string, '/admin')
 
-  if (!password || password !== process.env.ADMIN_PASSWORD) {
+  const headerList = await headers()
+  const ip =
+    headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    headerList.get('x-real-ip') ||
+    'unknown'
+
+  if (!checkRateLimit(ip)) {
+    redirect('/admin/giris?error=rate-limit')
+  }
+
+  const expected = process.env.ADMIN_PASSWORD
+
+  // Sunucuda şifre tanımlı değilse girişe asla izin verme
+  if (!expected) {
+    console.error('[admin] ADMIN_PASSWORD ortam değişkeni tanımlı değil')
+    redirect('/admin/giris?error=config')
+  }
+
+  if (!password || !timingSafeEqual(password, expected)) {
+    // Otomatik denemeleri yavaşlatmak için sabit gecikme
+    await new Promise((resolve) => setTimeout(resolve, 600))
     redirect('/admin/giris?error=1')
   }
 
+  loginAttempts.delete(ip)
+
   const cookieStore = await cookies()
-  cookieStore.set(ADMIN_COOKIE, 'authenticated', {
+  cookieStore.set(ADMIN_COOKIE, await createAdminToken(COOKIE_MAX_AGE), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -44,19 +103,34 @@ export async function adminLogout() {
  * Dosya Vercel serverless function'dan geçmez → 4.5 MB payload limiti aşılmaz.
  */
 export async function createSignedUploadUrl(fileName: string) {
-  const cookieStore = await cookies()
-  const session = cookieStore.get(ADMIN_COOKIE)?.value
-  if (!session || session !== 'authenticated') throw new Error('Yetkisiz erişim')
-  return getSignedUploadUrl(fileName)
+  await requireAdmin()
+
+  // Dosya adını temizle: yol geçişi (../), eğik çizgi ve tehlikeli karakterler
+  const safeName = fileName
+    .split(/[/\\]/)
+    .pop()!
+    .replace(/[^a-zA-Z0-9._-]/g, '-')
+    .replace(/^\.+/, '')
+    .slice(0, 120)
+
+  if (!safeName || !/\.(jpg|jpeg|png|webp|avif|gif|svg)$/i.test(safeName)) {
+    throw new Error('Geçersiz dosya adı veya desteklenmeyen uzantı')
+  }
+
+  return getSignedUploadUrl(safeName)
 }
 
 // ─── BRANDS & CATEGORIES ─────────────────────────────────────────────────────
 
 export async function getBrandsForAdmin() {
+  await requireAdmin()
+
   return prisma.brand.findMany({ orderBy: { name: 'asc' } })
 }
 
 export async function getCategoriesForAdmin(brandId?: number) {
+  await requireAdmin()
+
   return prisma.category.findMany({
     where: {
       isActive: true,
@@ -70,6 +144,8 @@ export async function getCategoriesForAdmin(brandId?: number) {
 // ─── PRODUCT LIST ─────────────────────────────────────────────────────────────
 
 export async function getProductsForAdmin(brandKey?: string) {
+  await requireAdmin()
+
   return prisma.product.findMany({
     where: brandKey ? { brand: { key: brandKey } } : undefined,
     include: {
@@ -82,6 +158,8 @@ export async function getProductsForAdmin(brandKey?: string) {
 }
 
 export async function getProductForEdit(id: string) {
+  await requireAdmin()
+
   return prisma.product.findUnique({
     where: { id },
     include: {
@@ -97,6 +175,8 @@ export async function getProductForEdit(id: string) {
 // ─── CREATE ───────────────────────────────────────────────────────────────────
 
 export async function createProduct(formData: FormData) {
+  await requireAdmin()
+
   const imageFile = formData.get('imageFile') as File | null
   let imageUrl = formData.get('imageUrl') as string | null
 
@@ -177,6 +257,8 @@ export async function createProduct(formData: FormData) {
 // ─── UPDATE ───────────────────────────────────────────────────────────────────
 
 export async function updateProduct(id: string, formData: FormData) {
+  await requireAdmin()
+
   const imageFile = formData.get('imageFile') as File | null
   let imageUrl = formData.get('imageUrl') as string | null
   const replaceImage = formData.get('replaceImage') === 'true'
@@ -262,6 +344,8 @@ export async function updateProduct(id: string, formData: FormData) {
 // ─── DELETE ───────────────────────────────────────────────────────────────────
 
 export async function deleteProduct(id: string) {
+  await requireAdmin()
+
   // Storage'dan görselleri de sil (Supabase Storage)
   const images = await prisma.productImage.findMany({ where: { productId: id } })
   for (const img of images) {
@@ -279,11 +363,15 @@ export async function deleteProduct(id: string) {
 // ─── TOGGLE ───────────────────────────────────────────────────────────────────
 
 export async function toggleProductActive(id: string, current: boolean) {
+  await requireAdmin()
+
   await prisma.product.update({ where: { id }, data: { isActive: !current } })
   revalidatePath('/admin/urunler')
 }
 
 export async function toggleProductFeatured(id: string, current: boolean) {
+  await requireAdmin()
+
   await prisma.product.update({ where: { id }, data: { isFeatured: !current } })
   revalidatePath('/admin/urunler')
 }

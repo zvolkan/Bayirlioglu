@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { prisma } from '@/lib/db'
+import { prisma, type TransactionClient } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 
 // ─── Oturum kontrolü ─────────────────────────────────────────────────────────
@@ -231,30 +231,38 @@ export async function addAddress(formData: FormData) {
 
   const isDefault = formData.get('isDefault') === 'on'
 
-  // Varsayılan yapılıyorsa diğerlerini sıfırla
-  if (isDefault) {
-    await prisma.address.updateMany({
-      where: { userId: user.id },
-      data: { isDefault: false },
-    })
-  }
+  // İlk adres otomatik varsayılan olsun
+  const existingCount = await prisma.address.count({ where: { userId: user.id } })
+  const makeDefault = isDefault || existingCount === 0
 
-  await prisma.address.create({
-    data: {
-      userId: user.id,
-      label: (formData.get('label') as string) || 'Adresim',
-      fullName: formData.get('fullName') as string,
-      phone: formData.get('phone') as string,
-      line1: formData.get('line1') as string,
-      line2: (formData.get('line2') as string) || null,
-      district: formData.get('district') as string,
-      city: formData.get('city') as string,
-      postalCode: (formData.get('postalCode') as string) || null,
-      isDefault,
-    },
+  // Varsayılan sıfırlama + oluşturma tek transaction: biri başarısız olursa
+  // kullanıcı varsayılan adressiz kalmasın
+  await prisma.$transaction(async (tx: TransactionClient) => {
+    if (makeDefault) {
+      await tx.address.updateMany({
+        where: { userId: user.id },
+        data: { isDefault: false },
+      })
+    }
+
+    await tx.address.create({
+      data: {
+        userId: user.id,
+        label: (formData.get('label') as string) || 'Adresim',
+        fullName: formData.get('fullName') as string,
+        phone: formData.get('phone') as string,
+        line1: formData.get('line1') as string,
+        line2: (formData.get('line2') as string) || null,
+        district: formData.get('district') as string,
+        city: formData.get('city') as string,
+        postalCode: (formData.get('postalCode') as string) || null,
+        isDefault: makeDefault,
+      },
+    })
   })
 
   revalidatePath('/hesabim')
+  revalidatePath('/hesabim/adreslerim')
 }
 
 // ─── Adres güncelle ──────────────────────────────────────────────────────────
@@ -264,16 +272,17 @@ export async function updateAddress(addressId: string, formData: FormData) {
 
   const isDefault = formData.get('isDefault') === 'on'
 
-  if (isDefault) {
-    await prisma.address.updateMany({
-      where: { userId: user.id },
-      data: { isDefault: false },
-    })
-  }
+  await prisma.$transaction(async (tx: TransactionClient) => {
+    if (isDefault) {
+      await tx.address.updateMany({
+        where: { userId: user.id },
+        data: { isDefault: false },
+      })
+    }
 
-  await prisma.address.updateMany({
-    where: { id: addressId, userId: user.id },
-    data: {
+    await tx.address.updateMany({
+      where: { id: addressId, userId: user.id },
+      data: {
       label: (formData.get('label') as string) || 'Adresim',
       fullName: formData.get('fullName') as string,
       phone: formData.get('phone') as string,
@@ -281,12 +290,14 @@ export async function updateAddress(addressId: string, formData: FormData) {
       line2: (formData.get('line2') as string) || null,
       district: formData.get('district') as string,
       city: formData.get('city') as string,
-      postalCode: (formData.get('postalCode') as string) || null,
-      isDefault,
-    },
+        postalCode: (formData.get('postalCode') as string) || null,
+        isDefault,
+      },
+    })
   })
 
   revalidatePath('/hesabim')
+  revalidatePath('/hesabim/adreslerim')
 }
 
 // ─── Adres sil ────────────────────────────────────────────────────────────────
@@ -294,9 +305,53 @@ export async function updateAddress(addressId: string, formData: FormData) {
 export async function deleteAddress(addressId: string) {
   const user = await getAuthUser()
 
+  const deleted = await prisma.address.findFirst({
+    where: { id: addressId, userId: user.id },
+    select: { isDefault: true },
+  })
+
   await prisma.address.deleteMany({
     where: { id: addressId, userId: user.id },
   })
 
+  // Varsayılan adres silindiyse kalanlardan birini varsayılan yap
+  if (deleted?.isDefault) {
+    const next = await prisma.address.findFirst({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    })
+    if (next) {
+      await prisma.address.update({ where: { id: next.id }, data: { isDefault: true } })
+    }
+  }
+
   revalidatePath('/hesabim')
+  revalidatePath('/hesabim/adreslerim')
+}
+
+// ─── Varsayılan adres yap ─────────────────────────────────────────────────────
+
+export async function setDefaultAddress(addressId: string) {
+  const user = await getAuthUser()
+
+  const owned = await prisma.address.findFirst({
+    where: { id: addressId, userId: user.id },
+    select: { id: true },
+  })
+  if (!owned) return
+
+  await prisma.$transaction([
+    prisma.address.updateMany({
+      where: { userId: user.id },
+      data: { isDefault: false },
+    }),
+    prisma.address.update({
+      where: { id: addressId },
+      data: { isDefault: true },
+    }),
+  ])
+
+  revalidatePath('/hesabim')
+  revalidatePath('/hesabim/adreslerim')
 }

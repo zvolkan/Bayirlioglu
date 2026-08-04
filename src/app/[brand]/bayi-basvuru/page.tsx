@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
 import { BRANDS } from '@/lib/constants'
+import { submitDealerApplication } from '@/app/actions/forms'
 import type { BrandKey } from '@/lib/types'
 
 const schema = z.object({
@@ -63,8 +64,27 @@ export default function BayiBasvuruPage() {
   } = useForm<FormData>({ resolver: zodResolver(schema) })
 
   const onSubmit = async (data: FormData) => {
-    await new Promise((r) => setTimeout(r, 1500))
-    console.log('Bayi başvurusu:', data)
+    const parts = data.contactName.trim().split(/\s+/)
+
+    const result = await submitDealerApplication({
+      companyName: data.companyName,
+      firstName: parts[0] ?? data.contactName,
+      lastName: parts.slice(1).join(' ') || '-',
+      email: data.email,
+      phone: data.phone,
+      city: data.city,
+      district: data.district,
+      brandInterest: brandKey,
+      businessType: data.existingBusiness === 'evet' ? 'Mevcut işletme var' : 'Yeni girişim',
+      annualRevenue: data.experience,
+      message: data.message,
+    })
+
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+
     toast.success('Başvurunuz alındı! Satış ekibimiz 1-2 iş günü içinde sizinle iletişime geçecek.')
     reset()
   }

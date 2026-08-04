@@ -100,6 +100,7 @@ model Product {
   specs       ProductSpec[]
   tags        ProductTag[]
   orderItems  OrderItem[]
+  favorites   Favorite[]
 
   @@index([brandId])
   @@index([categoryId])
@@ -175,6 +176,7 @@ model User {
 
   addresses Address[]
   orders    Order[]
+  favorites Favorite[]
 
   @@map("users")
 }
@@ -220,11 +222,37 @@ model Order {
   addressId     String?     @map("address_id")
   brandId       Int         @map("brand_id")
   status        OrderStatus @default(PENDING)
+
+  // Tutar dökümü — sonradan geri hesaplanamasın diye ayrı ayrı saklanır
+  subtotal      Decimal?    @db.Decimal(12, 2)
+  shippingFee   Decimal?    @map("shipping_fee") @db.Decimal(10, 2)
+  taxAmount     Decimal?    @map("tax_amount") @db.Decimal(10, 2)
   totalAmount   Decimal     @map("total_amount") @db.Decimal(12, 2)
+
+  // Teslimat adresi anlık kopyası — müşteri adresini silse de sipariş bozulmaz
+  shipFullName   String?    @map("ship_full_name") @db.VarChar(150)
+  shipPhone      String?    @map("ship_phone") @db.VarChar(20)
+  shipLine1      String?    @map("ship_line1") @db.VarChar(255)
+  shipLine2      String?    @map("ship_line2") @db.VarChar(255)
+  shipDistrict   String?    @map("ship_district") @db.VarChar(100)
+  shipCity       String?    @map("ship_city") @db.VarChar(100)
+  shipPostalCode String?    @map("ship_postal_code") @db.VarChar(10)
+
+  // Kargo takibi
+  carrier        String?    @db.VarChar(100)
+  trackingNumber String?    @map("tracking_number") @db.VarChar(100)
+  shippedAt      DateTime?  @map("shipped_at")
+  deliveredAt    DateTime?  @map("delivered_at")
+
+  // Stok bir kez düşülsün diye (tekrarlanan callback koruması)
+  stockReduced  Boolean     @default(false) @map("stock_reduced")
+
   notes         String?     @db.Text
+  adminNote     String?     @map("admin_note") @db.Text
   paymentMethod String?     @map("payment_method") @db.VarChar(50)
   paymentToken  String?     @map("payment_token") @db.VarChar(512)
   paymentStatus String?     @default("pending") @map("payment_status") @db.VarChar(20)
+  paymentId     String?     @map("payment_id") @db.VarChar(100)
   formContent   String?     @map("form_content") @db.Text
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
@@ -238,7 +266,64 @@ model Order {
   @@index([brandId])
   @@index([status])
   @@index([createdAt])
+  @@index([paymentToken])
   @@map("orders")
+}
+
+// ─── FAVORİLER ────────────────────────────────────────────────────────────────
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id") @db.Uuid
+  productId String   @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("favorites")
+}
+
+// ─── FORM KAYITLARI ───────────────────────────────────────────────────────────
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  brandKey  String?  @map("brand_key") @db.VarChar(30)
+  firstName String   @map("first_name") @db.VarChar(100)
+  lastName  String   @map("last_name") @db.VarChar(100)
+  email     String   @db.VarChar(255)
+  phone     String?  @db.VarChar(30)
+  subject   String?  @db.VarChar(150)
+  message   String   @db.Text
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([isRead])
+  @@map("contact_messages")
+}
+
+model DealerApplication {
+  id            String   @id @default(cuid())
+  companyName   String   @map("company_name") @db.VarChar(200)
+  firstName     String   @map("first_name") @db.VarChar(100)
+  lastName      String   @map("last_name") @db.VarChar(100)
+  email         String   @db.VarChar(255)
+  phone         String   @db.VarChar(30)
+  city          String   @db.VarChar(100)
+  district      String?  @db.VarChar(100)
+  brandInterest String?  @map("brand_interest") @db.VarChar(60)
+  businessType  String?  @map("business_type") @db.VarChar(80)
+  annualRevenue String?  @map("annual_revenue") @db.VarChar(80)
+  message       String?  @db.Text
+  status        String   @default("new") @db.VarChar(20)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([status])
+  @@map("dealer_applications")
 }
 
 model OrderItem {

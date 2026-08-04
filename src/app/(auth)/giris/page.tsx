@@ -102,9 +102,18 @@ export default async function GirisPage({
               />
             </div>
 
+            <div className="flex justify-end -mt-1">
+              <Link
+                href="/sifremi-unuttum"
+                className="text-sm text-gray-500 hover:text-gray-900 hover:underline"
+              >
+                Şifremi unuttum
+              </Link>
+            </div>
+
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-gray-900 text-white font-semibold text-sm hover:bg-gray-700 transition-colors"
+              className="btn-press w-full py-3 rounded-xl bg-gray-900 text-white font-semibold text-sm hover:bg-gray-700"
             >
               Giriş Yap
             </button>

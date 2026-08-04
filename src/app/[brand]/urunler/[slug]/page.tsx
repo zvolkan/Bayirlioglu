@@ -16,10 +16,28 @@ export const dynamic = 'force-dynamic'
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, brand } = await params
   const product = await getProductBySlug(slug, brand)
-  if (!product) return {}
+
+  if (!product) {
+    return { title: 'Ürün bulunamadı', robots: { index: false, follow: false } }
+  }
+
+  const cfg = BRANDS[brand as BrandKey] ?? BRANDS['alb-tarim']
+  const price = product.salePrice ?? product.price
+  const description =
+    product.shortDescription?.trim() ||
+    `${product.name} — ${cfg.name} güvencesiyle. ${price.toLocaleString('tr-TR')} ₺`
+  const image = product.images.find((i) => i.isPrimary)?.url ?? product.images[0]?.url
+
   return {
     title: product.name,
-    description: product.shortDescription,
+    description: description.slice(0, 160),
+    alternates: { canonical: `/${brand}/urunler/${slug}` },
+    openGraph: {
+      type: 'website',
+      title: `${product.name} | ${cfg.name}`,
+      description: description.slice(0, 200),
+      images: image ? [{ url: image, alt: product.name }] : undefined,
+    },
   }
 }
 

@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
 import { BRANDS } from '@/lib/constants'
+import { submitContactMessage } from '@/app/actions/forms'
 import type { BrandKey } from '@/lib/types'
 
 const schema = z.object({
@@ -48,8 +49,23 @@ export default function IletisimPage() {
   } = useForm<FormData>({ resolver: zodResolver(schema) })
 
   const onSubmit = async (data: FormData) => {
-    await new Promise((r) => setTimeout(r, 1200))
-    console.log('İletişim formu:', data)
+    const parts = data.name.trim().split(/\s+/)
+
+    const result = await submitContactMessage({
+      firstName: parts[0] ?? data.name,
+      lastName: parts.slice(1).join(' ') || '-',
+      email: data.email,
+      phone: data.phone,
+      subject: data.subject,
+      message: data.message,
+      brandKey,
+    })
+
+    if (!result.ok) {
+      toast.error(result.error)
+      return
+    }
+
     toast.success('Mesajınız iletildi! En kısa sürede dönüş yapacağız.')
     reset()
   }

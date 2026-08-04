@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { verifyAdminToken } from '@/lib/admin-auth'
+import { safeInternalPath } from '@/lib/safe-redirect'
 
 const ADMIN_COOKIE = 'admin_session'
 const ADMIN_LOGIN = '/admin/giris'
@@ -14,10 +16,13 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith(ADMIN_PREFIX)) {
     if (pathname === ADMIN_LOGIN) return NextResponse.next()
     const session = req.cookies.get(ADMIN_COOKIE)?.value
-    if (!session || session !== 'authenticated') {
+    if (!(await verifyAdminToken(session))) {
       const url = new URL(ADMIN_LOGIN, req.url)
-      url.searchParams.set('redirect', pathname)
-      return NextResponse.redirect(url)
+      url.searchParams.set('redirect', safeInternalPath(pathname, '/admin'))
+      const res = NextResponse.redirect(url)
+      // Geçersiz/eski token'ı temizle (eski 'authenticated' değeri dahil)
+      if (session) res.cookies.delete(ADMIN_COOKIE)
+      return res
     }
     return NextResponse.next()
   }

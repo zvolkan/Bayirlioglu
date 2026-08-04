@@ -1,19 +1,35 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useTransition } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
 import { cn, formatPrice, calculateDiscount } from '@/lib/utils'
 import { BRAND } from '@/lib/constants'
+import { useCartStore } from '@/store/cartStore'
+import { toggleFavorite } from '@/app/actions/favorites'
 import type { Product } from '@/lib/types'
 
 interface ProductCardProps {
   product: Product
   className?: string
+  /** Kullanıcının favorilerinde mi (sunucudan gelir) */
+  initialFavorite?: boolean
 }
 
-export default function ProductCard({ product, className }: ProductCardProps) {
-  const [isFavorite, setIsFavorite] = useState(false)
+export default function ProductCard({
+  product,
+  className,
+  initialFavorite = false,
+}: ProductCardProps) {
+  const [isFavorite, setIsFavorite] = useState(initialFavorite)
+  const [isPending, startTransition] = useTransition()
+
+  // Sepet: tek kaynak Zustand store. Eskiden burası doğrudan
+  // localStorage['cart'] anahtarına yazıyordu; gerçek sepet ise
+  // localStorage['bayirlioglu-cart'] altında farklı bir yapıda tutuluyordu, bu
+  // yüzden bu karttan eklenen ürün sepette hiç görünmüyordu.
+  const addItem = useCartStore((state) => state.addItem)
 
   const primaryImage = product.images.find((img) => img.isPrimary) ?? product.images[0]
   const hasDiscount = product.salePrice !== undefined && product.salePrice < product.price
@@ -22,29 +38,32 @@ export default function ProductCard({ product, className }: ProductCardProps) {
 
   const handleAddToCart = () => {
     if (isOutOfStock) return
-    try {
-      const raw = localStorage.getItem('cart')
-      const cart: Array<{ id: string; quantity: number; product: Product }> = raw
-        ? JSON.parse(raw)
-        : []
-      const existing = cart.find((item) => item.id === product.id)
-      if (existing) {
-        existing.quantity += 1
-      } else {
-        cart.push({ id: product.id, quantity: 1, product })
-      }
-      localStorage.setItem('cart', JSON.stringify(cart))
-      // Simple feedback — toast library entegrasyonu için toast.success() çağrısı buraya gelebilir
-      console.info(`${product.name} sepete eklendi`)
-    } catch (e) {
-      console.error('Sepet güncellenemedi', e)
-    }
+    addItem(product, 1)
+    toast.success(`${product.name} sepete eklendi`)
   }
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsFavorite((prev) => !prev)
+
+    const next = !isFavorite
+    setIsFavorite(next) // iyimser güncelleme
+
+    startTransition(async () => {
+      const result = await toggleFavorite(product.id)
+
+      if (!result.ok) {
+        setIsFavorite(!next) // geri al
+        toast.error(
+          result.reason === 'auth'
+            ? 'Favorilere eklemek için giriş yapmalısınız.'
+            : 'Favori güncellenemedi. Lütfen tekrar deneyin.',
+        )
+        return
+      }
+
+      setIsFavorite(result.isFavorite)
+    })
   }
 
   return (
@@ -99,6 +118,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
         {/* Favori butonu — sağ üst köşe (indirim badge yoksa) */}
         <button
           onClick={handleToggleFavorite}
+          disabled={isPending}
           className={cn(
             'absolute top-2 left-2 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm',
             'flex items-center justify-center shadow-sm transition-all duration-300',
