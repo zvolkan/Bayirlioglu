@@ -70,8 +70,17 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
 
     if (!response.ok) {
       const detail = await response.text().catch(() => '')
-      console.error('[e-posta] gönderim başarısız:', response.status, detail.slice(0, 300))
-      return { ok: false, reason: 'error', detail: `HTTP ${response.status}` }
+      // `from` ve `to` da loglanır: Resend'in en sık verdiği iki hata
+      // (doğrulanmamış alan adı / test modunda başka adrese gönderim)
+      // yalnızca bu iki değere bakılarak teşhis edilebiliyor.
+      console.error(
+        '[e-posta] gönderim başarısız:',
+        response.status,
+        `from=${config.from}`,
+        `to=${Array.isArray(options.to) ? options.to.join(',') : options.to}`,
+        detail.slice(0, 500),
+      )
+      return { ok: false, reason: 'error', detail: detail.slice(0, 300) || `HTTP ${response.status}` }
     }
 
     const data = (await response.json().catch(() => ({}))) as { id?: string }
