@@ -322,7 +322,7 @@ export default function BayiBasvuruPage() {
                   <span className="text-lg">✉️</span>
                   <div>
                     <p className="font-medium text-gray-800">E-posta</p>
-                    <p>bayi@bayirlioglugrup.com.tr</p>
+                    <p>bayi@bayirlioglu.com</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

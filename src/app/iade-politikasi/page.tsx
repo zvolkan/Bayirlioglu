@@ -35,7 +35,7 @@ const sections = [
   {
     title: '6. İade ve Değişim İletişimi',
     content:
-      'İade veya değişim talepleriniz için aşağıdaki kanallardan bize ulaşabilirsiniz:\n\nE-posta: iade@bayirlioglugrup.com.tr\nTelefon: +90 507 178 16 33\nMesai saatleri: Pazartesi – Cumartesi, 08:30 – 19:00',
+      'İade veya değişim talepleriniz için aşağıdaki kanallardan bize ulaşabilirsiniz:\n\nE-posta: iade@bayirlioglu.com\nTelefon: +90 507 178 16 33\nMesai saatleri: Pazartesi – Cumartesi, 08:30 – 19:00',
   },
 ]
 

@@ -9,7 +9,7 @@ const sections = [
   {
     title: '1. Veri Sorumlusunun Kimliği',
     content:
-      'Bayırlıoğlu Grup (ALB Tarım ve Alb Su Teknolojileri markaları), 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca veri sorumlusu sıfatıyla aşağıdaki bilgileri paylaşmaktadır.\n\nAdres: Saçkan Kavşağı Doğusu Savcı-Şok Market Yanı, Yeşilyurt, Akdeniz Cd. No:20/22, 33640 Anamur/Mersin\nE-posta: kvkk@bayirlioglugrup.com.tr',
+      'Bayırlıoğlu Grup (ALB Tarım ve Alb Su Teknolojileri markaları), 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca veri sorumlusu sıfatıyla aşağıdaki bilgileri paylaşmaktadır.\n\nAdres: Saçkan Kavşağı Doğusu Savcı-Şok Market Yanı, Yeşilyurt, Akdeniz Cd. No:20/22, 33640 Anamur/Mersin\nE-posta: kvkk@bayirlioglu.com',
   },
   {
     title: '2. İşlenen Kişisel Veriler',
@@ -39,7 +39,7 @@ const sections = [
   {
     title: '7. Haklarınız',
     content:
-      "KVKK'nın 11. maddesi uyarınca; kişisel verilerinizin işlenip işlenmediğini öğrenme, düzeltme talep etme, silinmesini isteme, işlemeye itiraz etme ve zararın giderilmesini talep etme haklarına sahipsiniz. Taleplerinizi kvkk@bayirlioglugrup.com.tr adresine iletebilirsiniz.",
+      "KVKK'nın 11. maddesi uyarınca; kişisel verilerinizin işlenip işlenmediğini öğrenme, düzeltme talep etme, silinmesini isteme, işlemeye itiraz etme ve zararın giderilmesini talep etme haklarına sahipsiniz. Taleplerinizi kvkk@bayirlioglu.com adresine iletebilirsiniz.",
   },
 ]
 
@@ -69,8 +69,8 @@ export default function KvkkPage() {
         <div className="mt-12 p-5 bg-gray-50 rounded-xl border border-gray-200">
           <p className="text-sm text-gray-600">
             Kişisel veri talepleriniz için:{' '}
-            <a href="mailto:kvkk@bayirlioglugrup.com.tr" className="text-blue-600 hover:underline font-medium">
-              kvkk@bayirlioglugrup.com.tr
+            <a href="mailto:kvkk@bayirlioglu.com" className="text-blue-600 hover:underline font-medium">
+              kvkk@bayirlioglu.com
             </a>
           </p>
         </div>

@@ -26,7 +26,7 @@ export default function GizlilikPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Genel Bilgi</h2>
               <p className="text-gray-600 leading-relaxed">
-                {BRAND.name} olarak, müşterilerimizin kişisel verilerinin güvenliği ve gizliliğine büyük önem veriyoruz.
+                Bayırlıoğlu Grup olarak, müşterilerimizin kişisel verilerinin güvenliği ve gizliliğine büyük önem veriyoruz.
                 Bu Gizlilik Politikası, sitemizi ziyaret ettiğinizde veya hizmetlerimizden faydalandığınızda
                 kişisel verilerinizin nasıl toplandığını, kullanıldığını ve korunduğunu açıklamaktadır.
                 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında hazırlanmıştır.
