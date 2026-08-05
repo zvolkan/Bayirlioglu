@@ -7,6 +7,8 @@ import CancelOrderButton from '../_components/CancelOrderButton'
 import RepeatOrderButton from '../../_components/RepeatOrderButton'
 import type { BrandKey } from '@/lib/types'
 import { carrierTrackingUrl } from '@/lib/carrier'
+import { remainingReturnDays } from '@/lib/returns'
+import ReturnRequestPanel from '../_components/ReturnRequestPanel'
 
 export const metadata: Metadata = {
   title: 'Sipariş Detayı | Bayırlıoğlu Grup',
@@ -55,6 +57,11 @@ export default async function SiparisDetayPage({ params }: Props) {
     include: {
       brand: { select: { name: true, key: true } },
       address: true,
+      returnRequests: {
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { status: true, adminNote: true },
+      },
       items: {
         include: {
           product: {
@@ -155,22 +162,6 @@ export default async function SiparisDetayPage({ params }: Props) {
           <div className="flex flex-wrap items-center gap-2 px-4 sm:px-5 py-3 bg-gray-50">
             <span className="text-xs text-gray-500 mr-1">Satıcı: <strong className="text-gray-700">{order.brand.name}</strong></span>
             <div className="flex flex-wrap gap-2 ml-auto">
-              {delivered && (
-                <button
-                  disabled
-                  title="Yakında aktif olacak"
-                  className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed font-medium"
-                >
-                  📦 İade Kargo Kodu Oluştur
-                </button>
-              )}
-              <button
-                disabled
-                title="Fatura henüz hazır değil"
-                className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed font-medium"
-              >
-                🧾 Fatura Görüntüle
-              </button>
               {isAlbTarim && (
                 <RepeatOrderButton orderId={order.id} brandKey={order.brand.key as BrandKey} />
               )}
@@ -230,6 +221,23 @@ export default async function SiparisDetayPage({ params }: Props) {
           </div>
         )}
 
+        {/* Cayma hakkı / iade */}
+        {delivered && order.paymentStatus === 'paid' && (
+          <div className="mb-4">
+            <ReturnRequestPanel
+              orderId={order.id}
+              items={order.items.map((item) => ({
+                id: item.id,
+                name: item.product.name,
+                quantity: item.quantity,
+                unit: item.product.unit,
+              }))}
+              remainingDays={remainingReturnDays(order.deliveredAt)}
+              existing={order.returnRequests[0] ?? null}
+            />
+          </div>
+        )}
+
         {/* Products */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
           <div className="p-4 sm:p-5 border-b border-gray-100">
@@ -279,6 +287,12 @@ export default async function SiparisDetayPage({ params }: Props) {
                 {cargoFee === 0 ? 'Ücretsiz' : formatPrice(cargoFee)}
               </span>
             </div>
+            {order.taxAmount != null && Number(order.taxAmount) > 0 && (
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>Bunun KDV&apos;si</span>
+                <span>{formatPrice(order.taxAmount)}</span>
+              </div>
+            )}
             <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
               <span>Toplam (KDV dahil)</span>
               <span>{formatPrice(order.totalAmount)}</span>

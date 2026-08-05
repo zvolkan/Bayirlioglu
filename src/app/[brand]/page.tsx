@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
+import { TESLIMAT_SURESI } from '@/lib/checkout'
 import { MOCK_BLOG_POSTS } from '@/data/mock'
 import { getFeaturedProducts } from '@/lib/queries/products'
 import { getCategoriesByBrand } from '@/lib/queries/categories'
@@ -283,7 +284,7 @@ export default async function BrandHomePage({ params }: Props) {
               : [
                   { icon: '🌿', title: 'Organik Sertifikalı', desc: 'Ürünlerimiz organik tarım standartlarına uygundur.' },
                   { icon: '🚜', title: 'Saha Danışmanlık', desc: 'Uzman agronomlarımız tarlada yanınızda.' },
-                  { icon: '🚚', title: 'Hızlı Teslimat', desc: '81 ile 2-3 iş günü içinde teslimat.' },
+                  { icon: '🚚', title: 'Hızlı Teslimat', desc: `81 ile ${TESLIMAT_SURESI} içinde teslimat.` },
                   { icon: '💰', title: 'Uygun Fiyat', desc: 'Çiftçi dostu fiyatlarla kaliteli ürünler.' },
                 ]
             ).map((item) => (

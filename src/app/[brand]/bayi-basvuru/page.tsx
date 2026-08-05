@@ -139,18 +139,20 @@ export default function BayiBasvuruPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Şirket Adı *</label>
+                  <label htmlFor="bayi-companyName" className="block text-sm font-semibold text-gray-700 mb-1.5">Şirket Adı *</label>
                   <input
                     {...register('companyName')}
+                    id="bayi-companyName"
                     placeholder="Şirketinizin adı"
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 ${errors.companyName ? 'border-red-300' : `border-gray-200 ${focusBorder}`}`}
                   />
                   {errors.companyName && <p className="text-red-500 text-xs mt-1">{errors.companyName.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Yetkili Adı *</label>
+                  <label htmlFor="bayi-contactName" className="block text-sm font-semibold text-gray-700 mb-1.5">Yetkili Adı *</label>
                   <input
                     {...register('contactName')}
+                    id="bayi-contactName"
                     placeholder="Ad Soyad"
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 ${errors.contactName ? 'border-red-300' : `border-gray-200 ${focusBorder}`}`}
                   />
@@ -160,9 +162,10 @@ export default function BayiBasvuruPage() {
 
               <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">E-posta *</label>
+                  <label htmlFor="bayi-email" className="block text-sm font-semibold text-gray-700 mb-1.5">E-posta *</label>
                   <input
                     {...register('email')}
+                    id="bayi-email"
                     type="email"
                     placeholder="ornek@sirket.com"
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 ${errors.email ? 'border-red-300' : `border-gray-200 ${focusBorder}`}`}
@@ -170,9 +173,10 @@ export default function BayiBasvuruPage() {
                   {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Telefon *</label>
+                  <label htmlFor="bayi-phone" className="block text-sm font-semibold text-gray-700 mb-1.5">Telefon *</label>
                   <input
                     {...register('phone')}
+                    id="bayi-phone"
                     type="tel"
                     placeholder="0555 000 00 00"
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 ${errors.phone ? 'border-red-300' : `border-gray-200 ${focusBorder}`}`}
@@ -183,18 +187,20 @@ export default function BayiBasvuruPage() {
 
               <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Şehir *</label>
+                  <label htmlFor="bayi-city" className="block text-sm font-semibold text-gray-700 mb-1.5">Şehir *</label>
                   <input
                     {...register('city')}
+                    id="bayi-city"
                     placeholder="İstanbul"
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 ${errors.city ? 'border-red-300' : `border-gray-200 ${focusBorder}`}`}
                   />
                   {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">İlçe *</label>
+                  <label htmlFor="bayi-district" className="block text-sm font-semibold text-gray-700 mb-1.5">İlçe *</label>
                   <input
                     {...register('district')}
+                    id="bayi-district"
                     placeholder="Kadıköy"
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 ${errors.district ? 'border-red-300' : `border-gray-200 ${focusBorder}`}`}
                   />
@@ -204,9 +210,10 @@ export default function BayiBasvuruPage() {
 
               <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Mevcut İşletme *</label>
+                  <label htmlFor="bayi-existingBusiness" className="block text-sm font-semibold text-gray-700 mb-1.5">Mevcut İşletme *</label>
                   <select
                     {...register('existingBusiness')}
+                    id="bayi-existingBusiness"
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 ${errors.existingBusiness ? 'border-red-300' : `border-gray-200 ${focusBorder}`}`}
                   >
                     <option value="">Seçin</option>
@@ -215,9 +222,10 @@ export default function BayiBasvuruPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Sektör Deneyimi *</label>
+                  <label htmlFor="bayi-experience" className="block text-sm font-semibold text-gray-700 mb-1.5">Sektör Deneyimi *</label>
                   <select
                     {...register('experience')}
+                    id="bayi-experience"
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 ${errors.experience ? 'border-red-300' : `border-gray-200 ${focusBorder}`}`}
                   >
                     <option value="">Seçin</option>
@@ -231,9 +239,10 @@ export default function BayiBasvuruPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Ek Bilgi</label>
+                <label htmlFor="bayi-message" className="block text-sm font-semibold text-gray-700 mb-1.5">Ek Bilgi</label>
                 <textarea
                   {...register('message')}
+                    id="bayi-message"
                   rows={3}
                   placeholder="Kendiniz veya işletmeniz hakkında eklemek istediğiniz bilgiler..."
                   className={`w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 ${focusBorder} resize-none`}

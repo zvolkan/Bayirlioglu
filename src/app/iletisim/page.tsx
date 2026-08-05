@@ -72,11 +72,12 @@ function ContactForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label htmlFor="iletisim-firstName" className="block text-sm font-medium text-gray-700 mb-1.5">
             Ad <span className="text-red-500">*</span>
           </label>
           <input
             {...register('firstName')}
+            id="iletisim-firstName"
             type="text"
             placeholder="Adınız"
             className={cn(
@@ -91,11 +92,12 @@ function ContactForm() {
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label htmlFor="iletisim-lastName" className="block text-sm font-medium text-gray-700 mb-1.5">
             Soyad <span className="text-red-500">*</span>
           </label>
           <input
             {...register('lastName')}
+            id="iletisim-lastName"
             type="text"
             placeholder="Soyadınız"
             className={cn(
@@ -112,11 +114,12 @@ function ContactForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label htmlFor="iletisim-email" className="block text-sm font-medium text-gray-700 mb-1.5">
           E-posta <span className="text-red-500">*</span>
         </label>
         <input
           {...register('email')}
+          id="iletisim-email"
           type="email"
           placeholder="ornek@email.com"
           className={cn(
@@ -132,11 +135,12 @@ function ContactForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label htmlFor="iletisim-phone" className="block text-sm font-medium text-gray-700 mb-1.5">
           Telefon <span className="text-red-500">*</span>
         </label>
         <input
           {...register('phone')}
+          id="iletisim-phone"
           type="tel"
           placeholder="05XX XXX XX XX"
           className={cn(
@@ -152,12 +156,13 @@ function ContactForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label htmlFor="iletisim-subject" className="block text-sm font-medium text-gray-700 mb-1.5">
           Konu <span className="text-red-500">*</span>
         </label>
         <div className="relative">
           <select
             {...register('subject')}
+            id="iletisim-subject"
             className={cn(
               'w-full px-4 py-2.5 rounded-lg border bg-white text-gray-900 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 appearance-none pr-10',
               errors.subject
@@ -180,11 +185,12 @@ function ContactForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label htmlFor="iletisim-message" className="block text-sm font-medium text-gray-700 mb-1.5">
           Mesaj <span className="text-red-500">*</span>
         </label>
         <textarea
           {...register('message')}
+          id="iletisim-message"
           rows={5}
           placeholder="Mesajınızı buraya yazınız..."
           className={cn(

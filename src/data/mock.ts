@@ -1158,7 +1158,7 @@ export const MOCK_BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
     title: 'Buğday Sezonunda Doğru Gübreleme Rehberi 2026',
-    slug: 'bugday-sezonunda-dogru-gübreleme-2026',
+    slug: 'bugday-sezonunda-dogru-gubreleme-2026',
     excerpt: 'Buğday ekiminde verim kaybını önlemek için uygulanması gereken gübre miktarları, zamanlaması ve uygulama teknikleri.',
     content: '<!-- Makale içeriği sonradan eklenecek -->',
     coverImage: '/images/blog/blog-001.jpg',

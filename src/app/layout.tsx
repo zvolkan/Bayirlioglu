@@ -32,6 +32,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="tr" className={inter.variable}>
       <body>
+        {/* Klavye kullanıcıları için: sekme ile odaklanınca görünür olur */}
+        <a
+          href="#ana-icerik"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-gray-900 focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+        >
+          Ana içeriğe atla
+        </a>
+
         {/* Arama motorları için kurum bilgisi */}
         <script
           type="application/ld+json"
@@ -55,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         <Header />
-        <main>
+        <main id="ana-icerik" tabIndex={-1}>
           <PageTransition>{children}</PageTransition>
         </main>
         <Footer />

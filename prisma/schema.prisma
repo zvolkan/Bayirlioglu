@@ -181,6 +181,7 @@ model User {
   addresses Address[]
   orders    Order[]
   favorites Favorite[]
+  returnRequests ReturnRequest[]
 
   @@map("users")
 }
@@ -277,6 +278,7 @@ model Order {
   address Address?   @relation(fields: [addressId], references: [id])
   brand   Brand      @relation(fields: [brandId], references: [id])
   items   OrderItem[]
+  returnRequests ReturnRequest[]
 
   @@index([userId])
   @@index([brandId])
@@ -359,4 +361,49 @@ model OrderItem {
 
   @@index([orderId])
   @@map("order_items")
+}
+
+// ─── İade talebi (cayma hakkı) ────────────────────────────────────────────────
+//
+// Müşterinin ödeme adımında onayladığı CAYMA HAKKI metni "Hesabım >
+// Siparişlerim > sipariş detayından iade talebinde bulunun" diyordu ama böyle
+// bir mekanizma yoktu; teslim edilmiş üründe 14 günlük hakkı sitede kullanmanın
+// yolu bulunmuyordu.
+//
+// Akış: müşteri talep açar (PENDING) → yönetici onaylar (APPROVED) ve müşteriye
+// ürünü nasıl göndereceği bildirilir → ürün ulaşınca sipariş ekranındaki
+// "Siparişi İade Et" ile para iade edilir ve talep COMPLETED olur.
+
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+model ReturnRequest {
+  id        String       @id @default(cuid())
+  orderId   String       @map("order_id")
+  userId    String       @map("user_id") @db.Uuid
+  status    ReturnStatus @default(PENDING)
+
+  // Müşterinin gerekçesi. Cayma hakkında gerekçe zorunlu değil; yine de
+  // operasyona yardımcı olsun diye alınıyor.
+  reason    String       @db.Text
+
+  // [{ orderItemId, quantity }] — hangi kalemler iade ediliyor
+  items     Json?
+
+  adminNote String?      @map("admin_note") @db.Text
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+  resolvedAt DateTime?   @map("resolved_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([status])
+  @@map("return_requests")
 }

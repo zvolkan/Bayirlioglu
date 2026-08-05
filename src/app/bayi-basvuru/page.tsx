@@ -171,21 +171,21 @@ export default function BayiBasvuruPage() {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                   {/* Company */}
                   <div>
-                    <label className="form-label">Firma / İşletme Adı *</label>
-                    <input {...register('companyName')} className="form-input" placeholder="Yılmaz Ticaret Ltd. Şti." />
+                    <label htmlFor="bayi-companyName" className="form-label">Firma / İşletme Adı *</label>
+                    <input {...register('companyName')} id="bayi-companyName" className="form-input" placeholder="Yılmaz Ticaret Ltd. Şti." />
                     {errors.companyName && <p className="form-error">{errors.companyName.message}</p>}
                   </div>
 
                   {/* Name */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="form-label">Ad *</label>
-                      <input {...register('firstName')} className="form-input" placeholder="Ahmet" />
+                      <label htmlFor="bayi-firstName" className="form-label">Ad *</label>
+                      <input {...register('firstName')} id="bayi-firstName" className="form-input" placeholder="Ahmet" />
                       {errors.firstName && <p className="form-error">{errors.firstName.message}</p>}
                     </div>
                     <div>
-                      <label className="form-label">Soyad *</label>
-                      <input {...register('lastName')} className="form-input" placeholder="Yılmaz" />
+                      <label htmlFor="bayi-lastName" className="form-label">Soyad *</label>
+                      <input {...register('lastName')} id="bayi-lastName" className="form-input" placeholder="Yılmaz" />
                       {errors.lastName && <p className="form-error">{errors.lastName.message}</p>}
                     </div>
                   </div>
@@ -193,13 +193,13 @@ export default function BayiBasvuruPage() {
                   {/* Contact */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="form-label">E-posta *</label>
-                      <input {...register('email')} type="email" className="form-input" placeholder="ahmet@firma.com" />
+                      <label htmlFor="bayi-email" className="form-label">E-posta *</label>
+                      <input {...register('email')} id="bayi-email" type="email" className="form-input" placeholder="ahmet@firma.com" />
                       {errors.email && <p className="form-error">{errors.email.message}</p>}
                     </div>
                     <div>
-                      <label className="form-label">Telefon *</label>
-                      <input {...register('phone')} type="tel" className="form-input" placeholder="0532 000 00 00" />
+                      <label htmlFor="bayi-phone" className="form-label">Telefon *</label>
+                      <input {...register('phone')} id="bayi-phone" type="tel" className="form-input" placeholder="0532 000 00 00" />
                       {errors.phone && <p className="form-error">{errors.phone.message}</p>}
                     </div>
                   </div>
@@ -207,24 +207,24 @@ export default function BayiBasvuruPage() {
                   {/* Location */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="form-label">İl *</label>
-                      <select {...register('city')} className="form-input">
+                      <label htmlFor="bayi-city" className="form-label">İl *</label>
+                      <select {...register('city')} id="bayi-city" className="form-input">
                         <option value="">İl seçin</option>
                         {TURKISH_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
                       </select>
                       {errors.city && <p className="form-error">{errors.city.message}</p>}
                     </div>
                     <div>
-                      <label className="form-label">İlçe *</label>
-                      <input {...register('district')} className="form-input" placeholder="İlçe" />
+                      <label htmlFor="bayi-district" className="form-label">İlçe *</label>
+                      <input {...register('district')} id="bayi-district" className="form-input" placeholder="İlçe" />
                       {errors.district && <p className="form-error">{errors.district.message}</p>}
                     </div>
                   </div>
 
                   {/* Marka Seçimi */}
                   <div>
-                    <label className="form-label">Hangi Marka İçin Başvuruyorsunuz? *</label>
-                    <select {...register('brand')} className="form-input">
+                    <label htmlFor="bayi-brand" className="form-label">Hangi Marka İçin Başvuruyorsunuz? *</label>
+                    <select {...register('brand')} id="bayi-brand" className="form-input">
                       <option value="">Seçin</option>
                       {BRAND_OPTIONS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
                     </select>
@@ -234,16 +234,16 @@ export default function BayiBasvuruPage() {
                   {/* Business */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="form-label">İşletme Türü *</label>
-                      <select {...register('businessType')} className="form-input">
+                      <label htmlFor="bayi-businessType" className="form-label">İşletme Türü *</label>
+                      <select {...register('businessType')} id="bayi-businessType" className="form-input">
                         <option value="">Seçin</option>
                         {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                       </select>
                       {errors.businessType && <p className="form-error">{errors.businessType.message}</p>}
                     </div>
                     <div>
-                      <label className="form-label">Yıllık Ciro *</label>
-                      <select {...register('annualRevenue')} className="form-input">
+                      <label htmlFor="bayi-annualRevenue" className="form-label">Yıllık Ciro *</label>
+                      <select {...register('annualRevenue')} id="bayi-annualRevenue" className="form-input">
                         <option value="">Seçin</option>
                         {REVENUE_RANGES.map((r) => <option key={r} value={r}>{r}</option>)}
                       </select>
@@ -253,9 +253,9 @@ export default function BayiBasvuruPage() {
 
                   {/* Message */}
                   <div>
-                    <label className="form-label">Ek Notlar (İsteğe Bağlı)</label>
+                    <label htmlFor="bayi-message" className="form-label">Ek Notlar (İsteğe Bağlı)</label>
                     <textarea
-                      {...register('message')}
+                      {...register('message')} id="bayi-message"
                       rows={4}
                       className="form-input resize-none"
                       placeholder="Bize işletmeniz hakkında daha fazla bilgi verin..."

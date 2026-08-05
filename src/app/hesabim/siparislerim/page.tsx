@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
+import { cancelStalePendingOrders } from '@/app/actions/orders'
 import { signOut } from '@/app/actions/auth'
 import CancelOrderButton from './_components/CancelOrderButton'
 import RepeatOrderButton from '../_components/RepeatOrderButton'
@@ -36,6 +37,10 @@ export default async function SiparislerimPage() {
   const supabase = await createClient()
   const { data: { user: authUser } } = await supabase.auth.getUser()
   if (!authUser) redirect('/giris')
+
+  // Ödemesi yarım kalmış eski siparişleri temizle — listede sonsuza kadar
+  // "Beklemede" olarak birikmesinler
+  await cancelStalePendingOrders(authUser.id)
 
   const dbUser = await prisma.user.findUnique({
     where: { id: authUser.id },

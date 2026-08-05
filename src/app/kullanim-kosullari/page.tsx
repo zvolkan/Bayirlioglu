@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
+import { TESLIMAT_SURESI } from '@/lib/checkout'
 
 export const metadata: Metadata = {
   title: 'Kullanım Koşulları',
@@ -56,7 +57,7 @@ export default function KullanimKosullariPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Teslimat</h2>
               <p className="text-gray-600 leading-relaxed">
-                Siparişler, stok durumuna bağlı olarak genellikle 2-5 iş günü içinde teslim edilir.
+                Siparişler, stok durumuna bağlı olarak genellikle {TESLIMAT_SURESI} içinde teslim edilir.
                 Teslimat süresi, bulunduğunuz konuma ve anlaşmalı kargo firmasının kapasitesine göre
                 değişiklik gösterebilir. {BRAND.name}, teslimat gecikmelerinden dolayı sorumluluk kabul etmez.
               </p>

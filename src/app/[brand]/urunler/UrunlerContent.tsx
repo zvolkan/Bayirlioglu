@@ -489,8 +489,9 @@ export default function UrunlerContent({
 
               {/* Stok */}
               <div>
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <label htmlFor="filtre-stokta" className="flex items-center gap-2.5 cursor-pointer select-none">
                   <input
+                    id="filtre-stokta"
                     type="checkbox"
                     checked={inStockOnly}
                     onChange={(e) => updateParams({ stokta: e.target.checked ? '1' : null })}

@@ -101,6 +101,28 @@ export default function Header() {
     if (dropdownTimerRef.current) clearTimeout(dropdownTimerRef.current)
   }, [])
 
+  // Mobil menü açıkken arka plandaki sayfanın kaydırılmasını engelle.
+  // Önceki `overflow` değeri saklanıp geri yükleniyor — başka bir bileşen
+  // (ör. modal) da kilit uygulamışsa onun değerini ezmemek için.
+  useEffect(() => {
+    if (!menuOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [menuOpen])
+
+  // Escape ile mobil menüyü kapat
+  useEffect(() => {
+    if (!menuOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [menuOpen])
+
   // Marka değiştirildiğinde o markanın sayfasına git
   const handleBrandSwitch = (key: BrandKey) => {
     const currentPath = pathname
@@ -133,11 +155,14 @@ export default function Header() {
   }
 
   const navPrefix = activeBrandKey ? `/${activeBrandKey}` : ''
-  const navItems = activeBrand?.nav.map((item) => ({
-    ...item,
-    href: navPrefix + item.href,
-    children: item.children?.map((c) => ({ ...c, href: navPrefix + c.href })),
-  })) ?? []
+  // Blog içeriği sahte/boş olduğu için yayından çıkarıldı; menüde gösterilmiyor.
+  const navItems = activeBrand?.nav
+    .filter((item) => !item.href.startsWith('/blog'))
+    .map((item) => ({
+      ...item,
+      href: navPrefix + item.href,
+      children: item.children?.map((c) => ({ ...c, href: navPrefix + c.href })),
+    })) ?? []
 
   return (
     <>
@@ -220,7 +245,9 @@ export default function Header() {
                 <button
                   className="md:hidden text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200 ml-1"
                   onClick={() => setMenuOpen(!menuOpen)}
-                  aria-label="Menü"
+                  aria-expanded={menuOpen}
+                  aria-controls="mobil-menu"
+                  aria-label={menuOpen ? 'Menüyü kapat' : 'Menüyü aç'}
                 >
                   <div className="relative w-5 h-5">
                     <span className={`absolute block w-5 h-0.5 bg-current transition-all duration-300 ${menuOpen ? 'top-2 rotate-45' : 'top-0.5'}`} />
@@ -314,13 +341,15 @@ export default function Header() {
               <div className="relative max-w-xl mx-auto">
                 <input
                   type="text"
+                  id="header-arama"
+                  aria-label="Ürün ara"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={activeBrand ? `${activeBrand.name} ürünlerinde ara...` : 'Ürün ara...'}
                   className="w-full bg-white/10 text-white placeholder:text-white/40 border border-white/20 rounded-xl px-5 py-3 pr-12 focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all duration-200"
                   autoFocus
                 />
-                <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors">
+                <button type="submit" aria-label="Ara" className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -335,7 +364,7 @@ export default function Header() {
       {menuOpen && (
         <>
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden" onClick={() => setMenuOpen(false)} />
-          <div className="fixed inset-x-0 top-[56px] sm:top-[64px] bg-gray-900/97 backdrop-blur-xl border-t border-white/10 z-40 md:hidden max-h-[80vh] overflow-y-auto">
+          <div id="mobil-menu" className="fixed inset-x-0 top-[56px] sm:top-[64px] bg-gray-900/97 backdrop-blur-xl border-t border-white/10 z-40 md:hidden max-h-[80vh] overflow-y-auto">
 
             <div className="p-4 border-b border-white/10">
               <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Marka Seç</p>

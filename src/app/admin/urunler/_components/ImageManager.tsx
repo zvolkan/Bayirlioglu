@@ -216,13 +216,14 @@ export default function ImageManager({ productId, productName, initialImages }: 
       {/* Yükleme */}
       <div className="pt-2 space-y-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="gorsel-dosya" className="block text-sm font-medium text-gray-700 mb-1">
             Görsel Ekle
             <span className="ml-1.5 text-xs font-normal text-gray-400">
               (birden fazla seçebilirsiniz)
             </span>
           </label>
           <input
+            id="gorsel-dosya"
             type="file"
             accept="image/jpeg,image/png,image/webp,image/avif"
             multiple
@@ -236,11 +237,12 @@ export default function ImageManager({ productId, productName, initialImages }: 
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="gorsel-url" className="block text-sm font-medium text-gray-700 mb-1">
             veya Görsel URL&apos;si
           </label>
           <div className="flex gap-2">
             <input
+              id="gorsel-url"
               value={manualUrl}
               onChange={(e) => setManualUrl(e.target.value)}
               placeholder="/images/urun-adi.jpg"

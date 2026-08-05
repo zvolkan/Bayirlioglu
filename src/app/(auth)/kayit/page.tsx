@@ -65,10 +65,11 @@ export default async function KayitPage({
 
           <form action={signUp} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Ad Soyad</label>
+              <label htmlFor="kayit-name" className="block text-sm font-medium text-gray-700 mb-1.5">Ad Soyad</label>
               <input
                 type="text"
                 name="name"
+                id="kayit-name"
                 required
                 placeholder="Ahmet Yılmaz"
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
@@ -76,10 +77,11 @@ export default async function KayitPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">E-posta</label>
+              <label htmlFor="kayit-email" className="block text-sm font-medium text-gray-700 mb-1.5">E-posta</label>
               <input
                 type="email"
                 name="email"
+                id="kayit-email"
                 required
                 placeholder="ornek@email.com"
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
@@ -87,10 +89,11 @@ export default async function KayitPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Şifre</label>
+              <label htmlFor="kayit-password" className="block text-sm font-medium text-gray-700 mb-1.5">Şifre</label>
               <input
                 type="password"
                 name="password"
+                id="kayit-password"
                 required
                 minLength={6}
                 placeholder="En az 6 karakter"

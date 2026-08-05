@@ -23,9 +23,10 @@ export default function ProfileForm({ name, phone, email }: Props) {
   return (
     <form action={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">Ad Soyad</label>
+        <label htmlFor="profil-name" className="block text-sm font-medium text-gray-700 mb-1.5">Ad Soyad</label>
         <input
           type="text"
+          id="profil-name"
           name="name"
           defaultValue={name ?? ''}
           required
@@ -33,9 +34,10 @@ export default function ProfileForm({ name, phone, email }: Props) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">E-posta</label>
+        <label htmlFor="profil-email" className="block text-sm font-medium text-gray-700 mb-1.5">E-posta</label>
         <input
           type="email"
+          id="profil-email"
           value={email}
           disabled
           className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-gray-400 text-sm bg-gray-50 cursor-not-allowed"
@@ -43,9 +45,10 @@ export default function ProfileForm({ name, phone, email }: Props) {
         <p className="text-xs text-gray-400 mt-1">E-posta adresi değiştirilemez.</p>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">Telefon</label>
+        <label htmlFor="profil-phone" className="block text-sm font-medium text-gray-700 mb-1.5">Telefon</label>
         <input
           type="tel"
+          id="profil-phone"
           name="phone"
           defaultValue={phone ?? ''}
           placeholder="05XX XXX XX XX"

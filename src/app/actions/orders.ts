@@ -416,3 +416,39 @@ export async function setDefaultAddress(addressId: string) {
   revalidatePath('/hesabim')
   revalidatePath('/hesabim/adreslerim')
 }
+
+// ─── Yarım kalan ödemeleri temizle ───────────────────────────────────────────
+
+/** Ödemesi tamamlanmayan siparişin geçerli sayılacağı süre */
+const BEKLEYEN_SIPARIS_SAAT = 24
+
+/**
+ * Ödeme ekranını kapatan kullanıcının siparişi sonsuza kadar "Beklemede"
+ * kalıyordu: listede birikiyor, müşteri ne yapacağını bilemiyordu. Kullanıcı
+ * kendi sipariş listesini açtığında eskimiş olanlar iptal ediliyor.
+ *
+ * Yalnızca ödemesi HİÇ alınmamış siparişlere dokunulur — para tahsil edilmiş
+ * bir siparişin buradan iptal edilmesi mümkün değil.
+ */
+export async function cancelStalePendingOrders(userId: string): Promise<void> {
+  const cutoff = new Date(Date.now() - BEKLEYEN_SIPARIS_SAAT * 3600_000)
+
+  try {
+    await prisma.order.updateMany({
+      where: {
+        userId,
+        status: 'PENDING',
+        paymentStatus: { not: 'paid' },
+        createdAt: { lt: cutoff },
+      },
+      data: {
+        status: 'CANCELLED',
+        paymentStatus: 'failed',
+        adminNote: 'Ödeme tamamlanmadığı için otomatik iptal edildi.',
+      },
+    })
+  } catch (error) {
+    // Temizlik işi; başarısız olursa sayfa yine de açılmalı
+    console.error('[sipariş] bekleyen sipariş temizliği başarısız:', error)
+  }
+}

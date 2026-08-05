@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
+import { TESLIMAT_SURESI } from '@/lib/checkout'
 import type { BrandKey } from '@/lib/types'
 
 const VALID_BRANDS: BrandKey[] = ['alb-tarim', 'alb-su-aritma']
@@ -48,8 +49,8 @@ const TARIM_SERVICES = [
   {
     icon: '🚚',
     title: 'Hızlı Teslimat',
-    desc: '81 ile uzanan dağıtım ağımızla siparişleriniz 2-3 iş günü içinde kapınızda.',
-    features: ['81 il teslimat', '2-3 iş günü', 'Soğuk zincir ürünler', 'Takip numarası ile anlık izleme'],
+    desc: `81 ile uzanan dağıtım ağımızla siparişleriniz ${TESLIMAT_SURESI} içinde kapınızda.`,
+    features: ['81 il teslimat', TESLIMAT_SURESI, 'Soğuk zincir ürünler', 'Takip numarası ile anlık izleme'],
   },
   {
     icon: '🔧',

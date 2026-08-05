@@ -199,3 +199,37 @@ SELECT 'ürün indeksleri' AS kontrol, COUNT(*) AS adet
 FROM pg_indexes
 WHERE tablename = 'products'
   AND indexname LIKE 'products_%_idx';
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- EK 4: İade talebi (cayma hakkı)
+-- Bu bölüm daha önce çalıştırılmadıysa güvenle çalıştırılabilir.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ReturnStatus') THEN
+    CREATE TYPE "ReturnStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'COMPLETED');
+  END IF;
+END $$;
+
+CREATE TABLE IF NOT EXISTS return_requests (
+  id          TEXT PRIMARY KEY,
+  order_id    TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  user_id     UUID NOT NULL REFERENCES users(id),
+  status      "ReturnStatus" NOT NULL DEFAULT 'PENDING',
+  reason      TEXT NOT NULL,
+  items       JSONB,
+  admin_note  TEXT,
+  created_at  TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  resolved_at TIMESTAMP(3)
+);
+
+CREATE INDEX IF NOT EXISTS return_requests_order_id_idx ON return_requests (order_id);
+CREATE INDEX IF NOT EXISTS return_requests_user_id_idx  ON return_requests (user_id);
+CREATE INDEX IF NOT EXISTS return_requests_status_idx   ON return_requests (status);
+
+SELECT 'iade talepleri tablosu' AS kontrol,
+       COUNT(*) AS var_mi
+FROM information_schema.tables
+WHERE table_name = 'return_requests';

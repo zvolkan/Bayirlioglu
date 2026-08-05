@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useCartStore } from '@/store/cartStore'
-import { KARGO_LIMIT, calculateTotals } from '@/lib/checkout'
+import { KARGO_LIMIT, TESLIMAT_SURESI, calculateTotals } from '@/lib/checkout'
 import { SITE_CONFIG } from '@/lib/constants'
 
 // Sözleşme metinlerinde kullanılacak gerçek alan adı ve iletişim bilgileri
@@ -55,7 +55,7 @@ Adres: ${SITE_CONFIG.address}
 Mal veya Hizmetin temel nitelikleri Site'de yayınlanan ürün/hizmet sayfalarında belirtilmektedir. Kampanya süresince geçerli olan satış fiyatı Siparişinizi verdiğiniz tarihteki fiyattır.
 
 5. ÖDEME ve TESLİMAT
-Sipariş toplamı, seçilen ödeme yöntemi ile tahsil edilecektir. Teslimat, sipariş onayından itibaren en geç 3-7 iş günü içinde gerçekleştirilecektir.
+Sipariş toplamı, seçilen ödeme yöntemi ile tahsil edilecektir. Teslimat, sipariş onayından itibaren en geç ${TESLIMAT_SURESI} içinde gerçekleştirilecektir.
 
 6. KİŞİSEL VERİLERİN KORUNMASI
 Kişisel verileriniz 6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında korunmaktadır.`
@@ -282,6 +282,7 @@ export default function CheckoutClient({ addresses }: Props) {
                   {addresses.map((addr) => (
                     <label
                       key={addr.id}
+                      htmlFor={`teslimat-adresi-${addr.id}`}
                       className={`flex gap-3 p-4 border-2 rounded-xl cursor-pointer transition-colors ${
                         selectedAddressId === addr.id
                           ? 'border-gray-900 bg-gray-50'
@@ -289,6 +290,7 @@ export default function CheckoutClient({ addresses }: Props) {
                       }`}
                     >
                       <input
+                        id={`teslimat-adresi-${addr.id}`}
                         type="radio"
                         name="savedAddress"
                         value={addr.id}
@@ -450,9 +452,10 @@ export default function CheckoutClient({ addresses }: Props) {
                 </div>
 
                 {/* Onay checkbox */}
-                <label className="flex items-start gap-3 cursor-pointer group mt-2">
+                <label htmlFor="sozlesme-onay" className="flex items-start gap-3 cursor-pointer group mt-2">
                   <div className="relative mt-0.5 flex-shrink-0">
                     <input
+                      id="sozlesme-onay"
                       type="checkbox"
                       checked={contractApproved}
                       onChange={(e) => setContractApproved(e.target.checked)}

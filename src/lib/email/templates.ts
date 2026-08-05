@@ -407,3 +407,177 @@ export function adminNewOrderEmail(data: OrderEmailData) {
     text: `Yeni sipariş ${data.orderId} — ${money(data.total)} — ${data.customerName}`,
   }
 }
+
+// ─── 5. İade talebi ──────────────────────────────────────────────────────────
+
+export function returnRequestedEmail(params: {
+  orderId: string
+  customerName: string
+  itemNames: string[]
+}) {
+  const siteUrl = getSiteUrl()
+
+  const html = layout(
+    'İade Talebiniz Alındı',
+    `
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">İade talebiniz alındı</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
+      Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
+        params.orderId,
+      )} numaralı siparişiniz için iade talebinizi aldık.
+    </p>
+
+    <div style="background:#fafafa;border-radius:12px;padding:16px;">
+      <p style="margin:0 0 8px;font-size:12px;color:#a1a1aa;">İADE EDİLECEK ÜRÜNLER</p>
+      ${params.itemNames
+        .map(
+          (name) =>
+            `<p style="margin:0 0 4px;font-size:14px;color:#3f3f46;">• ${escapeHtml(name)}</p>`,
+        )
+        .join('')}
+    </div>
+
+    <p style="margin:16px 0 0;font-size:14px;color:#52525b;line-height:1.7;">
+      Talebinizi en kısa sürede değerlendirip size dönüş yapacağız. Onaylandığında
+      ürünü nasıl göndereceğinizi ayrıca bildireceğiz. <strong>Ürünü şimdilik
+      göndermeyin.</strong>
+    </p>
+
+    ${button(`${siteUrl}/hesabim/siparislerim`, 'Siparişlerim')}
+  `,
+  )
+
+  const text = [
+    `${params.orderId} numaralı sipariş için iade talebiniz alındı.`,
+    `Ürünler: ${params.itemNames.join(', ')}`,
+    'Onaylandığında ürünü nasıl göndereceğinizi bildireceğiz. Şimdilik göndermeyin.',
+  ].join('\n')
+
+  return { subject: 'İade talebiniz alındı', html, text }
+}
+
+export function returnDecisionEmail(params: {
+  orderId: string
+  customerName: string
+  approved: boolean
+  adminNote?: string | null
+}) {
+  const siteUrl = getSiteUrl()
+
+  const body = params.approved
+    ? `
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">İade talebiniz onaylandı</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
+      Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
+        params.orderId,
+      )} numaralı siparişinize ait iade talebiniz onaylandı.
+    </p>
+
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;">
+      <p style="margin:0 0 10px;font-size:14px;color:#166534;line-height:1.7;">
+        <strong>Ürünü şu adrese gönderin:</strong><br />
+        ${escapeHtml(SITE_CONFIG.address)}
+      </p>
+      <p style="margin:0;font-size:14px;color:#166534;line-height:1.7;">
+        Ürün elimize ulaşıp kontrol edildikten sonra ödemeniz iade edilecek.
+        Kartınıza yansıması bankanıza bağlı olarak 1-7 iş günü sürebilir.
+      </p>
+    </div>
+  `
+    : `
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">İade talebiniz hakkında</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
+      Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
+        params.orderId,
+      )} numaralı siparişinize ait iade talebinizi maalesef karşılayamıyoruz.
+    </p>
+  `
+
+  const html = layout(
+    params.approved ? 'İade Talebiniz Onaylandı' : 'İade Talebiniz Hakkında',
+    `
+    ${body}
+    ${
+      params.adminNote
+        ? `<div style="background:#fafafa;border-radius:12px;padding:16px;margin-top:16px;">
+             <p style="margin:0 0 6px;font-size:12px;color:#a1a1aa;">AÇIKLAMA</p>
+             <p style="margin:0;font-size:14px;color:#3f3f46;line-height:1.7;">${escapeHtml(
+               params.adminNote,
+             )}</p>
+           </div>`
+        : ''
+    }
+    <p style="margin:16px 0 0;font-size:13px;color:#71717a;line-height:1.7;">
+      Sorularınız için <a href="mailto:${SITE_CONFIG.email}" style="color:#2563eb;">${
+        SITE_CONFIG.email
+      }</a> adresinden veya ${escapeHtml(SITE_CONFIG.phone)} numarasından bize ulaşabilirsiniz.
+    </p>
+    ${button(`${siteUrl}/hesabim/siparislerim`, 'Siparişlerim')}
+  `,
+  )
+
+  const text = [
+    params.approved
+      ? `${params.orderId} numaralı sipariş için iade talebiniz onaylandı.`
+      : `${params.orderId} numaralı sipariş için iade talebiniz karşılanamadı.`,
+    params.approved ? `Ürünü şu adrese gönderin: ${SITE_CONFIG.address}` : '',
+    params.adminNote ? `Açıklama: ${params.adminNote}` : '',
+    `İletişim: ${SITE_CONFIG.email} — ${SITE_CONFIG.phone}`,
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  return {
+    subject: params.approved ? 'İade talebiniz onaylandı' : 'İade talebiniz hakkında',
+    html,
+    text,
+  }
+}
+
+export function adminReturnRequestEmail(params: {
+  orderId: string
+  customerName: string
+  customerEmail: string
+  reason: string
+  itemNames: string[]
+}) {
+  const siteUrl = getSiteUrl()
+
+  const html = layout(
+    'Yeni İade Talebi',
+    `
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Yeni iade talebi</p>
+    <p style="margin:0 0 16px;font-size:14px;color:#52525b;line-height:1.7;">
+      <strong>${escapeHtml(params.customerName)}</strong> (${escapeHtml(
+        params.customerEmail,
+      )}) — sipariş ${escapeHtml(params.orderId)}
+    </p>
+
+    <div style="background:#fafafa;border-radius:12px;padding:16px;">
+      <p style="margin:0 0 8px;font-size:12px;color:#a1a1aa;">ÜRÜNLER</p>
+      ${params.itemNames
+        .map(
+          (name) =>
+            `<p style="margin:0 0 4px;font-size:14px;color:#3f3f46;">• ${escapeHtml(name)}</p>`,
+        )
+        .join('')}
+      <p style="margin:12px 0 6px;font-size:12px;color:#a1a1aa;">GEREKÇE</p>
+      <p style="margin:0;font-size:14px;color:#3f3f46;line-height:1.7;">${escapeHtml(
+        params.reason,
+      )}</p>
+    </div>
+
+    ${button(`${siteUrl}/admin/iadeler`, 'İade Taleplerini Aç')}
+  `,
+  )
+
+  const text = [
+    `Yeni iade talebi — sipariş ${params.orderId}`,
+    `Müşteri: ${params.customerName} (${params.customerEmail})`,
+    `Ürünler: ${params.itemNames.join(', ')}`,
+    `Gerekçe: ${params.reason}`,
+    `${siteUrl}/admin/iadeler`,
+  ].join('\n')
+
+  return { subject: `Yeni iade talebi — ${params.orderId}`, html, text }
+}

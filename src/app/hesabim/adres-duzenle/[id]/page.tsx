@@ -78,10 +78,11 @@ export default function AdresDuzenlePage() {
 
           <form action={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Adres Etiketi</label>
+              <label htmlFor="adres-label" className="block text-sm font-medium text-gray-700 mb-1.5">Adres Etiketi</label>
               <input
                 type="text"
                 name="label"
+                id="adres-label"
                 defaultValue={address.label}
                 placeholder="Ev, İş, Çiftlik..."
                 required
@@ -90,10 +91,11 @@ export default function AdresDuzenlePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Ad Soyad</label>
+              <label htmlFor="adres-fullName" className="block text-sm font-medium text-gray-700 mb-1.5">Ad Soyad</label>
               <input
                 type="text"
                 name="fullName"
+                id="adres-fullName"
                 defaultValue={address.fullName}
                 required
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
@@ -101,10 +103,11 @@ export default function AdresDuzenlePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Telefon</label>
+              <label htmlFor="adres-phone" className="block text-sm font-medium text-gray-700 mb-1.5">Telefon</label>
               <input
                 type="tel"
                 name="phone"
+                id="adres-phone"
                 defaultValue={address.phone}
                 placeholder="05XX XXX XX XX"
                 required
@@ -113,10 +116,11 @@ export default function AdresDuzenlePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Adres Satırı 1</label>
+              <label htmlFor="adres-line1" className="block text-sm font-medium text-gray-700 mb-1.5">Adres Satırı 1</label>
               <input
                 type="text"
                 name="line1"
+                id="adres-line1"
                 defaultValue={address.line1}
                 required
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
@@ -124,12 +128,13 @@ export default function AdresDuzenlePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="adres-line2" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Adres Satırı 2 <span className="text-gray-400">(opsiyonel)</span>
               </label>
               <input
                 type="text"
                 name="line2"
+                id="adres-line2"
                 defaultValue={address.line2 ?? ''}
                 placeholder="Daire, kat..."
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
@@ -138,9 +143,10 @@ export default function AdresDuzenlePage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">İl</label>
+                <label htmlFor="adres-city" className="block text-sm font-medium text-gray-700 mb-1.5">İl</label>
                 <select
                   name="city"
+                  id="adres-city"
                   defaultValue={address.city}
                   required
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
@@ -152,10 +158,11 @@ export default function AdresDuzenlePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">İlçe</label>
+                <label htmlFor="adres-district" className="block text-sm font-medium text-gray-700 mb-1.5">İlçe</label>
                 <input
                   type="text"
                   name="district"
+                  id="adres-district"
                   defaultValue={address.district}
                   required
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
@@ -164,12 +171,13 @@ export default function AdresDuzenlePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="adres-postalCode" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Posta Kodu <span className="text-gray-400">(opsiyonel)</span>
               </label>
               <input
                 type="text"
                 name="postalCode"
+                id="adres-postalCode"
                 defaultValue={address.postalCode ?? ''}
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
               />

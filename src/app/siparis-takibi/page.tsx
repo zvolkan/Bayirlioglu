@@ -72,9 +72,10 @@ export default function SiparisTakibiPage() {
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm p-6 mb-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Sipariş No</label>
+              <label htmlFor="takip-siparisNo" className="block text-sm font-medium text-gray-700 mb-1.5">Sipariş No</label>
               <input
                 type="text"
+                id="takip-siparisNo"
                 value={orderNum}
                 onChange={(e) => setOrderNum(e.target.value)}
                 placeholder="Sipariş onayında yer alan numara"
@@ -82,11 +83,12 @@ export default function SiparisTakibiPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="takip-email" className="block text-sm font-medium text-gray-700 mb-1.5">
                 E-posta adresiniz
               </label>
               <input
                 type="email"
+                id="takip-email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Siparişte kullandığınız e-posta"

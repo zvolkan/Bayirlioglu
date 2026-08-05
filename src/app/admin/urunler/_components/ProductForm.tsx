@@ -319,8 +319,9 @@ export default function ProductForm({
 
           {/* Website Markası (ALB Tarım / ALB Su Arıtma) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Marka *</label>
+            <label htmlFor="urun-brandId" className="block text-sm font-medium text-gray-700 mb-1">Marka *</label>
             <select
+              id="urun-brandId"
               name="brandId"
               required
               value={selectedBrandId}
@@ -338,8 +339,9 @@ export default function ProductForm({
             <>
               {/* Ana Kategori (L0) */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ana Kategori *</label>
+                <label htmlFor="urun-anaKategori" className="block text-sm font-medium text-gray-700 mb-1">Ana Kategori *</label>
                 <select
+                  id="urun-anaKategori"
                   required
                   value={selectedParentId || ''}
                   onChange={(e) => handleParentChange(Number(e.target.value))}
@@ -354,13 +356,14 @@ export default function ProductForm({
 
               {/* Ürün Markası (YENİ — her iki modda da gösterilir) */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="urun-productBrand" className="block text-sm font-medium text-gray-700 mb-1">
                   Ürün Markası *
                   <span className="ml-1.5 text-xs font-normal text-gray-400">
                     (Ürün kartında gösterilir)
                   </span>
                 </label>
                 <select
+                  id="urun-productBrand"
                   name="productBrand"
                   required
                   value={selectedProductBrand}
@@ -376,7 +379,7 @@ export default function ProductForm({
 
               {/* Alt Kategori (ürün tipi) */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="urun-categoryId" className="block text-sm font-medium text-gray-700 mb-1">
                   Alt Kategori *
                   {isIthalSelected && !selectedProductBrand && (
                     <span className="ml-2 text-xs text-amber-600 font-normal">
@@ -395,6 +398,7 @@ export default function ProductForm({
                   )}
                 </label>
                 <select
+                  id="urun-categoryId"
                   name="categoryId"
                   required
                   value={selectedCategoryId || ''}
@@ -411,8 +415,9 @@ export default function ProductForm({
           ) : (
             /* ── Kategori: Flat ── */
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Kategori *</label>
+              <label htmlFor="urun-categoryId" className="block text-sm font-medium text-gray-700 mb-1">Kategori *</label>
               <select
+                id="urun-categoryId"
                 name="categoryId"
                 required
                 defaultValue={defaultValues.categoryId ?? ''}
@@ -428,8 +433,9 @@ export default function ProductForm({
 
           {/* Ürün Adı */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Ürün Adı *</label>
+            <label htmlFor="urun-name" className="block text-sm font-medium text-gray-700 mb-1">Ürün Adı *</label>
             <input
+              id="urun-name"
               name="name"
               required
               defaultValue={defaultValues.name ?? ''}
@@ -444,7 +450,7 @@ export default function ProductForm({
 
           {/* Slug */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Slug *</label>
+            <label htmlFor="slug-input" className="block text-sm font-medium text-gray-700 mb-1">Slug *</label>
             <input
               id="slug-input"
               name="slug"
@@ -457,13 +463,14 @@ export default function ProductForm({
 
           {/* KDV Oranı */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="urun-vatRate" className="block text-sm font-medium text-gray-700 mb-1">
               KDV Oranı *
               <span className="ml-1.5 text-xs font-normal text-gray-400">
                 (fiyat KDV dahil girilir)
               </span>
             </label>
             <select
+              id="urun-vatRate"
               name="vatRate"
               defaultValue={String(defaultValues.vatRate ?? 20)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -476,8 +483,9 @@ export default function ProductForm({
 
           {/* SKU */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">SKU / Ürün Kodu</label>
+            <label htmlFor="urun-sku" className="block text-sm font-medium text-gray-700 mb-1">SKU / Ürün Kodu</label>
             <input
+              id="urun-sku"
               name="sku"
               defaultValue={defaultValues.sku ?? ''}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -488,8 +496,9 @@ export default function ProductForm({
 
         {/* Kısa Açıklama */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Kısa Açıklama</label>
+          <label htmlFor="urun-shortDescription" className="block text-sm font-medium text-gray-700 mb-1">Kısa Açıklama</label>
           <textarea
+            id="urun-shortDescription"
             name="shortDescription"
             rows={2}
             defaultValue={defaultValues.shortDescription ?? ''}
@@ -500,8 +509,9 @@ export default function ProductForm({
 
         {/* Açıklama */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tam Açıklama</label>
+          <label htmlFor="urun-description" className="block text-sm font-medium text-gray-700 mb-1">Tam Açıklama</label>
           <textarea
+            id="urun-description"
             name="description"
             rows={5}
             defaultValue={defaultValues.description ?? ''}
@@ -517,8 +527,9 @@ export default function ProductForm({
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fiyat (₺) *</label>
+            <label htmlFor="urun-price" className="block text-sm font-medium text-gray-700 mb-1">Fiyat (₺) *</label>
             <input
+              id="urun-price"
               name="price" type="number" step="0.01" min="0" required
               defaultValue={defaultValues.price ?? ''}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -526,8 +537,9 @@ export default function ProductForm({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">İndirimli Fiyat (₺)</label>
+            <label htmlFor="urun-salePrice" className="block text-sm font-medium text-gray-700 mb-1">İndirimli Fiyat (₺)</label>
             <input
+              id="urun-salePrice"
               name="salePrice" type="number" step="0.01" min="0"
               defaultValue={defaultValues.salePrice ?? ''}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -535,16 +547,18 @@ export default function ProductForm({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Stok Adedi *</label>
+            <label htmlFor="urun-stockQuantity" className="block text-sm font-medium text-gray-700 mb-1">Stok Adedi *</label>
             <input
+              id="urun-stockQuantity"
               name="stockQuantity" type="number" min="0" required
               defaultValue={defaultValues.stock ?? 0}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Birim</label>
+            <label htmlFor="urun-unit" className="block text-sm font-medium text-gray-700 mb-1">Birim</label>
             <select
+              id="urun-unit"
               name="unit"
               defaultValue={defaultValues.unit ?? 'adet'}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -599,13 +613,14 @@ export default function ProductForm({
 
         <div className="flex flex-col gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="urun-imageFile" className="block text-sm font-medium text-gray-700 mb-1">
               Dosya Yükle
               <span className="ml-1.5 text-xs font-normal text-gray-400">
                 (Supabase&apos;e doğrudan yüklenir — boyut sınırı yok)
               </span>
             </label>
             <input
+              id="urun-imageFile"
               ref={fileRef}
               name="imageFile"
               type="file"
@@ -617,10 +632,11 @@ export default function ProductForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="urun-imageUrl" className="block text-sm font-medium text-gray-700 mb-1">
               veya Görsel URL&apos;si <span className="text-xs font-normal text-gray-400">(public/ dizini)</span>
             </label>
             <input
+              id="urun-imageUrl"
               name="imageUrl"
               type="text"
               defaultValue={
@@ -660,18 +676,21 @@ export default function ProductForm({
         {specs.map((spec, idx) => (
           <div key={idx} className="grid grid-cols-12 gap-3 items-center">
             <input
+              aria-label={`${idx + 1}. özellik adı`}
               value={spec.name}
               onChange={(e) => updateSpec(idx, 'name', e.target.value)}
               placeholder="Özellik adı"
               className="col-span-4 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <input
+              aria-label={`${idx + 1}. özellik değeri`}
               value={spec.value}
               onChange={(e) => updateSpec(idx, 'value', e.target.value)}
               placeholder="Değer"
               className="col-span-5 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <input
+              aria-label={`${idx + 1}. özellik birimi`}
               value={spec.unit}
               onChange={(e) => updateSpec(idx, 'unit', e.target.value)}
               placeholder="Birim"
@@ -682,6 +701,7 @@ export default function ProductForm({
               onClick={() => removeSpec(idx)}
               className="col-span-1 text-gray-400 hover:text-red-500 text-xl leading-none"
               title="Sil"
+              aria-label={`${idx + 1}. özelliği sil`}
             >
               ×
             </button>
@@ -698,9 +718,10 @@ export default function ProductForm({
         <h2 className="font-semibold text-gray-800 text-base border-b pb-3 mb-4">Yayın Durumu</h2>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          <label className="flex items-center gap-3 cursor-pointer select-none">
+          <label htmlFor="urun-isActive" className="flex items-center gap-3 cursor-pointer select-none">
             <input type="hidden" name="isActive" value="false" />
             <input
+              id="urun-isActive"
               type="checkbox"
               name="isActive"
               value="true"
@@ -710,9 +731,10 @@ export default function ProductForm({
             <span className="text-sm text-gray-700">Aktif (sitede görünsün)</span>
           </label>
 
-          <label className="flex items-center gap-3 cursor-pointer select-none">
+          <label htmlFor="urun-isFeatured" className="flex items-center gap-3 cursor-pointer select-none">
             <input type="hidden" name="isFeatured" value="false" />
             <input
+              id="urun-isFeatured"
               type="checkbox"
               name="isFeatured"
               value="true"

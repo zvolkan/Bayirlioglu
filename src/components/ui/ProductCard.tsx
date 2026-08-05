@@ -75,7 +75,7 @@ export default function ProductCard({
       )}
     >
       {/* ─── GÖRSEL ALANI ─────────────────────────────────────────────── */}
-      <Link href={`/urunler/${product.slug}`} className="relative block aspect-square bg-gray-100 overflow-hidden">
+      <Link href={`/${product.brand}/urunler/${product.slug}`} className="relative block aspect-square bg-gray-100 overflow-hidden">
         {/* GÖRSEL: /public/images/products/ klasörüne ürün görsellerini ekleyin */}
         {primaryImage ? (
           <Image
@@ -168,7 +168,7 @@ export default function ProductCard({
 
         {/* Ürün adı */}
         <Link
-          href={`/urunler/${product.slug}`}
+          href={`/${product.brand}/urunler/${product.slug}`}
           className={cn(
             'font-semibold text-gray-900 line-clamp-2 transition-colors duration-150',
             BRAND.colors.navHover

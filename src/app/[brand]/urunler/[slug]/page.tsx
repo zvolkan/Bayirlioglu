@@ -7,7 +7,8 @@ import { BRANDS } from '@/lib/constants'
 import { getProductBySlug, getRelatedProducts } from '@/lib/queries/products'
 import { shouldShowRating } from '@/lib/reviews'
 import type { BrandKey } from '@/lib/types'
-import AddToCartButton from '@/components/product/AddToCartButton'
+import QuantityAddToCart from '@/components/product/QuantityAddToCart'
+import { KARGO_LIMIT, KARGO_UCRETI, TESLIMAT_SURESI } from '@/lib/checkout'
 
 interface Props {
   params: Promise<{ brand: string; slug: string }>
@@ -221,11 +222,28 @@ export default async function ProductDetailPage({ params }: Props) {
               </div>
 
               {/* CTA Butonları */}
+              {/* Kargo ve teslimat — müşteri sepete eklemeden önce bilmeli */}
+              <div className="mb-5 text-sm text-gray-600 bg-gray-50 rounded-xl px-4 py-3 space-y-1">
+                <p>
+                  🚚 Tahmini teslimat:{' '}
+                  <span className="font-semibold text-gray-900">{TESLIMAT_SURESI}</span>
+                </p>
+                <p>
+                  📦 {KARGO_LIMIT} TL ve üzeri siparişlerde{' '}
+                  <span className="font-semibold text-green-600">kargo ücretsiz</span>
+                  <span className="text-gray-400">
+                    {' '}
+                    · altında {KARGO_UCRETI.toLocaleString('tr-TR', {
+                      minimumFractionDigits: 2,
+                    })} TL
+                  </span>
+                </p>
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-3 mt-auto">
-                <AddToCartButton
+                <QuantityAddToCart
                   product={product}
-                  disabled={product.stock === 0}
-                  className={`flex-1 ${primaryBtn} text-white py-3.5 rounded-xl font-bold transition-colors text-center disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`flex-1 ${primaryBtn} text-white py-3.5 px-6 rounded-xl font-bold transition-colors text-center disabled:opacity-50 disabled:cursor-not-allowed`}
                 />
                 <a
                   href={`https://wa.me/${cfg.whatsapp.phone}?text=${encodeURIComponent(`${cfg.whatsapp.message} Ürün: ${product.name}`)}`}

@@ -81,10 +81,11 @@ export default async function GirisPage({
             <input type="hidden" name="redirect" value={redirectTo} />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">E-posta</label>
+              <label htmlFor="giris-email" className="block text-sm font-medium text-gray-700 mb-1.5">E-posta</label>
               <input
                 type="email"
                 name="email"
+                id="giris-email"
                 required
                 placeholder="ornek@email.com"
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
@@ -92,10 +93,11 @@ export default async function GirisPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Şifre</label>
+              <label htmlFor="giris-password" className="block text-sm font-medium text-gray-700 mb-1.5">Şifre</label>
               <input
                 type="password"
                 name="password"
+                id="giris-password"
                 required
                 placeholder="••••••••"
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"

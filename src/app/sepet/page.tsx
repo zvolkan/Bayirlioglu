@@ -58,6 +58,12 @@ export default function SepetPage() {
   // detayı da aynı fonksiyonu kullanır, böylece rakamlar birbirini tutar.
   const { subtotal, shippingFee: cargoFee, total } = calculateTotals(getTotalPrice())
 
+  // Ödeme tek marka üzerinden yapılıyor (iyzico işlemi tek satıcıya bağlanıyor).
+  // Sepette iki markanın ürünü varsa müşteri ödeme adımında sunucudan hata
+  // alıyor ama sepette hiçbir uyarı görmüyordu — çıkmaz sokak.
+  const brandsInCart = Array.from(new Set(items.map((i) => i.product.brand)))
+  const mixedBrands = brandsInCart.length > 1
+
   // localStorage okunana kadar iskelet göster — aksi hâlde sunucuda "Sepetiniz
   // boş" render edilip istemcide dolu sepete atlıyor (hydration uyumsuzluğu).
   if (!hasHydrated) {
@@ -121,6 +127,20 @@ export default function SepetPage() {
               ({items.length} ürün)
             </span>
           </h1>
+
+          {mixedBrands && (
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+              <p className="text-sm font-semibold text-amber-900">
+                Sepetinizde iki farklı markanın ürünü var
+              </p>
+              <p className="text-sm text-amber-800 mt-1 leading-relaxed">
+                ALB Tarım ve ALB Su Teknolojileri siparişleri ayrı ayrı
+                tamamlanıyor. Ödemeye geçebilmek için bir markanın ürünlerini
+                sepetten çıkarıp önce diğerini tamamlayın, sonra kalanlar için
+                yeni sipariş verin.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -263,13 +283,24 @@ export default function SepetPage() {
                 </div>
               </div>
 
-              <Link
-                href="/odeme"
-                className="mt-5 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
-              >
-                Siparişi Tamamla
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              {mixedBrands ? (
+                <button
+                  type="button"
+                  disabled
+                  title="Sepetinizde iki farklı markanın ürünü var"
+                  className="mt-5 w-full flex items-center justify-center gap-2 bg-gray-200 text-gray-500 font-semibold py-3 rounded-xl text-sm cursor-not-allowed"
+                >
+                  Siparişi Tamamla
+                </button>
+              ) : (
+                <Link
+                  href="/odeme"
+                  className="mt-5 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
+                >
+                  Siparişi Tamamla
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              )}
 
               <p className="text-xs text-gray-400 text-center mt-3">
                 Güvenli ödeme ile korunan alışveriş

@@ -9,6 +9,27 @@
 export const KARGO_LIMIT = 500
 export const KARGO_UCRETI = 29.9
 
+/**
+ * Teslimat süresi — TEK KAYNAK.
+ *
+ * Site genelinde üç farklı süre yazıyordu: mesafeli satış sözleşmesi "3-7 iş
+ * günü", kullanım koşulları "2-5 iş günü", marka sayfaları "2-3 iş günü".
+ * Bağlayıcı olan sözleşme metnidir; pazarlama sayfalarının daha kısa süre vaat
+ * etmesi tüketici şikâyetine açık bir durumdu. Hepsi buradan okuyor.
+ */
+export const TESLIMAT_SURESI = '2-5 iş günü'
+
+/** Cayma hakkı süresi (gün) — Mesafeli Sözleşmeler Yönetmeliği md. 9 */
+export const CAYMA_SURESI_GUN = 14
+
+/** Ücretsiz kargo eşiğini insan diline çeviren yardımcı */
+export function kargoMetni(): string {
+  return `${KARGO_LIMIT} TL ve üzeri siparişlerde kargo ücretsiz, altında ${KARGO_UCRETI.toLocaleString(
+    'tr-TR',
+    { minimumFractionDigits: 2 },
+  )} TL`
+}
+
 /** Fiyatları 2 haneye yuvarla — kayan nokta artıklarını temizler */
 export function money(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100

@@ -1,6 +1,7 @@
 import { prisma, type TransactionClient } from '@/lib/db'
 import { refundPayment, cancelPayment } from '@/lib/iyzico'
 import { notifyOrderRefunded } from '@/lib/email/notify'
+import { completeReturnRequestsForOrder } from '@/app/actions/returns'
 
 /**
  * Sipariş iadesi — TEK KAYNAK.
@@ -195,6 +196,9 @@ export async function processRefund(options: RefundOptions): Promise<RefundOutco
   }
 
   // Müşteriye iade bildirimi — gönderilemezse iade yine de geçerli
+  // Açık iade talebi varsa kapat — yönetici ayrıca kapatmak zorunda kalmasın
+  await completeReturnRequestsForOrder(orderId)
+
   await notifyOrderRefunded(orderId, reason)
 
   return {

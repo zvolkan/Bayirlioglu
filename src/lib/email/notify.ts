@@ -10,6 +10,9 @@ import {
   orderDeliveredEmail,
   orderCancelledEmail,
   adminNewOrderEmail,
+  returnRequestedEmail,
+  returnDecisionEmail,
+  adminReturnRequestEmail,
   type OrderEmailData,
 } from './templates'
 
@@ -297,5 +300,120 @@ export async function notifyOrderRefunded(orderId: string, reason?: string): Pro
     })
   } catch (error) {
     console.error('[e-posta] iade bildirimi gönderilemedi:', orderId, error)
+  }
+}
+
+// ─── İade talebi ─────────────────────────────────────────────────────────────
+
+async function loadReturnRequest(requestId: string) {
+  return prisma.returnRequest.findUnique({
+    where: { id: requestId },
+    select: {
+      id: true,
+      reason: true,
+      status: true,
+      adminNote: true,
+      items: true,
+      order: {
+        select: {
+          id: true,
+          shipFullName: true,
+          items: { select: { id: true, quantity: true, product: { select: { name: true } } } },
+        },
+      },
+      user: { select: { email: true, name: true } },
+    },
+  })
+}
+
+/** Talepteki kalem id'lerini okunabilir ürün adlarına çevirir */
+function returnItemNames(request: {
+  items: unknown
+  order: { items: Array<{ id: string; quantity: number; product: { name: string } }> }
+}): string[] {
+  const selected = Array.isArray(request.items)
+    ? (request.items as Array<{ orderItemId?: string }>)
+    : []
+  const ids = new Set(selected.map((i) => i.orderItemId).filter(Boolean))
+
+  const matched = request.order.items.filter((i) => ids.has(i.id))
+  const source = matched.length > 0 ? matched : request.order.items
+
+  return source.map((i) => `${i.product.name} × ${i.quantity}`)
+}
+
+/** Müşteriye "talebiniz alındı", yöneticiye "yeni talep var" */
+export async function notifyReturnRequested(requestId: string): Promise<void> {
+  try {
+    const request = await loadReturnRequest(requestId)
+    if (!request?.user.email) return
+
+    const customerName = request.order.shipFullName ?? request.user.name ?? 'Müşterimiz'
+    const itemNames = returnItemNames(request)
+
+    const customer = returnRequestedEmail({
+      orderId: request.order.id,
+      customerName,
+      itemNames,
+    })
+    await sendEmailSafe({
+      to: request.user.email,
+      subject: customer.subject,
+      html: customer.html,
+      text: customer.text,
+    })
+
+    const adminTo = process.env.ADMIN_NOTIFY_EMAIL
+      ? unquote(process.env.ADMIN_NOTIFY_EMAIL)
+      : ''
+    if (adminTo) {
+      const adminMail = adminReturnRequestEmail({
+        orderId: request.order.id,
+        customerName,
+        customerEmail: request.user.email,
+        reason: request.reason,
+        itemNames,
+      })
+      await sendEmailSafe({
+        to: adminTo,
+        subject: adminMail.subject,
+        html: adminMail.html,
+        text: adminMail.text,
+        replyTo: request.user.email,
+      })
+    }
+  } catch (error) {
+    console.error('[e-posta] iade talebi bildirimi gönderilemedi:', requestId, error)
+  }
+}
+
+/** Yöneticinin kararını müşteriye bildirir */
+export async function notifyReturnDecision(requestId: string): Promise<void> {
+  try {
+    const request = await loadReturnRequest(requestId)
+    if (!request?.user.email) return
+
+    const mail = returnDecisionEmail({
+      orderId: request.order.id,
+      customerName: request.order.shipFullName ?? request.user.name ?? 'Müşterimiz',
+      approved: request.status === 'APPROVED',
+      adminNote: request.adminNote,
+    })
+
+    const result = await sendEmailSafe({
+      to: request.user.email,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+    })
+
+    if (!result.ok) {
+      await appendAdminNote(
+        request.order.id,
+        `İade kararı bildirimi GÖNDERİLEMEDİ. Sağlayıcı yanıtı: ${result.detail ?? result.reason}`,
+      )
+    }
+  } catch (error) {
+    console.error('[e-posta] iade kararı bildirimi gönderilemedi:', requestId, error)
   }
 }

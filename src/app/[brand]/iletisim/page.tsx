@@ -151,9 +151,10 @@ export default function IletisimPage() {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Ad Soyad *</label>
+                    <label htmlFor="iletisim-name" className="block text-sm font-semibold text-gray-700 mb-1.5">Ad Soyad *</label>
                     <input
                       {...register('name')}
+                      id="iletisim-name"
                       placeholder="Adınız Soyadınız"
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-colors ${
                         errors.name ? 'border-red-300 focus:border-red-400' : `border-gray-200 ${focusBorder}`
@@ -162,9 +163,10 @@ export default function IletisimPage() {
                     {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">E-posta *</label>
+                    <label htmlFor="iletisim-email" className="block text-sm font-semibold text-gray-700 mb-1.5">E-posta *</label>
                     <input
                       {...register('email')}
+                      id="iletisim-email"
                       type="email"
                       placeholder="ornek@email.com"
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-colors ${
@@ -177,18 +179,20 @@ export default function IletisimPage() {
 
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Telefon</label>
+                    <label htmlFor="iletisim-phone" className="block text-sm font-semibold text-gray-700 mb-1.5">Telefon</label>
                     <input
                       {...register('phone')}
+                      id="iletisim-phone"
                       type="tel"
                       placeholder="0555 000 00 00"
                       className={`w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 ${focusBorder} transition-colors`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Konu *</label>
+                    <label htmlFor="iletisim-subject" className="block text-sm font-semibold text-gray-700 mb-1.5">Konu *</label>
                     <select
                       {...register('subject')}
+                      id="iletisim-subject"
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-colors ${
                         errors.subject ? 'border-red-300' : `border-gray-200 ${focusBorder}`
                       }`}
@@ -203,9 +207,10 @@ export default function IletisimPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Mesajınız *</label>
+                  <label htmlFor="iletisim-message" className="block text-sm font-semibold text-gray-700 mb-1.5">Mesajınız *</label>
                   <textarea
                     {...register('message')}
+                    id="iletisim-message"
                     rows={5}
                     placeholder="Mesajınızı buraya yazın..."
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-colors resize-none ${

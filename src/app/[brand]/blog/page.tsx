@@ -16,6 +16,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!VALID_BRANDS.includes(brand as BrandKey)) return {}
   const cfg = BRANDS[brand as BrandKey]
   return {
+    // Blog içerikleri henüz gerçek değil; arama motorlarında boş sayfa
+    // görünmesin diye indekslenmiyor. Gerçek içerik yazılınca kaldırın.
+    robots: { index: false, follow: true },
     title: `Blog | ${cfg.name}`,
     description: `${cfg.name} blog yazıları, ipuçları ve sektör haberleri.`,
   }
