@@ -91,19 +91,41 @@ function toEmailData(order: LoadedOrder): OrderEmailData {
 // ─── Sipariş onayı ───────────────────────────────────────────────────────────
 
 export async function notifyOrderConfirmed(orderId: string): Promise<void> {
+  let failure: string | null = null
+
+  // Bu satır günlüklerde hiç görünmüyorsa e-posta kodu deploy edilmemiş
+  // veya callback buraya kadar gelmemiş demektir.
+  console.log('[e-posta] sipariş onayı tetiklendi:', orderId)
+
   try {
     const order = await loadOrderForEmail(orderId)
-    if (!order?.user.email) return
+    if (!order) {
+      failure = 'E-posta gönderilemedi: sipariş kaydı okunamadı.'
+      return
+    }
+    if (!order.user.email) {
+      failure = 'E-posta gönderilemedi: siparişin kullanıcısında e-posta adresi yok.'
+      return
+    }
 
     const data = toEmailData(order)
 
     const customer = orderConfirmationEmail(data)
-    await sendEmailSafe({
+    const customerResult = await sendEmailSafe({
       to: order.user.email,
       subject: customer.subject,
       html: customer.html,
       text: customer.text,
     })
+
+    if (!customerResult.ok) {
+      failure =
+        customerResult.reason === 'not-configured'
+          ? 'Müşteri onay e-postası GÖNDERİLMEDİ: RESEND_API_KEY veya EMAIL_FROM sunucuda tanımlı değil (Vercel değişkenlerini kontrol edip yeniden deploy alın).'
+          : `Müşteri onay e-postası GÖNDERİLEMEDİ. Sağlayıcı yanıtı: ${
+              customerResult.detail ?? 'bilinmiyor'
+            }`
+    }
 
     // Yöneticiye bildirim — ayrı adres tanımlıysa
     const adminTo = process.env.ADMIN_NOTIFY_EMAIL
@@ -111,16 +133,45 @@ export async function notifyOrderConfirmed(orderId: string): Promise<void> {
       : ''
     if (adminTo) {
       const adminMail = adminNewOrderEmail(data)
-      await sendEmailSafe({
+      const adminResult = await sendEmailSafe({
         to: adminTo,
         subject: adminMail.subject,
         html: adminMail.html,
         text: adminMail.text,
         replyTo: order.user.email,
       })
+
+      if (!adminResult.ok && !failure) {
+        failure = `Yönetici bildirimi gönderilemedi (${adminTo}). Sağlayıcı yanıtı: ${
+          adminResult.detail ?? adminResult.reason
+        }`
+      }
     }
   } catch (error) {
+    failure = `Onay e-postası hazırlanırken hata: ${String(error).slice(0, 200)}`
     console.error('[e-posta] sipariş onayı gönderilemedi:', orderId, error)
+  } finally {
+    // Sunucu günlüklerine erişmeden de görülebilsin diye başarısızlık sebebi
+    // siparişin yönetici notuna yazılır. Müşteri teyit e-postası almadıysa
+    // yöneticinin bunu bilmesi gerekiyor — sessizce kaybolmamalı.
+    if (failure) await appendAdminNote(orderId, failure)
+  }
+}
+
+/** Var olan yönetici notunu ezmeden sonuna ekler */
+async function appendAdminNote(orderId: string, note: string): Promise<void> {
+  try {
+    const current = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { adminNote: true },
+    })
+    const merged = [current?.adminNote, note].filter(Boolean).join('\n')
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { adminNote: merged.slice(-1000) },
+    })
+  } catch (error) {
+    console.error('[e-posta] yönetici notu yazılamadı:', orderId, error)
   }
 }
 
