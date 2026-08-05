@@ -1,6 +1,7 @@
 
 import { prisma } from '@/lib/db'
 import { sendEmailSafe, unquote } from './send'
+import { deploymentTag } from '@/lib/deployment'
 import {
   orderConfirmationEmail,
   orderShippedEmail,
@@ -154,7 +155,7 @@ export async function notifyOrderConfirmed(orderId: string): Promise<void> {
     // Sunucu günlüklerine erişmeden de görülebilsin diye başarısızlık sebebi
     // siparişin yönetici notuna yazılır. Müşteri teyit e-postası almadıysa
     // yöneticinin bunu bilmesi gerekiyor — sessizce kaybolmamalı.
-    if (failure) await appendAdminNote(orderId, failure)
+    if (failure) await appendAdminNote(orderId, `${failure} [build: ${deploymentTag()}]`)
   }
 }
 

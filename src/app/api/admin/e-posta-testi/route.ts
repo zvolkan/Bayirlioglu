@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { verifyAdminToken } from '@/lib/admin-auth'
 import { sendEmail } from '@/lib/email/send'
+import { deploymentTag } from '@/lib/deployment'
+import { getSiteUrl } from '@/lib/site-url'
 
 /**
  * E-posta yapılandırma testi (yalnızca admin).
@@ -36,9 +38,28 @@ export async function GET(request: Request) {
     ADMIN_NOTIFY_EMAIL: adminNotify ?? 'tanımlı değil (yönetici bildirimi kapalı)',
   }
 
+  // Bu isteği HANGİ build karşıladı ve iyzico geri dönüşü NEREYE gidiyor?
+  // İkisi farklıysa ödeme callback'i başka bir deployment'a düşüyor demektir —
+  // orada ortam değişkenleri tanımlı olmayabilir.
+  const siteUrl = getSiteUrl()
+  const dagitim = {
+    buIstegiKarsilayanBuild: deploymentTag(),
+    buIstegiKarsilayanAdres: url.host,
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'TANIMLI DEĞİL',
+    hesaplananSiteAdresi: siteUrl,
+    iyzicoyaBildirilenCallback: `${siteUrl}/api/odeme/callback`,
+    uyari:
+      new URL(siteUrl).host === url.host
+        ? null
+        : `DİKKAT: Bu sayfayı "${url.host}" üzerinden açtınız ama ödeme geri dönüşü "${
+            new URL(siteUrl).host
+          }" adresine gidiyor. Bunlar farklıysa callback başka bir deployment'a düşer ve orada ortam değişkenleri tanımlı olmayabilir.`,
+  }
+
   if (!to) {
     return NextResponse.json({
       config,
+      dagitim,
       bilgi:
         'Test göndermek için ?to=adres@ornek.com ekleyin. ' +
         'Resend doğrulanmış alan adınız yoksa yalnızca Resend hesabınızı ' +
@@ -50,6 +71,7 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         config,
+        dagitim,
         sonuc: 'başarısız',
         aciklama:
           'RESEND_API_KEY veya EMAIL_FROM tanımlı değil. Vercel ortam ' +
@@ -69,6 +91,7 @@ export async function GET(request: Request) {
   if (result.ok) {
     return NextResponse.json({
       config,
+      dagitim,
       sonuc: 'başarılı',
       resendId: result.id,
       aciklama: `Gönderildi. ${to} gelen kutusunu (ve spam klasörünü) kontrol edin.`,
@@ -78,6 +101,7 @@ export async function GET(request: Request) {
   return NextResponse.json(
     {
       config,
+      dagitim,
       sonuc: 'başarısız',
       detay: result.detail ?? result.reason,
       aciklama:
