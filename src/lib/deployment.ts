@@ -9,8 +9,14 @@
  */
 export function deploymentTag(): string {
   const env = process.env.VERCEL_ENV ?? 'local'
-  const commit = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7)
-  const host = process.env.VERCEL_URL
 
-  return [env, commit, host].filter(Boolean).join(' · ')
+  // DİKKAT: Commit SHA yeterli DEĞİL. Aynı commit'i yeniden deploy ettiğinizde
+  // SHA aynı kalır ama deployment (ve dolayısıyla ona bağlanan ortam
+  // değişkenleri) değişir. Ortam değişkenleri deployment oluşturulurken
+  // bağlandığı için, "değişkeni ekledim ama eski deployment'ta yoktu" durumunu
+  // ayırt etmenin tek yolu deployment kimliğidir.
+  const deploymentId = process.env.VERCEL_DEPLOYMENT_ID
+  const commit = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7)
+
+  return [env, deploymentId, commit].filter(Boolean).join(' · ')
 }
