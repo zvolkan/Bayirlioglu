@@ -17,6 +17,19 @@ export async function middleware(req: NextRequest) {
   const forwardHeaders = new Headers(req.headers)
   forwardHeaders.set('x-pathname', pathname)
 
+  // ── 0. Supabase auth kodu kök adrese düştüyse kurtar ─────────────────────
+  // Supabase, istenen `redirectTo` adresi izin listesinde yoksa sessizce kendi
+  // "Site URL" ayarına yönlendiriyor. O da genelde kök adres olduğu için
+  // kullanıcı `/?code=...` üzerine düşüyor, kod hiç takas edilmiyor ve giriş
+  // yarım kalıyor. Doğru çözüm Supabase panelindeki Redirect URLs listesini
+  // düzeltmek; bu ise ayar kayarsa girişin bozulmamasını sağlayan emniyet ağı.
+  if (pathname === '/' && req.nextUrl.searchParams.has('code')) {
+    const url = new URL('/api/auth/callback', req.url)
+    url.searchParams.set('code', req.nextUrl.searchParams.get('code')!)
+    url.searchParams.set('next', '/hesabim')
+    return NextResponse.redirect(url)
+  }
+
   // ── 1. Admin rotaları (cookie tabanlı, Supabase kullanmıyor) ──────────────
   if (pathname.startsWith(ADMIN_PREFIX)) {
     if (pathname === ADMIN_LOGIN) {
