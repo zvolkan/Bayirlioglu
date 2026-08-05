@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db'
 import CancelOrderButton from '../_components/CancelOrderButton'
 import RepeatOrderButton from '../../_components/RepeatOrderButton'
 import type { BrandKey } from '@/lib/types'
+import { carrierTrackingUrl } from '@/lib/carrier'
 
 export const metadata: Metadata = {
   title: 'Sipariş Detayı | Bayırlıoğlu Grup',
@@ -82,12 +83,29 @@ export default async function SiparisDetayPage({ params }: Props) {
   const shipped = ['SHIPPED', 'DELIVERED'].includes(order.status)
   const delivered = order.status === 'DELIVERED'
 
-  const addr = order.address
+  // Adres anlık kopyası: müşteri adresini silerse/düzenlerse geçmiş sipariş
+  // bozulmasın diye sipariş anındaki bilgiler tercih edilir. `order.address`
+  // yalnızca eski (snapshot'sız) siparişler için yedek.
+  const addr = order.shipFullName
+    ? {
+        fullName: order.shipFullName,
+        line1: order.shipLine1 ?? '',
+        line2: order.shipLine2,
+        district: order.shipDistrict ?? '',
+        city: order.shipCity ?? '',
+        postalCode: order.shipPostalCode,
+        phone: order.shipPhone ?? '',
+      }
+    : order.address
 
-  const KARGO_UCRETI = 29.90
-  const KARGO_LIMIT = 500
-  const subtotal = Number(order.totalAmount)
-  const cargoFee = subtotal >= KARGO_LIMIT ? 0 : KARGO_UCRETI
+  // Tutarlar siparişin kendi kayıtlarından okunur. Önceden burada kargo ücreti
+  // ve limiti yeniden hesaplanıyordu; `order.totalAmount` (kargo DAHİL) ara
+  // toplam sanıldığı için 500 TL sınırına yakın siparişlerde ödenen kargo
+  // "Ücretsiz" görünüyordu. Ayrıca kargo ücreti ileride değişirse geçmiş
+  // siparişlerin dökümü de değişirdi.
+  const total = Number(order.totalAmount)
+  const cargoFee = Number(order.shippingFee ?? 0)
+  const subtotal = order.subtotal != null ? Number(order.subtotal) : total - cargoFee
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -174,8 +192,39 @@ export default async function SiparisDetayPage({ params }: Props) {
                 <p className="text-xs text-gray-500 mt-0.5">
                   {delivered
                     ? 'Siparişiniz teslim edilmiştir.'
-                    : 'Siparişiniz kargoya verilmiştir. Kargo takip numarası için satıcıyla iletişime geçin.'}
+                    : 'Siparişiniz kargoya verilmiştir.'}
                 </p>
+
+                {/* Takip bilgisi admin tarafından giriliyordu ama müşteriye
+                    hiç gösterilmiyordu; müşteri satıcıya yazmak zorunda
+                    kalıyordu. */}
+                {order.carrier && order.trackingNumber && (
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    <span className="text-gray-500">
+                      {order.carrier} —{' '}
+                      <span className="font-mono font-semibold text-gray-900">
+                        {order.trackingNumber}
+                      </span>
+                    </span>
+                    {carrierTrackingUrl(order.carrier, order.trackingNumber) ? (
+                      <a
+                        href={carrierTrackingUrl(order.carrier, order.trackingNumber)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-indigo-600 hover:text-indigo-700"
+                      >
+                        Kargoyu takip et →
+                      </a>
+                    ) : (
+                      <Link
+                        href="/siparis-takibi"
+                        className="font-semibold text-indigo-600 hover:text-indigo-700"
+                      >
+                        Sipariş takibi →
+                      </Link>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -222,7 +271,7 @@ export default async function SiparisDetayPage({ params }: Props) {
           <div className="px-4 sm:px-5 py-4 bg-gray-50 border-t border-gray-100 space-y-2">
             <div className="flex justify-between text-sm text-gray-600">
               <span>Ara Toplam</span>
-              <span>{formatPrice(subtotal >= KARGO_LIMIT ? subtotal : subtotal - cargoFee)}</span>
+              <span>{formatPrice(subtotal)}</span>
             </div>
             <div className="flex justify-between text-sm text-gray-600">
               <span>Kargo</span>

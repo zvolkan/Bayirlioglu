@@ -5,7 +5,11 @@ import { revalidatePath } from 'next/cache'
 import { prisma, type TransactionClient } from '@/lib/db'
 import { verifyAdminToken } from '@/lib/admin-auth'
 import { processRefund } from '@/lib/refund'
-import { notifyOrderShipped } from '@/lib/email/notify'
+import {
+  notifyOrderShipped,
+  notifyOrderDelivered,
+  notifyOrderCancelled,
+} from '@/lib/email/notify'
 
 /**
  * Admin sipariş yönetimi.
@@ -137,6 +141,22 @@ export async function updateOrderStatus(orderId: string, status: string) {
     )
   }
 
+  // Ödemesi alınmış siparişi durum menüsünden iptal etmek PARA KAYBIDIR:
+  // müşterinin parası hesapta kalır, düşülen stok geri gelmez, iade e-postası
+  // gitmez. Bu yol kapatılıp iade akışına yönlendiriliyor.
+  const existing = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { paymentStatus: true, status: true },
+  })
+  if (!existing) throw new Error('Sipariş bulunamadı')
+
+  if (status === 'CANCELLED' && existing.paymentStatus === 'paid') {
+    throw new Error(
+      'Bu siparişin ödemesi tahsil edilmiş. Durum menüsünden iptal edilirse para ' +
+        'müşteriye dönmez. "Siparişi İade Et" butonunu kullanın.',
+    )
+  }
+
   const data: Record<string, unknown> = { status }
 
   // Durum geçişlerinde tarih damgaları
@@ -144,6 +164,14 @@ export async function updateOrderStatus(orderId: string, status: string) {
   if (status === 'DELIVERED') data.deliveredAt = new Date()
 
   await prisma.order.update({ where: { id: orderId }, data })
+
+  // Müşteri bildirimleri — durum gerçekten değiştiyse, tekrar tekrar
+  // gönderilmesin diye önceki durumla karşılaştırılıyor.
+  if (existing.status !== status) {
+    if (status === 'SHIPPED') await notifyOrderShipped(orderId)
+    if (status === 'DELIVERED') await notifyOrderDelivered(orderId)
+    if (status === 'CANCELLED') await notifyOrderCancelled(orderId)
+  }
 
   revalidatePath('/admin/siparisler')
   revalidatePath(`/admin/siparisler/${orderId}`)

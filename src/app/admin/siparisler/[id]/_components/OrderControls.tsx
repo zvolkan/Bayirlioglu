@@ -17,7 +17,9 @@ const STATUS_OPTIONS = [
   { value: 'SHIPPED', label: 'Kargoya Verildi' },
   { value: 'DELIVERED', label: 'Teslim Edildi' },
   { value: 'CANCELLED', label: 'İptal Edildi' },
-  { value: 'REFUNDED', label: 'İade Edildi' },
+  // 'REFUNDED' bilerek yok: iade, para hareketi gerektirdiği için durum
+  // menüsünden değil "Siparişi İade Et" butonundan yapılıyor. Sunucu zaten
+  // reddediyordu; seçeneği burada göstermek yöneticiyi boşuna uğraştırıyordu.
 ]
 
 const CARRIERS = [
@@ -61,8 +63,11 @@ export default function OrderControls({
         await updateOrderStatus(orderId, selectedStatus)
         toast.success('Sipariş durumu güncellendi')
         router.refresh()
-      } catch {
-        toast.error('Durum güncellenemedi')
+      } catch (error) {
+        // Sunucu açıklayıcı mesaj döndürüyor ("ödemesi tahsil edilmiş, İade Et
+        // butonunu kullanın" gibi); önceden yutulup yerine genel bir metin
+        // gösteriliyordu.
+        toast.error(error instanceof Error ? error.message : 'Durum güncellenemedi')
       }
     })
   }

@@ -92,46 +92,16 @@ export async function getLastOrder(brandKey?: string) {
   return order
 }
 
-// ─── Sipariş oluştur ──────────────────────────────────────────────────────────
-
-export type CreateOrderInput = {
-  brandId: number
-  addressId?: string
-  notes?: string
-  paymentMethod?: string
-  items: { productId: string; quantity: number; unitPrice: number }[]
-}
-
-export async function createOrder(input: CreateOrderInput) {
-  const user = await getAuthUser()
-
-  const totalAmount = input.items.reduce(
-    (sum, item) => sum + item.quantity * item.unitPrice,
-    0
-  )
-
-  const order = await prisma.order.create({
-    data: {
-      userId: user.id,
-      brandId: input.brandId,
-      addressId: input.addressId ?? null,
-      notes: input.notes ?? null,
-      paymentMethod: input.paymentMethod ?? null,
-      totalAmount,
-      items: {
-        create: input.items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.quantity * item.unitPrice,
-        })),
-      },
-    },
-  })
-
-  revalidatePath('/hesabim')
-  return order
-}
+// ─── Sipariş oluşturma KALDIRILDI ────────────────────────────────────────────
+//
+// Buradaki `createOrder` hiçbir yerden çağrılmıyordu ama `'use server'`
+// dosyasında export edildiği için herkesin POST edebileceği açık bir uç
+// noktaydı. Tutarı İSTEMCİDEN gelen `unitPrice` ile hesaplıyor, stok/fiyat/
+// marka doğrulaması yapmıyordu — giriş yapmış herhangi biri veritabanını
+// sahte siparişlerle doldurabilirdi.
+//
+// Gerçek sipariş oluşturma `src/app/api/odeme/initialize/route.ts` içinde,
+// fiyatlar veritabanından okunarak yapılıyor.
 
 // ─── Son siparişi tekrarla — sepete ekle ─────────────────────────────────────
 // Geçen yılın siparişindeki ürünleri (aktif ve stokta olanları) döndürür.
@@ -367,6 +337,10 @@ export async function addAddress(formData: FormData) {
 export async function updateAddress(addressId: string, formData: FormData) {
   const user = await getAuthUser()
 
+  // `addAddress` doğrulamadan geçiyordu ama burada ham değerler doğrudan
+  // Prisma'ya yazılıyordu: boş ad soyad null hatası, 300 karakterlik adres
+  // P2000 hatası veriyordu. Aynı doğrulayıcı kullanılıyor.
+  const input = parseAddressForm(formData)
   const isDefault = formData.get('isDefault') === 'on'
 
   await prisma.$transaction(async (tx: TransactionClient) => {
@@ -379,17 +353,7 @@ export async function updateAddress(addressId: string, formData: FormData) {
 
     await tx.address.updateMany({
       where: { id: addressId, userId: user.id },
-      data: {
-      label: (formData.get('label') as string) || 'Adresim',
-      fullName: formData.get('fullName') as string,
-      phone: formData.get('phone') as string,
-      line1: formData.get('line1') as string,
-      line2: (formData.get('line2') as string) || null,
-      district: formData.get('district') as string,
-      city: formData.get('city') as string,
-        postalCode: (formData.get('postalCode') as string) || null,
-        isDefault,
-      },
+      data: { ...input, isDefault },
     })
   })
 

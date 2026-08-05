@@ -250,6 +250,96 @@ export function orderShippedEmail(params: {
   return { subject: 'Siparişiniz kargoya verildi', html, text }
 }
 
+// ─── 2b. Teslim edildi ───────────────────────────────────────────────────────
+
+/**
+ * Teslimat teyidi.
+ *
+ * Cayma hakkı süresi teslim tarihinden itibaren işlediği için bu e-posta aynı
+ * zamanda sürenin başladığının yazılı bildirimi oluyor.
+ */
+export function orderDeliveredEmail(params: { orderId: string; customerName: string }) {
+  const siteUrl = getSiteUrl()
+
+  const html = layout(
+    'Siparişiniz Teslim Edildi',
+    `
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz teslim edildi 📦</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
+      Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
+        params.orderId,
+      )} numaralı siparişiniz teslim edildi. Bizi tercih ettiğiniz için teşekkür ederiz.
+    </p>
+
+    <div style="background:#fafafa;border-radius:12px;padding:16px;">
+      <p style="margin:0;font-size:14px;color:#52525b;line-height:1.7;">
+        Üründe bir sorun varsa veya cayma hakkınızı kullanmak isterseniz,
+        <strong>teslim tarihinden itibaren 14 gün</strong> içinde
+        <a href="mailto:${SITE_CONFIG.email}" style="color:#2563eb;">${SITE_CONFIG.email}</a>
+        adresinden veya ${escapeHtml(SITE_CONFIG.phone)} numarasından bize ulaşabilirsiniz.
+      </p>
+    </div>
+
+    ${button(`${siteUrl}/hesabim/siparislerim`, 'Siparişlerim')}
+  `,
+  )
+
+  const text = [
+    `${params.orderId} numaralı siparişiniz teslim edildi.`,
+    'Cayma hakkınızı teslim tarihinden itibaren 14 gün içinde kullanabilirsiniz.',
+    `İletişim: ${SITE_CONFIG.email} — ${SITE_CONFIG.phone}`,
+  ].join('\n')
+
+  return { subject: 'Siparişiniz teslim edildi', html, text }
+}
+
+// ─── 2c. Ödeme alınmadan iptal ───────────────────────────────────────────────
+
+/**
+ * Ödemesi alınmamış (PENDING) siparişin iptali. Para iadesi söz konusu
+ * olmadığı için `orderRefundedEmail` yerine bu kullanılır — müşteriye
+ * olmayan bir iadeyi beklemesini söylememek önemli.
+ */
+export function orderCancelledEmail(params: {
+  orderId: string
+  customerName: string
+  reason?: string
+}) {
+  const siteUrl = getSiteUrl()
+
+  const html = layout(
+    'Siparişiniz İptal Edildi',
+    `
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz iptal edildi</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
+      Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
+        params.orderId,
+      )} numaralı siparişiniz iptal edildi.
+    </p>
+
+    <div style="background:#fafafa;border-radius:12px;padding:16px;">
+      <p style="margin:0;font-size:14px;color:#52525b;line-height:1.7;">
+        Bu sipariş için tahsil edilmiş bir ödeme bulunmuyor, dolayısıyla iade
+        yapılmasına gerek yok. Bir yanlışlık olduğunu düşünüyorsanız bize
+        ulaşın.
+      </p>
+    </div>
+
+    ${params.reason ? `<p style="margin:16px 0 0;font-size:13px;color:#71717a;">Not: ${escapeHtml(params.reason)}</p>` : ''}
+
+    ${button(`${siteUrl}/hesabim/siparislerim`, 'Siparişlerim')}
+  `,
+  )
+
+  const text = [
+    `${params.orderId} numaralı siparişiniz iptal edildi.`,
+    'Bu sipariş için tahsil edilmiş bir ödeme bulunmuyor.',
+    `İletişim: ${SITE_CONFIG.email}`,
+  ].join('\n')
+
+  return { subject: 'Siparişiniz iptal edildi', html, text }
+}
+
 // ─── 3. İptal / iade ─────────────────────────────────────────────────────────
 
 export function orderRefundedEmail(params: {

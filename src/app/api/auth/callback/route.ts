@@ -17,9 +17,11 @@ export async function GET(request: Request) {
       // Supabase kullanıcısını kendi DB'mize senkronize et
       await prisma.user.upsert({
         where: { id: data.user.id },
+        // DİKKAT: `name` bilerek güncellenmiyor. Her giriş/şifre sıfırlamada
+        // Supabase metadata'sından üzerine yazılırsa kullanıcının profil
+        // ekranından girdiği ad sessizce kayboluyordu.
         update: {
           email: data.user.email!,
-          name: data.user.user_metadata?.full_name ?? data.user.user_metadata?.name ?? null,
         },
         create: {
           id: data.user.id,

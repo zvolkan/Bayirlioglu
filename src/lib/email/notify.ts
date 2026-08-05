@@ -2,10 +2,13 @@
 import { prisma } from '@/lib/db'
 import { sendEmailSafe, unquote } from './send'
 import { deploymentTag } from '@/lib/deployment'
+import { carrierTrackingUrl } from '@/lib/carrier'
 import {
   orderConfirmationEmail,
   orderShippedEmail,
   orderRefundedEmail,
+  orderDeliveredEmail,
+  orderCancelledEmail,
   adminNewOrderEmail,
   type OrderEmailData,
 } from './templates'
@@ -16,20 +19,6 @@ import {
  * Hepsi "ateşle ve unut" mantığında: e-posta gönderilemezse hata fırlatmaz,
  * yalnızca log'a yazar. Sipariş akışı hiçbir koşulda e-posta yüzünden bozulmaz.
  */
-
-/** Bilinen kargo firmaları için takip bağlantısı */
-function carrierTrackingUrl(carrier: string, code: string): string | null {
-  const c = carrier.toLocaleLowerCase('tr')
-  if (c.includes('yurtiçi') || c.includes('yurtici'))
-    return `https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=${code}`
-  if (c.includes('aras')) return `https://kargotakip.araskargo.com.tr/mobil/sorgu.aspx?code=${code}`
-  if (c.includes('mng')) return `https://kargotakip.mngkargo.com.tr/?takipNo=${code}`
-  if (c.includes('ptt')) return `https://gonderitakip.ptt.gov.tr/Track/Verify?q=${code}`
-  if (c.includes('sürat') || c.includes('surat'))
-    return `https://www.suratkargo.com.tr/KargoTakip/?kargotakipno=${code}`
-  if (c.includes('ups')) return `https://www.ups.com/track?tracknum=${code}`
-  return null
-}
 
 async function loadOrderForEmail(orderId: string) {
   return prisma.order.findUnique({
@@ -179,9 +168,20 @@ async function appendAdminNote(orderId: string, note: string): Promise<void> {
 // ─── Kargo bildirimi ─────────────────────────────────────────────────────────
 
 export async function notifyOrderShipped(orderId: string): Promise<void> {
+  let failure: string | null = null
+
   try {
     const order = await loadOrderForEmail(orderId)
-    if (!order?.user.email || !order.carrier || !order.trackingNumber) return
+    if (!order?.user.email) return
+
+    // Kargo bilgisi girilmeden durum SHIPPED yapıldıysa gönderecek bir şey yok.
+    // Sessizce geçmek yerine not düşülüyor: müşteri takip numarası bekliyor.
+    if (!order.carrier || !order.trackingNumber) {
+      failure =
+        'Kargo bildirimi gönderilmedi: kargo firması veya takip numarası girilmemiş. ' +
+        'Kargo bilgisini kaydettiğinizde e-posta otomatik gider.'
+      return
+    }
 
     const mail = orderShippedEmail({
       orderId: order.id,
@@ -191,14 +191,87 @@ export async function notifyOrderShipped(orderId: string): Promise<void> {
       trackingUrl: carrierTrackingUrl(order.carrier, order.trackingNumber),
     })
 
-    await sendEmailSafe({
+    const result = await sendEmailSafe({
       to: order.user.email,
       subject: mail.subject,
       html: mail.html,
       text: mail.text,
     })
+
+    if (!result.ok) {
+      failure = `Kargo bildirimi GÖNDERİLEMEDİ. Sağlayıcı yanıtı: ${result.detail ?? result.reason}`
+    }
   } catch (error) {
+    failure = `Kargo bildirimi hazırlanırken hata: ${String(error).slice(0, 200)}`
     console.error('[e-posta] kargo bildirimi gönderilemedi:', orderId, error)
+  } finally {
+    if (failure) await appendAdminNote(orderId, `${failure} [build: ${deploymentTag()}]`)
+  }
+}
+
+// ─── Teslim edildi ───────────────────────────────────────────────────────────
+
+export async function notifyOrderDelivered(orderId: string): Promise<void> {
+  let failure: string | null = null
+
+  try {
+    const order = await loadOrderForEmail(orderId)
+    if (!order?.user.email) return
+
+    const mail = orderDeliveredEmail({
+      orderId: order.id,
+      customerName: order.shipFullName ?? order.user.name ?? 'Müşterimiz',
+    })
+
+    const result = await sendEmailSafe({
+      to: order.user.email,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+    })
+
+    if (!result.ok) {
+      failure = `Teslimat bildirimi GÖNDERİLEMEDİ. Sağlayıcı yanıtı: ${result.detail ?? result.reason}`
+    }
+  } catch (error) {
+    failure = `Teslimat bildirimi hazırlanırken hata: ${String(error).slice(0, 200)}`
+    console.error('[e-posta] teslimat bildirimi gönderilemedi:', orderId, error)
+  } finally {
+    if (failure) await appendAdminNote(orderId, `${failure} [build: ${deploymentTag()}]`)
+  }
+}
+
+// ─── Ödemesiz iptal ──────────────────────────────────────────────────────────
+
+/** Ödemesi alınmamış siparişin iptali. Para iadesi olan iptal için notifyOrderRefunded. */
+export async function notifyOrderCancelled(orderId: string, reason?: string): Promise<void> {
+  let failure: string | null = null
+
+  try {
+    const order = await loadOrderForEmail(orderId)
+    if (!order?.user.email) return
+
+    const mail = orderCancelledEmail({
+      orderId: order.id,
+      customerName: order.shipFullName ?? order.user.name ?? 'Müşterimiz',
+      reason,
+    })
+
+    const result = await sendEmailSafe({
+      to: order.user.email,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+    })
+
+    if (!result.ok) {
+      failure = `İptal bildirimi GÖNDERİLEMEDİ. Sağlayıcı yanıtı: ${result.detail ?? result.reason}`
+    }
+  } catch (error) {
+    failure = `İptal bildirimi hazırlanırken hata: ${String(error).slice(0, 200)}`
+    console.error('[e-posta] iptal bildirimi gönderilemedi:', orderId, error)
+  } finally {
+    if (failure) await appendAdminNote(orderId, `${failure} [build: ${deploymentTag()}]`)
   }
 }
 
