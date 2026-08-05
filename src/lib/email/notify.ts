@@ -1,6 +1,6 @@
 
 import { prisma } from '@/lib/db'
-import { sendEmailSafe } from './send'
+import { sendEmailSafe, unquote } from './send'
 import {
   orderConfirmationEmail,
   orderShippedEmail,
@@ -106,7 +106,9 @@ export async function notifyOrderConfirmed(orderId: string): Promise<void> {
     })
 
     // Yöneticiye bildirim — ayrı adres tanımlıysa
-    const adminTo = process.env.ADMIN_NOTIFY_EMAIL?.trim()
+    const adminTo = process.env.ADMIN_NOTIFY_EMAIL
+      ? unquote(process.env.ADMIN_NOTIFY_EMAIL)
+      : ''
     if (adminTo) {
       const adminMail = adminNewOrderEmail(data)
       await sendEmailSafe({

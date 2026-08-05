@@ -29,9 +29,30 @@ export type SendEmailResult =
   | { ok: true; id: string | null }
   | { ok: false; reason: 'not-configured' | 'error'; detail?: string }
 
+/**
+ * Ortam değişkenlerinden gelen sarmalayıcı tırnakları temizler.
+ *
+ * `.env` dosyasında boşluk içeren değerler tırnak içine alınır
+ * (`EMAIL_FROM="Ad Soyad <a@b.com>"`) ve dosya okunurken tırnaklar ayıklanır.
+ * Vercel panelinde ise değer ne yazılmışsa aynen saklanır — tırnaklar da dahil.
+ * Aynı satır panele yapıştırılınca gönderen adresi tırnaklı kalıyor ve Resend
+ * "invalid from field" diyerek reddediyor. Bu yüzden burada da temizliyoruz.
+ */
+export function unquote(value: string): string {
+  const trimmed = value.trim()
+  if (trimmed.length >= 2) {
+    const first = trimmed[0]
+    const last = trimmed[trimmed.length - 1]
+    if ((first === '"' && last === '"') || (first === "'" && last === "'")) {
+      return trimmed.slice(1, -1).trim()
+    }
+  }
+  return trimmed
+}
+
 function getConfig() {
-  const apiKey = process.env.RESEND_API_KEY?.trim()
-  const from = process.env.EMAIL_FROM?.trim()
+  const apiKey = process.env.RESEND_API_KEY ? unquote(process.env.RESEND_API_KEY) : ''
+  const from = process.env.EMAIL_FROM ? unquote(process.env.EMAIL_FROM) : ''
   if (!apiKey || !from) return null
   return { apiKey, from }
 }
