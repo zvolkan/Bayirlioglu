@@ -120,11 +120,3 @@ export async function getRelatedProducts(
   })
   return rows.map(toProduct)
 }
-
-/** Tüm aktif ürünlerin slug + brand listesi (generateStaticParams için) */
-export async function getAllProductSlugs() {
-  return prisma.product.findMany({
-    where: { isActive: true },
-    select: { slug: true, brand: { select: { key: true } } },
-  })
-}

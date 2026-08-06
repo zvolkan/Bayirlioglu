@@ -77,44 +77,7 @@ export async function removeFavorite(productId: string): Promise<{ ok: boolean }
 }
 
 /** Kullanıcının favori ürün id'leri — kart listelerinde kalbi dolu göstermek için */
-export async function getFavoriteIds(): Promise<Set<string>> {
-  const userId = await getUserId()
-  if (!userId) return new Set()
-
-  try {
-    const rows = await prisma.favorite.findMany({
-      where: { userId },
-      select: { productId: true },
-    })
-    return new Set(rows.map((r: { productId: string }) => r.productId))
-  } catch (error) {
-    console.error('[favorites] liste hatası:', error)
-    return new Set()
-  }
-}
-
-/** Favori ürünlerin tamamı (favoriler sayfası için) */
-export async function getFavoriteProducts() {
-  const userId = await getUserId()
-  if (!userId) return []
-
-  try {
-    const rows = await prisma.favorite.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        product: {
-          include: {
-            brand: true,
-            category: true,
-            images: { where: { isPrimary: true }, take: 1 },
-          },
-        },
-      },
-    })
-    return rows.filter((r: { product: unknown }) => r.product !== null)
-  } catch (error) {
-    console.error('[favorites] ürün listesi hatası:', error)
-    return []
-  }
-}
+// ─── Kullanılmayan favori sorguları KALDIRILDI ───────────────────────────────
+//
+// `getFavoriteIds` ve `getFavoriteProducts` çağrılmıyordu; favoriler sayfası
+// Prisma'yı doğrudan kullanıyor.

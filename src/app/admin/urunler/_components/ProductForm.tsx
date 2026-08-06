@@ -2,6 +2,7 @@
 
 import { useState, useRef, useTransition, useMemo } from 'react'
 import { createSignedUploadUrl } from '@/app/actions/admin'
+import { slugify } from '@/lib/utils'
 
 // ── Ürün markası listesi (11 marka) ──────────────────────────────────────────
 const URUN_MARKALARI = [
@@ -169,15 +170,6 @@ export default function ProductForm({
   const [selectedCategoryId, setSelectedCategoryId] = useState<number>(resolveInitialCategoryId)
 
   // ── Yardımcılar ──────────────────────────────────────────────────────────
-
-  function slugify(text: string) {
-    return text
-      .toLowerCase()
-      .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
-      .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')
-  }
 
   function addSpec() { setSpecs((prev) => [...prev, { name: '', value: '', unit: '' }]) }
   function removeSpec(idx: number) { setSpecs((prev) => prev.filter((_, i) => i !== idx)) }

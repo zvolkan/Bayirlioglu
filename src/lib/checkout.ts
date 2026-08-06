@@ -19,16 +19,6 @@ export const KARGO_UCRETI = 29.9
  */
 export const TESLIMAT_SURESI = '2-5 iş günü'
 
-/** Cayma hakkı süresi (gün) — Mesafeli Sözleşmeler Yönetmeliği md. 9 */
-export const CAYMA_SURESI_GUN = 14
-
-/** Ücretsiz kargo eşiğini insan diline çeviren yardımcı */
-export function kargoMetni(): string {
-  return `${KARGO_LIMIT} TL ve üzeri siparişlerde kargo ücretsiz, altında ${KARGO_UCRETI.toLocaleString(
-    'tr-TR',
-    { minimumFractionDigits: 2 },
-  )} TL`
-}
 
 /** Fiyatları 2 haneye yuvarla — kayan nokta artıklarını temizler */
 export function money(value: number): number {
@@ -51,8 +41,6 @@ export function extractVat(grossAmount: number, vatRatePercent: number) {
   return { net, vat: money(grossAmount - net), rate }
 }
 
-/** Türkiye'de geçerli KDV oranları */
-export const VAT_RATES = [1, 10, 20] as const
 
 export interface OrderTotals {
   subtotal: number

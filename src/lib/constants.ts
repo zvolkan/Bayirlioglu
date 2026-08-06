@@ -164,24 +164,6 @@ export const SITE_CONFIG = {
   },
 };
 
-export const PAGINATION_PAGE_SIZE = 12;
-
-export const ORDER_STATUS_LABELS: Record<string, string> = {
-  pending: 'Beklemede',
-  confirmed: 'Onaylandı',
-  processing: 'Hazırlanıyor',
-  shipped: 'Kargoya Verildi',
-  delivered: 'Teslim Edildi',
-  cancelled: 'İptal Edildi',
-  refunded: 'İade Edildi',
-};
-
-export const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  credit_card: 'Kredi / Banka Kartı',
-  bank_transfer: 'Havale / EFT',
-  cash_on_delivery: 'Kapıda Ödeme',
-};
-
 export const TURKISH_CITIES = [
   'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Aksaray', 'Amasya',
   'Ankara', 'Antalya', 'Ardahan', 'Artvin', 'Aydın', 'Balıkesir',

@@ -4,23 +4,20 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { carrierTrackingUrl } from '@/lib/carrier'
 import { trackOrder, type TrackingResult } from '@/app/actions/order-tracking'
 
-/** Bilinen kargo firmaları için takip bağlantısı */
-function carrierTrackingUrl(carrier: string | null, code: string | null): string | null {
+/**
+ * Ortak `carrierTrackingUrl` null kabul etmiyor; sayfa null gelebilen
+ * alanlarla çalıştığı için ince bir sarmalayıcı kullanılıyor.
+ *
+ * Bu sayfada fonksiyonun tamamı kopyalanmıştı ve kopyada `encodeURIComponent`
+ * yoktu — takip numarasında boşluk veya özel karakter olduğunda bozuk bağlantı
+ * üretiyordu.
+ */
+function trackingUrlOf(carrier: string | null, code: string | null): string | null {
   if (!carrier || !code) return null
-  const c = carrier.toLocaleLowerCase('tr')
-
-  if (c.includes('yurtiçi') || c.includes('yurtici'))
-    return `https://www.yurticikargo.com/tr/online-servisler/gonderi-sorgula?code=${code}`
-  if (c.includes('aras'))
-    return `https://kargotakip.araskargo.com.tr/mobil/sorgu.aspx?code=${code}`
-  if (c.includes('mng')) return `https://kargotakip.mngkargo.com.tr/?takipNo=${code}`
-  if (c.includes('ptt')) return `https://gonderitakip.ptt.gov.tr/Track/Verify?q=${code}`
-  if (c.includes('sürat') || c.includes('surat'))
-    return `https://www.suratkargo.com.tr/KargoTakip/?kargotakipno=${code}`
-  if (c.includes('ups')) return `https://www.ups.com/track?tracknum=${code}`
-  return null
+  return carrierTrackingUrl(carrier, code)
 }
 
 export default function SiparisTakibiPage() {
@@ -55,7 +52,7 @@ export default function SiparisTakibiPage() {
     setResult(response.data)
   }
 
-  const trackingUrl = result ? carrierTrackingUrl(result.carrier, result.trackingNo) : null
+  const trackingUrl = result ? trackingUrlOf(result.carrier, result.trackingNo) : null
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">

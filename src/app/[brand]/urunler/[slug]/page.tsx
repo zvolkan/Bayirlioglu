@@ -56,7 +56,7 @@ export default async function ProductDetailPage({ params }: Props) {
   const cfg = BRANDS[brandKey] ?? BRANDS['alb-tarim']
   // Marka tonları <html data-brand="..."> üzerinden geliyor
   const accentText = 'text-brand-600'
-  const primaryBtn = 'bg-brand-600 hover:bg-brand-500'
+  const primaryBtn = 'btn-sheen btn-press bg-brand-600 hover:bg-brand-500'
   const badgeBg = 'bg-brand-100 text-brand-700'
 
   const displayPrice = product.salePrice ?? product.price

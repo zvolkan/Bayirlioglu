@@ -33,8 +33,3 @@ export function getSiteUrl(): string {
 
   return FALLBACK_DEV
 }
-
-/** Sözleşme metinlerinde gösterilecek alan adı (protokolsüz) */
-export function getSiteDomain(): string {
-  return getSiteUrl().replace(/^https?:\/\//, '')
-}

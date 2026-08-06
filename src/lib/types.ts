@@ -112,20 +112,6 @@ export interface Category {
   children?: Category[]; // getCategoriesWithChildren tarafından doldurulur
 }
 
-// ─── YORUM ───────────────────────────────────────────────────────────────────
-
-export interface Review {
-  id: number;
-  productId: string;
-  userId: string;
-  userName: string;
-  rating: number;
-  title?: string;
-  body: string;
-  isApproved: boolean;
-  createdAt: string;
-}
-
 // ─── SEPET ───────────────────────────────────────────────────────────────────
 
 export interface CartItem {
@@ -133,13 +119,11 @@ export interface CartItem {
   quantity: number;
 }
 
-export interface Cart {
-  items: CartItem[];
-  total: number;
-  itemCount: number;
-}
-
-// ─── SİPARİŞ ─────────────────────────────────────────────────────────────────
+// ─── SİPARİŞ DURUMU ──────────────────────────────────────────────────────────
+//
+// Not: Sipariş, kullanıcı, adres ve form tipleri buradan kaldırıldı; hepsi
+// Prisma'dan geliyor ve buradaki elle yazılmış kopyaları hiçbir yerden
+// import edilmiyordu (bazıları Prisma şemasıyla da uyuşmuyordu).
 
 export type OrderStatus =
   | 'pending'
@@ -149,81 +133,6 @@ export type OrderStatus =
   | 'delivered'
   | 'cancelled'
   | 'refunded';
-
-export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
-export type PaymentMethod = 'credit_card' | 'bank_transfer' | 'cash_on_delivery';
-
-export interface OrderItem {
-  id: number;
-  productName: string;
-  productSku: string;
-  unitPrice: number;
-  quantity: number;
-  totalPrice: number;
-  image?: string;
-}
-
-export interface ShippingAddress {
-  firstName: string;
-  lastName: string;
-  phone: string;
-  city: string;
-  district: string;
-  address: string;
-  postalCode?: string;
-}
-
-export interface Order {
-  id: string;
-  orderNumber: string;
-  status: OrderStatus;
-  items: OrderItem[];
-  subtotal: number;
-  discountAmount: number;
-  shippingCost: number;
-  taxAmount: number;
-  totalAmount: number;
-  shippingAddress: ShippingAddress;
-  paymentMethod: PaymentMethod;
-  paymentStatus: PaymentStatus;
-  cargoCompany?: string;
-  trackingNumber?: string;
-  notes?: string;
-  brand: BrandKey;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// ─── KULLANICI ────────────────────────────────────────────────────────────────
-
-export type UserRole = 'customer' | 'admin' | 'dealer';
-
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  role: UserRole;
-  brandPreference?: BrandKey | 'both';
-  emailVerified: boolean;
-  createdAt: string;
-}
-
-export interface Address {
-  id: string;
-  userId: string;
-  title: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  city: string;
-  district: string;
-  neighborhood?: string;
-  addressLine: string;
-  postalCode?: string;
-  isDefault: boolean;
-}
 
 // ─── BLOG ────────────────────────────────────────────────────────────────────
 
@@ -255,73 +164,6 @@ export interface Service {
 
 // ─── BAYİ BAŞVURU ────────────────────────────────────────────────────────────
 
-export interface DealerApplication {
-  companyName: string;
-  contactName: string;
-  email: string;
-  phone: string;
-  city: string;
-  district?: string;
-  message?: string;
-  brandInterest: BrandKey | 'both';
-}
-
-// ─── KUPON ───────────────────────────────────────────────────────────────────
-
-export interface Coupon {
-  id: number;
-  code: string;
-  description: string;
-  discountType: 'percentage' | 'fixed';
-  discountValue: number;
-  minOrderAmount?: number;
-  isActive: boolean;
-  expiresAt?: string;
-}
-
-// ─── FORM TİPLERİ ────────────────────────────────────────────────────────────
-
-export interface LoginFormData {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
-}
-
-export interface RegisterFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  phone?: string;
-  acceptTerms: boolean;
-}
-
-export interface ContactFormData {
-  name: string;
-  email: string;
-  phone?: string;
-  subject: string;
-  message: string;
-  brand?: BrandKey;
-}
-
-export interface CheckoutFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  city: string;
-  district: string;
-  address: string;
-  postalCode?: string;
-  paymentMethod: PaymentMethod;
-  couponCode?: string;
-  notes?: string;
-}
-
-// ─── GENEL UI TİPLERİ ────────────────────────────────────────────────────────
-
 export interface StatItem {
   value: string;
   label: string;
@@ -342,19 +184,4 @@ export interface Testimonial {
   rating: number;
   image?: string;       // görsel URL — sonradan eklenecek
   brand: BrandKey;
-}
-
-export type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popular';
-
-export interface PaginationMeta {
-  page: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
-}
-
-export interface ApiResponse<T> {
-  data: T;
-  meta?: PaginationMeta;
-  error?: string;
 }

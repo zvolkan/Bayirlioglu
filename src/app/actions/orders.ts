@@ -16,81 +16,11 @@ async function getAuthUser() {
   return user
 }
 
-// ─── Kullanıcının sipariş listesi ─────────────────────────────────────────────
-
-export async function getUserOrders() {
-  const user = await getAuthUser()
-
-  const orders = await prisma.order.findMany({
-    where: { userId: user.id },
-    include: {
-      brand: { select: { name: true, key: true } },
-      address: true,
-      items: {
-        include: {
-          product: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              price: true,
-              salePrice: true,
-              unit: true,
-              images: {
-                where: { isPrimary: true },
-                take: 1,
-                select: { url: true },
-              },
-            },
-          },
-        },
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
-
-  return orders
-}
-
-// ─── Son siparişi getir ───────────────────────────────────────────────────────
-
-export async function getLastOrder(brandKey?: string) {
-  const user = await getAuthUser()
-
-  const order = await prisma.order.findFirst({
-    where: {
-      userId: user.id,
-      ...(brandKey ? { brand: { key: brandKey } } : {}),
-    },
-    include: {
-      brand: { select: { name: true, key: true } },
-      items: {
-        include: {
-          product: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              price: true,
-              salePrice: true,
-              unit: true,
-              isActive: true,
-              stockQuantity: true,
-              images: {
-                where: { isPrimary: true },
-                take: 1,
-                select: { url: true },
-              },
-            },
-          },
-        },
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
-
-  return order
-}
+// ─── Kullanılmayan sipariş sorguları KALDIRILDI ──────────────────────────────
+//
+// `getUserOrders` ve `getLastOrder` hiçbir yerden çağrılmıyordu; sayfalar
+// Prisma'yı doğrudan sorguluyor. `'use server'` dosyasında export edildikleri
+// için kullanılmasalar da dışarıdan POST edilebilen birer uç noktaydılar.
 
 // ─── Sipariş oluşturma KALDIRILDI ────────────────────────────────────────────
 //

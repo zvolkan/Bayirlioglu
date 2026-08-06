@@ -709,7 +709,7 @@ function ProductGrid({
             style={{ animationDelay: `${Math.min(index, 12) * 45}ms` }}
             className="anim-fade-up"
           >
-            <div className="group h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift hover:border-gray-200 flex flex-col">
+            <div className="group h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift card-glow flex flex-col">
               {/* Görsel */}
               <Link href={`/${brandKey}/urunler/${product.slug}`}>
                 <div className="img-zoom aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center relative overflow-hidden">
