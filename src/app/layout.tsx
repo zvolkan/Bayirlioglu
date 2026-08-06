@@ -10,6 +10,8 @@ import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 import PageTransition from '@/components/layout/PageTransition'
 import ScrollProgress from '@/components/layout/ScrollProgress'
+import BrandSync from '@/components/layout/BrandSync'
+import { brandFromPath, type ActiveBrand } from '@/lib/brand-path'
 import CookieConsent from '@/components/layout/CookieConsent'
 import { Toaster } from 'react-hot-toast'
 
@@ -32,21 +34,16 @@ export const metadata: Metadata = {
 }
 
 /**
- * Aktif markayı yoldan çözer.
+ * İlk boyama için sunucu tarafında markayı belirler.
  *
- * Marka renkleri CSS değişkenleriyle geliyor ve Header/Footer kök düzende
- * olduğu için değişkenlerin <html> üzerinde tanımlı olması gerekiyor.
- * Middleware her istekte `x-pathname` başlığını gönderiyor.
+ * DİKKAT: Bu değer YALNIZCA ilk yüklemede geçerli. Next.js kök düzeni rotalar
+ * arasında paylaştığı ve istemci tarafı gezinmede yeniden render etmediği için
+ * sonraki geçişlerde `<BrandSync />` bileşeni niteliği güncelliyor. İkisi
+ * birlikte çalışmalı — biri eksikse renkler ya sıçrar ya da takılı kalır.
  */
-async function resolveBrand(): Promise<'alb-tarim' | 'alb-su-aritma' | 'grup'> {
+async function resolveBrand(): Promise<ActiveBrand> {
   const pathname = (await headers()).get('x-pathname') ?? ''
-  if (pathname.startsWith('/alb-su-aritma')) return 'alb-su-aritma'
-  // Grup ana sayfası kendi kimliğini kullanıyor. Sepet, ödeme, hesap gibi
-  // ortak sayfalarda ana marka olan ALB Tarım geçerli sayılıyor; buralarda
-  // birincil butonlar zaten nötr koyu renkte, marka rengi yalnızca ikincil
-  // vurgu olarak görünüyor.
-  if (pathname === '/') return 'grup'
-  return 'alb-tarim'
+  return brandFromPath(pathname)
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -58,7 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* Klavye kullanıcıları için: sekme ile odaklanınca görünür olur */}
         <a
           href="#ana-icerik"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-gray-900 focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-gray-900 focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
         >
           Ana içeriğe atla
         </a>
@@ -85,6 +82,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             }),
           }}
         />
+        <BrandSync />
         <ScrollProgress />
         <Header />
         <main id="ana-icerik" tabIndex={-1}>
