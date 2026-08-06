@@ -99,7 +99,7 @@ export default async function BrandHomePage({ params }: Props) {
             <div className="flex items-center justify-between mb-10">
               <div>
                 <p className="font-bold uppercase text-sm tracking-widest mb-1 text-brand-400">Kategori</p>
-                <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Ürün Kategorileri</h2>
+                <h2 className="text-2xl sm:text-3xl font-black text-gray-900 rule-under">Ürün Kategorileri</h2>
               </div>
               <Link href={`/${brandKey}/urunler`} className="hidden sm:block text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors arrow-slide">
                 Tüm Ürünler <span className="arrow">→</span>
@@ -202,7 +202,7 @@ export default async function BrandHomePage({ params }: Props) {
               <div className="flex items-center justify-between mb-10">
                 <div>
                   <p className="font-bold uppercase text-sm tracking-widest mb-1 text-brand-400">Seçili Ürünler</p>
-                  <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Öne Çıkan Ürünler</h2>
+                  <h2 className="text-2xl sm:text-3xl font-black text-gray-900 rule-under">Öne Çıkan Ürünler</h2>
                 </div>
                 <Link href={`/${brandKey}/urunler`} className="hidden sm:block text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors arrow-slide">
                   Tümünü Gör <span className="arrow">→</span>
@@ -278,7 +278,7 @@ export default async function BrandHomePage({ params }: Props) {
           <Reveal>
             <div className="text-center mb-12">
               <p className="font-bold uppercase text-sm tracking-widest mb-2 text-brand-400">Avantajlar</p>
-              <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Neden {cfg.name}?</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 rule-under">Neden {cfg.name}?</h2>
             </div>
           </Reveal>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -443,7 +443,7 @@ export default async function BrandHomePage({ params }: Props) {
               <div className="flex items-center justify-between mb-10">
                 <div>
                   <p className="font-bold uppercase text-sm tracking-widest mb-1 text-brand-400">Blog</p>
-                  <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Son Yazılar</h2>
+                  <h2 className="text-2xl sm:text-3xl font-black text-gray-900 rule-under">Son Yazılar</h2>
                 </div>
                 <Link href={`/${brandKey}/blog`} className="hidden sm:block text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors arrow-slide">
                   Tüm Yazılar <span className="arrow">→</span>

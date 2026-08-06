@@ -45,9 +45,12 @@ export default function BrandHeroSection({ brandKey }: Props) {
   const heroBg       = 'from-brand-900 via-brand-800 to-brand-900'
   const overlayColor = 'from-brand-900/85 via-brand-800/60 to-brand-900/80'
   const tagText      = 'text-brand-400'
-  const primaryBtn   = 'bg-brand-600 hover:bg-brand-500 shadow-brand-600/40'
+  // Vurgu rengi (tarımda limon yeşili, suda turkuaz) yalnızca KOYU zeminde
+  // kullanılıyor. Beyaz üzerinde kontrastı 1,5:1 — okunmaz. Burada zemin
+  // olarak kullanılıp üstüne en koyu marka tonu yazılıyor: 9,9:1.
+  const primaryBtn   = 'bg-brand-accent hover:brightness-110 shadow-brand-accent/30 text-brand-900'
   const outlineBtn   = 'border-brand-400/60 hover:bg-brand-400/10 focus:ring-brand-400'
-  const badgeBg      = 'bg-brand-500/15 border-brand-400/30 text-brand-200'
+  const badgeBg      = 'bg-brand-accent/90 border-brand-accent text-brand-900'
   const dividerColor = 'bg-brand-500/40'
 
   return (
@@ -176,7 +179,7 @@ export default function BrandHeroSection({ brandKey }: Props) {
                 <>
                   <Link
                     href={`/${brandKey}${cfg.cta.href}`}
-                    className={`inline-flex items-center justify-center gap-2 ${primaryBtn} text-white font-bold text-base sm:text-lg px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200`}
+                    className={`inline-flex items-center justify-center gap-2 ${primaryBtn} font-bold text-base sm:text-lg px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200`}
                   >
                     {cfg.cta.label}
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
