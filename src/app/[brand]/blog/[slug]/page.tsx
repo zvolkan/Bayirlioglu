@@ -56,13 +56,11 @@ export default async function BlogPostPage({ params }: Props) {
             <span>/</span>
             <span className="text-white/70 line-clamp-1">{post.title}</span>
           </nav>
-          {post.tags && post.tags.length > 0 && (
+          {post.category && (
             <div className="flex flex-wrap gap-2 mb-5">
-              {[post.category].filter(Boolean).map((tag) => (
-                <span key={tag} className="inline-block text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full bg-brand-100 text-brand-700">
-                  {tag}
-                </span>
-              ))}
+              <span className="inline-block text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full bg-brand-100 text-brand-700">
+                {post.category}
+              </span>
             </div>
           )}
           <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-5">
@@ -112,17 +110,15 @@ export default async function BlogPostPage({ params }: Props) {
             <div dangerouslySetInnerHTML={{ __html: post.content }} />
           </div>
 
-          {/* Etiketler */}
-          {post.tags && post.tags.length > 0 && (
+          {/* Kategori */}
+          {post.category && (
             <div className="mt-8 pt-6 border-t border-gray-100">
-              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-3">Etiketler</p>
-              <div className="flex flex-wrap gap-2">
-                {[post.category].filter(Boolean).map((tag) => (
-                  <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
-                    #{tag}
-                  </span>
-                ))}
-              </div>
+              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-3">
+                Kategori
+              </p>
+              <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+                #{post.category}
+              </span>
             </div>
           )}
 
