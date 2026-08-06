@@ -40,14 +40,15 @@ export default function BrandHeroSection({ brandKey }: Props) {
 
   const taglineLines = cfg.tagline.split('\n')
 
-  // Renk şeması
-  const heroBg       = isAlbSu ? 'from-blue-950 via-blue-900 to-cyan-950'       : 'from-green-950 via-green-900 to-emerald-950'
-  const overlayColor = isAlbSu ? 'from-blue-950/85 via-blue-900/60 to-cyan-950/80' : 'from-green-950/85 via-green-900/60 to-emerald-950/80'
-  const tagText      = isAlbSu ? 'text-blue-400'   : 'text-green-400'
-  const primaryBtn   = isAlbSu ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/40' : 'bg-green-600 hover:bg-green-500 shadow-green-600/40'
-  const outlineBtn   = isAlbSu ? 'border-blue-400/60 hover:bg-blue-400/10 focus:ring-blue-400' : 'border-green-400/60 hover:bg-green-400/10 focus:ring-green-400'
-  const badgeBg      = isAlbSu ? 'bg-blue-500/15 border-blue-400/30 text-blue-300' : 'bg-green-500/15 border-green-400/30 text-green-300'
-  const dividerColor = isAlbSu ? 'bg-blue-500/40' : 'bg-green-500/40'
+  // Renk şeması — tonlar <html data-brand="..."> üzerinden geliyor,
+  // burada marka ayrımı yapmaya gerek yok.
+  const heroBg       = 'from-brand-900 via-brand-800 to-brand-900'
+  const overlayColor = 'from-brand-900/85 via-brand-800/60 to-brand-900/80'
+  const tagText      = 'text-brand-400'
+  const primaryBtn   = 'bg-brand-600 hover:bg-brand-500 shadow-brand-600/40'
+  const outlineBtn   = 'border-brand-400/60 hover:bg-brand-400/10 focus:ring-brand-400'
+  const badgeBg      = 'bg-brand-500/15 border-brand-400/30 text-brand-200'
+  const dividerColor = 'bg-brand-500/40'
 
   return (
     <section className="relative min-h-screen flex flex-col overflow-hidden -mt-14 sm:-mt-16 md:-mt-[6.5rem]">
