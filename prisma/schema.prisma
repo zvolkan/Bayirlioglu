@@ -25,6 +25,7 @@ model Brand {
   categories  Category[]
   products    Product[]
   orders      Order[]
+  blogPosts  BlogPost[]
 
   @@map("brands")
 }
@@ -406,4 +407,33 @@ model ReturnRequest {
   @@index([userId])
   @@index([status])
   @@map("return_requests")
+}
+
+// ─── Blog ─────────────────────────────────────────────────────────────────────
+//
+// Blog yazıları örnek veriden (`src/data/mock.ts`) geliyordu; içerikleri boştu
+// ve yönetim ekranı olmadığı için güncellenemiyordu. Artık veritabanında.
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  brandId   Int      @map("brand_id")
+  title     String   @db.VarChar(200)
+  slug      String   @unique @db.VarChar(220)
+  excerpt   String?  @db.Text
+  content   String   @db.Text
+  category  String?  @db.VarChar(80)
+  coverImage String? @map("cover_image") @db.VarChar(500)
+  author    String?  @db.VarChar(120)
+
+  isPublished Boolean   @default(false) @map("is_published")
+  publishedAt DateTime? @map("published_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  brand Brand @relation(fields: [brandId], references: [id])
+
+  @@index([brandId, isPublished, publishedAt])
+  @@index([slug])
+  @@map("blog_posts")
 }

@@ -233,3 +233,31 @@ SELECT 'iade talepleri tablosu' AS kontrol,
        COUNT(*) AS var_mi
 FROM information_schema.tables
 WHERE table_name = 'return_requests';
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- EK 5: Blog yazıları
+-- Daha önce çalıştırılmadıysa güvenle çalıştırılabilir.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id           TEXT PRIMARY KEY,
+  brand_id     INTEGER NOT NULL REFERENCES brands(id),
+  title        VARCHAR(200) NOT NULL,
+  slug         VARCHAR(220) NOT NULL UNIQUE,
+  excerpt      TEXT,
+  content      TEXT NOT NULL,
+  category     VARCHAR(80),
+  cover_image  VARCHAR(500),
+  author       VARCHAR(120),
+  is_published BOOLEAN NOT NULL DEFAULT FALSE,
+  published_at TIMESTAMP(3),
+  created_at   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS blog_posts_listing_idx
+  ON blog_posts (brand_id, is_published, published_at DESC);
+CREATE INDEX IF NOT EXISTS blog_posts_slug_idx ON blog_posts (slug);
+
+SELECT 'blog tablosu' AS kontrol, COUNT(*) AS var_mi
+FROM information_schema.tables WHERE table_name = 'blog_posts';

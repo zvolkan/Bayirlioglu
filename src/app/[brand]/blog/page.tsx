@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
-import { MOCK_BLOG_POSTS } from '@/data/mock'
+import { getPublishedPosts } from '@/lib/blog'
+import BrandArtwork from '@/components/ui/BrandArtwork'
 import type { BrandKey } from '@/lib/types'
 
 const VALID_BRANDS: BrandKey[] = ['alb-tarim', 'alb-su-aritma']
@@ -16,9 +17,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!VALID_BRANDS.includes(brand as BrandKey)) return {}
   const cfg = BRANDS[brand as BrandKey]
   return {
-    // Blog içerikleri henüz gerçek değil; arama motorlarında boş sayfa
-    // görünmesin diye indekslenmiyor. Gerçek içerik yazılınca kaldırın.
-    robots: { index: false, follow: true },
     title: `Blog | ${cfg.name}`,
     description: `${cfg.name} blog yazıları, ipuçları ve sektör haberleri.`,
   }
@@ -29,10 +27,19 @@ export default async function BlogPage({ params }: Props) {
   if (!VALID_BRANDS.includes(brand as BrandKey)) notFound()
 
   const brandKey = brand as BrandKey
-  // Renk artık brand-* sınıflarından geliyor; bu bayrak sadece emoji seçimi için
-  const isAlbSu = brandKey === 'alb-su-aritma'
   const cfg = BRANDS[brandKey]
-  const posts = MOCK_BLOG_POSTS.filter((p) => p.brand === brandKey)
+
+  // Yazılar artık veritabanından; yalnızca yayında olanlar geliyor.
+  const posts = await getPublishedPosts(brandKey)
+
+  const formatDate = (date: Date | null) =>
+    date
+      ? new Date(date).toLocaleDateString('tr-TR', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : ''
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -70,14 +77,22 @@ export default async function BlogPage({ params }: Props) {
                 href={`/${brandKey}/blog/${posts[0].slug}`}
                 className="group grid md:grid-cols-2 bg-white rounded-3xl border border-gray-100 overflow-hidden hover-lift"
               >
-                {/* GÖRSEL: {posts[0].coverImage} */}
-                <div className="brand-surface flex items-center justify-center min-h-52 md:min-h-64 text-7xl">
-                  {isAlbSu ? '💧' : '🌱'}
+                <div className="img-zoom min-h-52 md:min-h-64 relative overflow-hidden bg-gray-100">
+                  {posts[0].coverImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={posts[0].coverImage}
+                      alt={posts[0].title}
+                      className="img-zoom-target absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <BrandArtwork variant="blog" className="absolute inset-0 w-full h-full" />
+                  )}
                 </div>
                 <div className="p-4 sm:p-8 flex flex-col justify-center">
-                  {posts[0].tags && posts[0].tags.length > 0 && (
+                  {posts[0].category && (
                     <span className="inline-block text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full mb-4 w-fit bg-brand-100 text-brand-700">
-                      {posts[0].tags[0]}
+                      {posts[0].category}
                     </span>
                   )}
                   <h2 className="text-2xl font-black text-gray-900 leading-tight mb-3 group-hover:text-gray-700 transition-colors">
@@ -85,19 +100,13 @@ export default async function BlogPage({ params }: Props) {
                   </h2>
                   <p className="text-gray-500 leading-relaxed mb-5">{posts[0].excerpt}</p>
                   <div className="flex items-center gap-3 text-sm text-gray-400">
-                    <span>{posts[0].author}</span>
-                    <span>·</span>
-                    <span>
-                      {new Date(posts[0].publishedAt).toLocaleDateString('tr-TR', {
-                        day: 'numeric', month: 'long', year: 'numeric',
-                      })}
-                    </span>
-                    {posts[0].readTime && (
+                    {posts[0].author && (
                       <>
+                        <span>{posts[0].author}</span>
                         <span>·</span>
-                        <span>{posts[0].readTime} dk okuma</span>
                       </>
                     )}
+                    <span>{formatDate(posts[0].publishedAt)}</span>
                   </div>
                 </div>
               </Link>
@@ -112,14 +121,22 @@ export default async function BlogPage({ params }: Props) {
                     href={`/${brandKey}/blog/${post.slug}`}
                     className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift"
                   >
-                    {/* GÖRSEL: {post.coverImage} */}
-                    <div className="aspect-[16/9] brand-surface flex items-center justify-center text-5xl">
-                      {isAlbSu ? '💧' : '🌱'}
+                    <div className="img-zoom aspect-[16/9] relative overflow-hidden bg-gray-100">
+                      {post.coverImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={post.coverImage}
+                          alt={post.title}
+                          className="img-zoom-target absolute inset-0 w-full h-full object-cover"
+                        />
+                      ) : (
+                        <BrandArtwork variant="blog" className="absolute inset-0 w-full h-full" />
+                      )}
                     </div>
                     <div className="p-5">
-                      {post.tags && post.tags.length > 0 && (
+                      {post.category && (
                         <span className="inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full mb-3 bg-brand-100 text-brand-700">
-                          {post.tags[0]}
+                          {post.category}
                         </span>
                       )}
                       <h3 className="font-bold text-gray-900 leading-snug mb-2 group-hover:text-gray-700 transition-colors line-clamp-2">
@@ -127,8 +144,8 @@ export default async function BlogPage({ params }: Props) {
                       </h3>
                       <p className="text-gray-500 text-sm line-clamp-2 mb-4">{post.excerpt}</p>
                       <div className="flex items-center justify-between text-xs text-gray-400">
-                        <span>{post.author}</span>
-                        {post.readTime && <span>{post.readTime} dk</span>}
+                        <span>{post.author ?? ''}</span>
+                        <span>{formatDate(post.publishedAt)}</span>
                       </div>
                     </div>
                   </Link>

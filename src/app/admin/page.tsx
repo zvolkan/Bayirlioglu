@@ -78,6 +78,15 @@ export default async function AdminPage() {
           </Link>
 
           <Link
+            href="/admin/blog"
+            className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-gray-100 group"
+          >
+            <div className="text-3xl mb-3 icon-pop">✍️</div>
+            <h3 className="text-base font-bold text-gray-900">Blog Yazıları</h3>
+            <p className="text-sm text-gray-400 mt-1">Yazı ekle, düzenle, yayına al</p>
+          </Link>
+
+          <Link
             href="/admin/iadeler"
             className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-gray-100 group"
           >

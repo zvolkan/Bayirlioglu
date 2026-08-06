@@ -77,6 +77,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ])
 
+  // ── Yayındaki blog yazıları ──────────────────────────────────────────────
+  let blogRoutes: MetadataRoute.Sitemap = []
+
+  try {
+    const posts = await prisma.blogPost.findMany({
+      where: { isPublished: true },
+      select: { slug: true, updatedAt: true, brand: { select: { key: true } } },
+    })
+
+    blogRoutes = posts.map((post: { slug: string; updatedAt: Date; brand: { key: string } }) => ({
+      url: `${base}/${post.brand.key}/blog/${post.slug}`,
+      lastModified: post.updatedAt,
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    }))
+  } catch (error) {
+    console.error('[sitemap] blog yazıları okunamadı:', error)
+  }
+
   // ── Gerçek ürünler ───────────────────────────────────────────────────────
   let productRoutes: MetadataRoute.Sitemap = []
 
@@ -101,5 +120,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('[sitemap] ürünler alınamadı:', error)
   }
 
-  return [...staticRoutes, ...brandRoutes, ...productRoutes]
+  return [...staticRoutes, ...brandRoutes, ...productRoutes, ...blogRoutes]
 }

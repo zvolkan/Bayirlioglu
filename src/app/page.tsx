@@ -13,11 +13,12 @@ export const metadata: Metadata = {
 }
 
 // ─── İstatistikler ───────────────────────────────────────────────────────────
+// Doğrulanamayan rakamlar kaldırıldı.
 const STATS = [
-  { value: '20+', label: 'Yıl Deneyim' },
-  { value: '16.000+', label: 'Mutlu Müşteri' },
+  { value: 'Anamur', label: 'Merkez' },
+  { value: '2', label: 'Marka' },
   { value: '81 İl', label: 'Teslimat Ağı' },
-  { value: '2', label: 'Güçlü Marka' },
+  { value: '11', label: 'Tedarik Markası' },
 ]
 
 // ─── Değerlerimiz ─────────────────────────────────────────────────────────────
@@ -79,7 +80,7 @@ export default function HomePage() {
             {/* Kuruluş yılı rozeti */}
             <span className="anim-fade-up anim-delay-150 inline-flex items-center gap-2 bg-white/8 border border-white/15 text-white/75 text-sm px-4 py-1.5 rounded-full mb-8 font-medium">
               <span className="w-2 h-2 rounded-full bg-stone-400 animate-pulse" />
-              Türkiye&apos;de 20+ Yıllık Deneyim
+              Anamur Merkezli, Türkiye Geneli Teslimat
             </span>
 
             <h1 className="anim-fade-up anim-delay-200 text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-6">
@@ -236,7 +237,7 @@ export default function HomePage() {
               <h3 className="text-2xl font-black text-gray-900 mb-3">ALB Tarım</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
                 Organik gübreler, damla sulama sistemleri, tarım ilaçları ve tarım teknolojileri
-                ile Türk çiftçisine katma değer sağlıyoruz. 15.000&apos;den fazla çiftçi ailesi
+                ile Türk çiftçisine katma değer sağlıyoruz. Anamur&apos;dan Türkiye&apos;nin dört bir yanına
                 bizimle büyüdü.
               </p>
               <ul className="space-y-2 text-sm text-gray-600 mb-8">

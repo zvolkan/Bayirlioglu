@@ -7,11 +7,13 @@ export const metadata: Metadata = {
     '2006 yılından bu yana tarım ve su teknolojileri alanında faaliyet gösteren Bayırlıoğlu Grup hakkında bilgi edinin.',
 }
 
+// Doğrulanamayan rakamlar kaldırıldı. Gerçek değerleriniz olduğunda buraya
+// yazın — uydurma sayı, tüketici şikâyetinde aleyhe delil olur.
 const stats = [
-  { value: '20+', label: 'Yıl Deneyim' },
-  { value: '15.000+', label: 'Mutlu Müşteri' },
-  { value: '81', label: 'İl' },
-  { value: '500+', label: 'Ürün Çeşidi' },
+  { value: 'Anamur', label: 'Merkez' },
+  { value: '2 Marka', label: 'Tarım ve Su' },
+  { value: '81 İl', label: 'Kargo ile Teslimat' },
+  { value: '11 Marka', label: 'Yetkili Tedarik' },
 ]
 
 const values = [
@@ -83,12 +85,16 @@ const team = [
   },
 ]
 
-const certifications = [
-  { name: 'ISO 9001:2015', description: 'Kalite Yönetim Sistemi' },
-  { name: 'ISO 14001:2015', description: 'Çevre Yönetim Sistemi' },
-  { name: 'CE Belgesi', description: 'Avrupa Uygunluk Standardı' },
-  { name: 'TSE Belgesi', description: 'Türk Standartları Enstitüsü' },
-]
+// BELGELER — şimdilik boş.
+//
+// Burada ISO 9001, ISO 14001, CE ve TSE belgeleri listeleniyordu. Sahip
+// olmadığınız bir belgeyi ilan etmek yalnızca itibar sorunu değil; Ticaret
+// Bakanlığı'nın aldatıcı reklam denetimine de konu olur.
+//
+// Elinizdeki gerçek belgeleri (belge numarası ve veren kurumla birlikte)
+// gönderdiğinizde bu listeye eklenecek. Dizi boş olduğunda bölüm hiç
+// görünmüyor.
+const certifications: Array<{ name: string; description: string }> = []
 
 export default function HakkimizdaPage() {
   return (
@@ -125,7 +131,7 @@ export default function HakkimizdaPage() {
                 <strong>Alb Su Teknolojileri</strong> markasını kurdu.
               </p>
               <p>
-                Bugün, Türkiye'nin 81 ilinde 15.000'den fazla müşterimize hizmet vermekteyiz.
+                Bugün Anamur merkezli olarak Türkiye'nin 81 iline kargo ile ürün gönderiyoruz.
                 500'den fazla ürün ve uzman kadromuzla tarım ve su teknolojileri alanında
                 güvenilir çözüm ortağınız olmaya devam ediyoruz.
               </p>
@@ -233,7 +239,8 @@ export default function HakkimizdaPage() {
         </div>
       </section>
 
-      {/* Sertifikalar */}
+      {/* Sertifikalar — belge listesi boşsa bölüm hiç render edilmiyor */}
+      {certifications.length > 0 && (
       <section className="py-16 sm:py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="text-center mb-12">
@@ -258,6 +265,7 @@ export default function HakkimizdaPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* CTA */}
       <section className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-16 sm:py-20">

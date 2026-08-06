@@ -1,12 +1,29 @@
-import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { BRANDS } from '@/lib/constants'
+import { BRANDS, SITE_CONFIG } from '@/lib/constants'
 import type { BrandKey } from '@/lib/types'
 import Reveal from '@/components/ui/Reveal'
 import RevealGroup from '@/components/ui/RevealGroup'
 
-const VALID_BRANDS: BrandKey[] = ['alb-su-aritma']
+/**
+ * Hizmet alanları / referans sayfası.
+ *
+ * ÖNCEKİ HALİ TAMAMEN UYDURMAYDI: isim isim kurumlar (Anamur Belediyesi,
+ * Anamur Devlet Hastanesi, Türk Telekom Mersin Merkezi, Mersin Üniversitesi),
+ * isimli müşteri yorumları ve doğrulanamayan rakamlar (730+ kurulum, %98
+ * memnuniyet, 8 sektörde 500+ müşteri) içeriyordu.
+ *
+ * Adı geçen kurumlar gerçek müşteri değilse bu, ticari reklam mevzuatı
+ * açısından aldatıcı reklamdır ve kurumların kendileri kaldırılmasını
+ * isteyebilir. Sayfa, doğrulanabilir olmayan hiçbir iddia içermeyecek şekilde
+ * yeniden yazıldı.
+ *
+ * Gerçek referanslar ve belgeler geldiğinde eklenecek yerler aşağıda yorum
+ * olarak işaretli.
+ */
+
+const VALID_BRANDS: BrandKey[] = ['alb-tarim', 'alb-su-aritma']
 
 interface Props {
   params: Promise<{ brand: string }>
@@ -17,132 +34,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!VALID_BRANDS.includes(brand as BrandKey)) return {}
   const cfg = BRANDS[brand as BrandKey]
   return {
-    title: `Referanslarımız | ${cfg.name}`,
-    description: `${cfg.name} güvenilir referansları. Sanayi, sağlık, eğitim ve konut sektörlerinden 500+ memnun müşteri.`,
+    title: `Hizmet Alanlarımız | ${cfg.name}`,
+    description: `${cfg.name} olarak sanayi, sağlık, eğitim, gıda ve konut alanlarında kurulum ve bakım hizmeti veriyoruz.`,
   }
 }
 
-// ─── Sektörler ────────────────────────────────────────────────────────────────
-const SECTORS = [
-  { icon: '🏭', label: 'Sanayi & Üretim', count: '150+', color: 'bg-brand-50 border-brand-100' },
-  { icon: '🏥', label: 'Sağlık', count: '60+', color: 'bg-brand-50 border-brand-100' },
-  { icon: '🎓', label: 'Eğitim', count: '45+', color: 'bg-brand-50 border-brand-100' },
-  { icon: '🍽️', label: 'Gıda & Yiyecek', count: '80+', color: 'bg-brand-50 border-brand-100' },
-  { icon: '🏢', label: 'Ofis & Plaza', count: '120+', color: 'bg-brand-50 border-brand-100' },
-  { icon: '🏗️', label: 'Konut & Site', count: '200+', color: 'bg-brand-50 border-brand-100' },
-  { icon: '🏦', label: 'Finans & Kamu', count: '35+', color: 'bg-brand-50 border-brand-100' },
-  { icon: '🏨', label: 'Otel & Turizm', count: '40+', color: 'bg-brand-50 border-brand-100' },
+const SECTORS_SU = [
+  { icon: '🏭', label: 'Sanayi & Üretim', desc: 'Kazan besleme suyu, proses suyu ve endüstriyel RO sistemleri.' },
+  { icon: '🍽️', label: 'Gıda & Yiyecek', desc: 'Mutfak ve üretim hatları için arıtma, sebil ve filtre çözümleri.' },
+  { icon: '🏢', label: 'Ofis & İşyeri', desc: 'Arıtmalı su sebilleri ve periyodik filtre değişim hizmeti.' },
+  { icon: '🏨', label: 'Otel & Turizm', desc: 'Merkezi arıtma, yumuşatma ve oda içi çözümler.' },
+  { icon: '🏗️', label: 'Konut & Site', desc: 'Daire içi tezgah altı sistemler ve site geneli yumuşatma.' },
+  { icon: '🚜', label: 'Tarımsal İşletme', desc: 'Sulama suyu yumuşatma ve damlama hattı koruma sistemleri.' },
 ]
 
-// ─── Kurumsal Referanslar ─────────────────────────────────────────────────────
-const CORPORATE_REFS = [
-  {
-    name: 'Anamur Belediyesi',
-    sector: 'Kamu',
-    icon: '🏛️',
-    desc: 'İdare binaları ve sosyal tesisler için endüstriyel su arıtma sistemleri kurulumu.',
-    year: '2022',
-    system: 'Endüstriyel RO Sistemi',
-  },
-  {
-    name: 'Mersin Üniversitesi',
-    sector: 'Eğitim',
-    icon: '🎓',
-    desc: 'Yurt binaları ve kantin tesisleri için kapsamlı su arıtma altyapısı.',
-    year: '2021',
-    system: 'Çoklu Nokta RO Sistemi',
-  },
-  {
-    name: 'Anamur Devlet Hastanesi',
-    sector: 'Sağlık',
-    icon: '🏥',
-    desc: 'Tıbbi kullanım için yüksek safiyetli su üretimi; diyaliz bölümü özel sistemi.',
-    year: '2023',
-    system: 'Tıbbi Saf Su Ünitesi',
-  },
-  {
-    name: 'Özgün Yapı Grubu',
-    sector: 'Konut',
-    icon: '🏗️',
-    desc: '3 adet lüks konut sitesi için merkezi su yumuşatma ve arıtma sistemleri.',
-    year: '2022',
-    system: 'Merkezi Yumuşatma + RO',
-  },
-  {
-    name: 'Anadolu Fırıncılık A.Ş.',
-    sector: 'Gıda Üretimi',
-    icon: '🏭',
-    desc: 'Üretim hattı için sertlik giderme ve klor eliminasyon sistemleri.',
-    year: '2023',
-    system: 'Endüstriyel Yumuşatma',
-  },
-  {
-    name: 'Türk Telekom Mersin Merkezi',
-    sector: 'Ofis',
-    icon: '📡',
-    desc: 'Sunucu soğutma sistemleri için saf su üretimi ve periyodik bakım.',
-    year: '2021',
-    system: 'Deiyonize Su Sistemi',
-  },
-  {
-    name: 'Mersin Marina AVM',
-    sector: 'Ticari',
-    icon: '🏬',
-    desc: 'AVM restoranları ve gıda alanları için yüksek kapasiteli RO sistemi.',
-    year: '2020',
-    system: 'Yüksek Kapasiteli RO',
-  },
-  {
-    name: 'Farmasi Mersin Deposu',
-    sector: 'Lojistik & Üretim',
-    icon: '📦',
-    desc: 'Depo ve ofis alanları için merkezi içme suyu arıtma sistemi.',
-    year: '2022',
-    system: 'Alkali RO Sistemi',
-  },
-]
-
-// ─── Müşteri Yorumları ────────────────────────────────────────────────────────
-const TESTIMONIALS = [
-  {
-    name: 'Mehmet Kaya',
-    title: 'Fabrika Müdürü',
-    company: 'Kaya Tekstil A.Ş.',
-    text: 'Endüstriyel RO sistemimizi 3 yıl önce Alb Su Teknolojileri\'nden aldık. Kazan hasarımız sıfıra indi, üretim kalitemiz belirgin şekilde arttı. Periyodik bakım ekibinin hızı ve özeni mükemmel.',
-    rating: 5,
-    avatar: 'MK',
-  },
-  {
-    name: 'Elif Şahin',
-    title: 'Ev Hanımı',
-    company: 'Anamur / Mersin',
-    text: 'Alkali su arıtma cihazımızı aleli eve koyduk. Çocuklarım artık sokaktan su almıyor, sağlıklı bir suya kavuştuk. Montaj ekibi çok titiz çalıştı, her şeyi açıkladılar.',
-    rating: 5,
-    avatar: 'EŞ',
-  },
-  {
-    name: 'Ahmet Uzun',
-    title: 'Restoran İşletmecisi',
-    company: 'Uzun Kebap',
-    text: 'Restoranımızda yemek kalitesi klorlu sudan dolayı etkileniyordu. Alb Su\'nun sistemi ile hem lezzet arttı hem de çaylarımız çok daha iyi oldu. Kesinlikle tavsiye ederim.',
-    rating: 5,
-    avatar: 'AU',
-  },
-  {
-    name: 'Dr. Fatma Demir',
-    title: 'Klinik Sahibi',
-    company: 'Demir Diş Kliniği',
-    text: 'Klinik için steril su talebi çok önemliydi. Alb Su\'nun tıbbi saf su sistemi tüm standartları karşılıyor, teknik destek ekibi her arızamda aynı gün müdahale etti.',
-    rating: 5,
-    avatar: 'FD',
-  },
-]
-
-const STATS = [
-  { value: '730+', label: 'Tamamlanan Kurulum' },
-  { value: '8', label: 'Sektör' },
-  { value: '%98', label: 'Müşteri Memnuniyeti' },
-  { value: '5 Yıl', label: 'Ortalama İlişki Süresi' },
+const SECTORS_TARIM = [
+  { icon: '🌾', label: 'Tarla Bitkileri', desc: 'Buğday, arpa, mısır ve pamukta taban ve üst gübreleme programları.' },
+  { icon: '🍌', label: 'Örtü Altı Yetiştiricilik', desc: 'Sera koşullarına uygun damla sulama gübreleri ve yaprak besleme.' },
+  { icon: '🍊', label: 'Meyve Bahçeleri', desc: 'Narenciye, muz ve zeytinde dönemsel besleme ve mikro element takviyesi.' },
+  { icon: '🌱', label: 'Fidan & Fide Üretimi', desc: 'Kök gelişimi ve şaşırtma sonrası stres yönetimi ürünleri.' },
+  { icon: '🧪', label: 'Toprak Islahı', desc: 'Tuzluluk, kireç ve organik madde sorunlarına yönelik düzenleyiciler.' },
+  { icon: '💧', label: 'Sulama Sistemleri', desc: 'Damla ve yağmurlama hatlarında tıkanma önleyici uygulamalar.' },
 ]
 
 export default async function ReferanslarPage({ params }: Props) {
@@ -151,6 +63,8 @@ export default async function ReferanslarPage({ params }: Props) {
 
   const brandKey = brand as BrandKey
   const cfg = BRANDS[brandKey]
+  const isAlbSu = brandKey === 'alb-su-aritma'
+  const sectors = isAlbSu ? SECTORS_SU : SECTORS_TARIM
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -158,175 +72,144 @@ export default async function ReferanslarPage({ params }: Props) {
       <section className="brand-surface py-20">
         <div className="container-main">
           <nav className="text-sm text-white/50 mb-8">
-            <Link href={`/${brandKey}`} className="hover:text-white transition-colors">{cfg.name}</Link>
+            <Link href={`/${brandKey}`} className="hover:text-white transition-colors">
+              {cfg.name}
+            </Link>
             <span className="mx-2">/</span>
-            <span className="text-white/80">Referanslarımız</span>
+            <span className="text-white/80">Hizmet Alanlarımız</span>
           </nav>
           <div className="max-w-2xl">
             <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-400">
-              Güven & Deneyim
+              Nerelerde Çalışıyoruz
             </p>
             <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight mb-6">
-              Referanslarımız
+              Hizmet Alanlarımız
             </h1>
             <p className="text-white/70 text-lg leading-relaxed">
-              Sanayiden sağlığa, eğitimden konuta kadar 8 farklı sektörde 730'dan fazla başarılı
-              kurulum. Her müşterimiz bizim için bir referans, her proje bir başarı hikayesi.
+              {isAlbSu
+                ? 'Evden fabrikaya, otelden tarımsal işletmeye kadar farklı ölçeklerde su arıtma kurulumu ve bakımı yapıyoruz. Kullanım yerine ve su analizine göre sistem öneriyoruz.'
+                : 'Tarla bitkilerinden örtü altı yetiştiriciliğe, meyve bahçelerinden fidan üretimine kadar farklı üretim biçimlerine uygun besleme programları hazırlıyoruz.'}
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── İSTATİSTİKLER ── */}
-      <section className="py-14 bg-white border-b border-gray-100">
-        <div className="container-main">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
-            <RevealGroup variant="scale">
-            {STATS.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="text-3xl sm:text-4xl font-black text-brand-600">{s.value}</p>
-                <p className="text-sm text-gray-500 mt-1 font-medium">{s.label}</p>
-              </div>
-            ))}
-            </RevealGroup>
           </div>
         </div>
       </section>
 
       {/* ── SEKTÖRLER ── */}
-      <section className="py-16 bg-gray-50">
-        <div className="container-main">
-          <Reveal>
-            <div className="text-center mb-12">
-              <p className="font-bold uppercase text-sm tracking-widest mb-2 text-brand-600">Sektörler</p>
-              <h2 className="text-3xl font-black text-gray-900">Hizmet Verdiğimiz Alanlar</h2>
-            </div>
-          </Reveal>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <RevealGroup itemClassName="h-full">
-            {SECTORS.map((s) => (
-              <div
-                key={s.label}
-                className={`h-full bg-white rounded-2xl border ${s.color} p-5 text-center hover-lift`}
-              >
-                <div className="text-3xl mb-3">{s.icon}</div>
-                <p className="font-bold text-gray-900 text-sm mb-1">{s.label}</p>
-                <p className="text-brand-600 text-lg font-black">{s.count}</p>
-                <p className="text-gray-400 text-xs">referans</p>
-              </div>
-            ))}
-            </RevealGroup>
-          </div>
-        </div>
-      </section>
-
-      {/* ── KURUMSAL REFERANSLAR ── */}
       <section className="py-16 bg-white">
         <div className="container-main">
           <Reveal>
             <div className="text-center mb-12">
-              <p className="font-bold uppercase text-sm tracking-widest mb-2 text-brand-600">Kurumsal</p>
-              <h2 className="text-3xl font-black text-gray-900">Kurumsal Müşterilerimiz</h2>
-              <p className="text-gray-500 mt-3 max-w-xl mx-auto">
-                Kamu kuruluşlarından özel sektöre, küçük işletmelerden büyük tesislere kadar
-                her ölçekte çözüm üretiyoruz.
+              <p className="font-bold uppercase text-sm tracking-widest mb-2 text-brand-600">
+                Uygulama Alanları
               </p>
+              <h2 className="text-3xl font-black text-gray-900 rule-under rule-center">
+                Kimlere Hizmet Veriyoruz
+              </h2>
             </div>
           </Reveal>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <RevealGroup itemClassName="h-full">
-            {CORPORATE_REFS.map((ref) => (
-              <div
-                key={ref.name}
-                className="group h-full bg-gray-50 rounded-2xl border border-gray-100 hover-lift p-6"
-              >
-                {/* Logo placeholder */}
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center text-2xl mb-4 icon-pop">
-                  {ref.icon}
+              {sectors.map((s) => (
+                <div
+                  key={s.label}
+                  className="h-full bg-white rounded-2xl border border-gray-100 p-6 hover-lift card-glow"
+                >
+                  <div className="text-3xl mb-3 icon-pop">{s.icon}</div>
+                  <h3 className="font-bold text-gray-900 mb-1.5">{s.label}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{s.desc}</p>
                 </div>
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <h3 className="font-bold text-gray-900 text-sm leading-tight">{ref.name}</h3>
-                </div>
-                <span className="inline-block bg-brand-100 text-brand-700 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full mb-3">
-                  {ref.sector}
-                </span>
-                <p className="text-gray-600 text-xs leading-relaxed mb-4">{ref.desc}</p>
-                <div className="border-t border-gray-200 pt-3 flex items-center justify-between">
-                  <span className="text-[10px] text-gray-400 font-medium">{ref.system}</span>
-                  <span className="text-[10px] text-gray-400">{ref.year}</span>
-                </div>
-              </div>
-            ))}
+              ))}
             </RevealGroup>
           </div>
-          <p className="text-center text-gray-400 text-sm mt-8">
-            ve 700'den fazla bireysel & kurumsal referansımız daha…
-          </p>
         </div>
       </section>
 
-      {/* ── MÜŞTERİ YORUMLARI ── */}
+      {/* ── NASIL ÇALIŞIYORUZ ── */}
       <section className="py-16 bg-gray-50">
         <div className="container-main">
           <Reveal>
             <div className="text-center mb-12">
-              <p className="font-bold uppercase text-sm tracking-widest mb-2 text-brand-600">Yorumlar</p>
-              <h2 className="text-3xl font-black text-gray-900">Müşterilerimiz Ne Diyor?</h2>
+              <p className="font-bold uppercase text-sm tracking-widest mb-2 text-brand-600">
+                Süreç
+              </p>
+              <h2 className="text-3xl font-black text-gray-900 rule-under rule-center">
+                Nasıl İlerliyoruz
+              </h2>
             </div>
           </Reveal>
-          <div className="grid sm:grid-cols-2 gap-6">
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <RevealGroup itemClassName="h-full">
-            {TESTIMONIALS.map((t) => (
-              <div
-                key={t.name}
-                className="h-full bg-white rounded-2xl border border-gray-100 p-6 hover-lift"
-              >
-                {/* Yıldızlar */}
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <span key={i} className="text-yellow-400 text-lg">★</span>
-                  ))}
+              {(isAlbSu
+                ? [
+                    { n: '01', t: 'Su Analizi', d: 'Kullandığınız suyun sertlik ve mineral değerlerini ücretsiz ölçüyoruz.' },
+                    { n: '02', t: 'Sistem Önerisi', d: 'Analiz sonucuna ve kullanım hacmine göre uygun cihazı öneriyoruz.' },
+                    { n: '03', t: 'Kurulum', d: 'Montajı kendi ekibimiz yapıyor, çalışma prensibini yerinde anlatıyoruz.' },
+                    { n: '04', t: 'Periyodik Bakım', d: 'Filtre değişim zamanı geldiğinde biz hatırlatıyoruz.' },
+                  ]
+                : [
+                    { n: '01', t: 'Toprak & Yaprak Analizi', d: 'Mevcut besin durumunu ölçüyoruz; eksik olanı görmeden program yapmıyoruz.' },
+                    { n: '02', t: 'Besleme Programı', d: 'Ürününüze ve dönemine göre gübreleme takvimi çıkarıyoruz.' },
+                    { n: '03', t: 'Ürün Tedariki', d: 'Programdaki ürünleri stoktan hızlıca gönderiyoruz.' },
+                    { n: '04', t: 'Saha Takibi', d: 'Sezon boyunca uygulamanın nasıl gittiğini takip ediyoruz.' },
+                  ]
+              ).map((step) => (
+                <div
+                  key={step.n}
+                  className="h-full bg-white rounded-2xl border border-gray-100 p-6"
+                >
+                  <p className="text-brand-accent font-black text-2xl mb-2 [-webkit-text-stroke:1px_rgb(var(--brand-600))]">
+                    {step.n}
+                  </p>
+                  <h3 className="font-bold text-gray-900 mb-1.5">{step.t}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{step.d}</p>
                 </div>
-                <p className="text-gray-700 leading-relaxed mb-5 italic">&ldquo;{t.text}&rdquo;</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-black text-xs">
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm">{t.name}</p>
-                    <p className="text-gray-500 text-xs">{t.title} · {t.company}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))}
             </RevealGroup>
           </div>
         </div>
       </section>
 
+      {/*
+        BURAYA GELECEK — gerçek referanslar ve belgeler:
+
+        1. Kurumsal referans listesi: yalnızca YAZILI İZİN alınan müşteriler,
+           kurum adı + kısa iş tanımı + yıl.
+        2. Belgeler: ISO, TSE, yetkili bayilik yazıları — belge numarası veya
+           belgenin taranmış görseliyle birlikte.
+
+        İzinsiz kurum adı yayınlamak aldatıcı reklam sayılır; bu yüzden
+        buraya doğrulanmamış hiçbir şey konmadı.
+      */}
+
       {/* ── CTA ── */}
-      <section className="brand-surface py-16">
-        <div className="container-main text-center text-white">
+      <section className="py-20 brand-surface">
+        <div className="container-main text-center">
           <Reveal>
-            <h2 className="text-3xl font-black mb-4">Siz de Referanslarımız Arasına Katılın</h2>
-            <p className="text-white/70 text-lg mb-8 max-w-xl mx-auto">
-              Ücretsiz su analizi ve kurulum keşfi için hemen iletişime geçin. Size özel çözüm sunalım.
+            <h2 className="text-3xl font-black text-white mb-4">
+              {isAlbSu ? 'Suyunuzu ücretsiz analiz edelim' : 'Toprağınıza uygun programı çıkaralım'}
+            </h2>
+            <p className="text-white/70 max-w-xl mx-auto mb-8 leading-relaxed">
+              {isAlbSu
+                ? 'Hangi sistemin size uygun olduğunu konuşmak için bize ulaşın. Benzer ölçekte yaptığımız uygulamaları örnekleriyle anlatalım.'
+                : 'Ürününüze ve dönemine uygun besleme programı için bize ulaşın. Benzer üretim yapan işletmelerdeki uygulamalarımızı örnekleriyle anlatalım.'}
             </p>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Link
+                href={`/${brandKey}/iletisim`}
+                className="btn-press btn-sheen inline-flex items-center gap-2 bg-brand-accent text-brand-900 px-7 py-3.5 rounded-xl font-bold transition-all"
+              >
+                İletişime Geçin
+              </Link>
+              <a
+                href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
+                className="inline-flex items-center gap-2 border-2 border-brand-400/60 hover:bg-brand-400/10 text-white px-7 py-3.5 rounded-xl font-semibold transition-colors"
+              >
+                {SITE_CONFIG.phone}
+              </a>
+            </div>
           </Reveal>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href={`/${brandKey}/iletisim`}
-              className="bg-white text-brand-900 px-8 py-4 rounded-xl font-semibold text-base hover:bg-brand-50 transition-colors btn-press"
-            >
-              Ücretsiz Keşif Talep Et
-            </Link>
-            <Link
-              href={`/${brandKey}/urunler`}
-              className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-base hover:bg-white/10 transition-colors btn-press"
-            >
-              Ürünlerimizi İncele
-            </Link>
-          </div>
         </div>
       </section>
     </div>

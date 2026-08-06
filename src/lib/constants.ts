@@ -23,10 +23,13 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
       message: 'Merhaba! ALB Tarım ürünleri hakkında bilgi almak istiyorum.',
       tooltip: "ALB Tarım'a WhatsApp'tan yazın!",
     },
+    // Doğrulanabilir olmayan rakamlar kaldırıldı ("500+ Ürün Çeşidi" katalogda
+    // 69 ürün varken yazıyordu; "15.000+ Mutlu Çiftçi" ölçülebilir değil).
+    // Gerçek rakamlarınız olduğunda buraya yazın, site geneline yansır.
     stats: [
-      { value: '500+', label: 'Ürün Çeşidi' },
-      { value: '15.000+', label: 'Mutlu Çiftçi' },
-      { value: '81 İl', label: 'Teslimat' },
+      { value: 'Anamur', label: 'Merkez' },
+      { value: '81 İl', label: 'Kargo ile Teslimat' },
+      { value: '11 Marka', label: 'Yetkili Tedarik' },
     ],
     nav: [
       {
@@ -81,10 +84,11 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
       message: 'Merhaba! Alb Su Teknolojileri su arıtma sistemleri hakkında bilgi almak istiyorum.',
       tooltip: "Alb Su Teknolojileri'ne WhatsApp'tan yazın!",
     },
+    // Doğrulanabilir olmayan rakamlar kaldırıldı.
     stats: [
-      { value: '1.000+', label: 'Kurulum' },
-      { value: '20+', label: 'Yıl Deneyim' },
-      { value: '7/24', label: 'Teknik Destek' },
+      { value: 'Anamur', label: 'Merkez' },
+      { value: 'Ücretsiz', label: 'Su Analizi' },
+      { value: 'Yerinde', label: 'Montaj & Servis' },
     ],
     nav: [
       {

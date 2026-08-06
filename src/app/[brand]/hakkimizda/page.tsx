@@ -5,6 +5,7 @@ import { BRANDS } from '@/lib/constants'
 import type { BrandKey } from '@/lib/types'
 import Reveal from '@/components/ui/Reveal'
 import RevealGroup from '@/components/ui/RevealGroup'
+import BrandArtwork from '@/components/ui/BrandArtwork'
 
 const VALID_BRANDS: BrandKey[] = ['alb-tarim', 'alb-su-aritma']
 
@@ -27,14 +28,13 @@ const TARIM_TIMELINE = [
   { year: '2005', event: 'Ulusal dağıtım ağımızı kurarak 50 ile ulaştık.' },
   { year: '2010', event: 'Organik tarım sertifikası alındı, 5.000 çiftçi milini geçtik.' },
   { year: '2015', event: 'Online satış platformumuz devreye girdi.' },
-  { year: '2020', event: '15.000 çiftçi müşteri eşiği aşıldı, 81 il hedefi gerçekleşti.' },
+  { year: '2020', event: 'Kargo ağı genişletildi, 81 ile teslimat yapılmaya başlandı.' },
   { year: '2025', event: 'Dijital tarım danışmanlık platformumuz hayata geçirildi.' },
 ]
 
 const ALBSU_TIMELINE = [
   { year: '2003', event: 'Albsu, su arıtma alanında yolculuğuna başladı.' },
   { year: '2008', event: 'İlk klima ve iklimlendirme ürünleri portföye eklendi.' },
-  { year: '2013', event: 'ISO 9001 Kalite Yönetim Sistemi sertifikası alındı.' },
   { year: '2017', event: 'Akıllı ev elektroniği ürünleri satışa sunuldu.' },
   { year: '2021', event: '1.000 başarılı montaj hedefi aşıldı.' },
   { year: '2025', event: 'Türkiye\'nin önde gelen su teknolojileri markası konumuna yükseldi.' },
@@ -136,10 +136,6 @@ export default async function HakkimizdaPage({ params }: Props) {
                 <p className="text-gray-500 text-sm font-medium">{s.label}</p>
               </div>
             ))}
-            <div className="h-full text-center bg-white rounded-2xl border border-gray-100 p-6">
-              <p className="text-4xl font-black text-brand-600 mb-2">20+</p>
-              <p className="text-gray-500 text-sm font-medium">Yıl Deneyim</p>
-            </div>
             </RevealGroup>
           </div>
         </div>
@@ -153,20 +149,17 @@ export default async function HakkimizdaPage({ params }: Props) {
             <h2 className="text-3xl font-black text-gray-900 mb-4">Uzman Kadromuz</h2>
             <p className="text-gray-500 max-w-xl mx-auto mb-10">
               {isAlbSu
-                ? 'Su teknolojileri, klima sistemleri ve elektronik alanlarında 50+ uzman çalışanımız hizmetinizde.'
-                : 'Agronomi, sulama mühendisliği ve tarım teknolojileri alanlarında 100+ uzman ekibimiz ile yanınızdayız.'}
+                ? 'Su teknolojileri, klima sistemleri ve elektronik alanlarında deneyimli ekibimizle hizmetinizdeyiz.'
+                : 'Agronomi ve sulama konusunda deneyimli ekibimizle sahada yanınızdayız.'}
             </p>
           </Reveal>
-          {/* GÖRSEL: /public/images/team-group.jpg */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto mb-8">
-            <RevealGroup variant="scale">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="aspect-square rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-3xl">
-                👤
-              </div>
-            ))}
-            </RevealGroup>
-          </div>
+          {/* Gerçek ekip fotoğrafı hazır olduğunda burası <Image> ile
+              değiştirilecek; şimdilik marka renklerine uyan bir görsel var. */}
+          <Reveal variant="scale">
+            <div className="max-w-3xl mx-auto mb-8 rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+              <BrandArtwork variant="ekip" className="w-full h-40 sm:h-52 block" />
+            </div>
+          </Reveal>
           <Link
             href={`/${brandKey}/iletisim`}
             className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors btn-press"

@@ -3,6 +3,7 @@ import Link from 'next/link'
 const GRUP_LINKS = [
   { label: 'Hakkımızda', href: '/hakkimizda' },
   { label: 'Hizmetler', href: '/hizmetler' },
+  { label: 'Blog', href: '/blog' },
   { label: 'Bayi Başvurusu', href: '/bayi-basvuru' },
   { label: 'İletişim', href: '/iletisim' },
 ]

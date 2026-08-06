@@ -4,7 +4,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
 import { TESLIMAT_SURESI } from '@/lib/checkout'
-import { MOCK_BLOG_POSTS } from '@/data/mock'
+import { getPublishedPosts } from '@/lib/blog'
+import BrandArtwork from '@/components/ui/BrandArtwork'
 import { getFeaturedProducts } from '@/lib/queries/products'
 import { getCategoriesByBrand } from '@/lib/queries/categories'
 import type { BrandKey } from '@/lib/types'
@@ -48,7 +49,8 @@ export default async function BrandHomePage({ params }: Props) {
     getFeaturedProducts(brandKey, 6),
     getCategoriesByBrand(brandKey),
   ])
-  const brandPosts = MOCK_BLOG_POSTS.filter((p) => p.brand === brandKey).slice(0, 3)
+  // Yayındaki son üç yazı; hiç yoksa blog bölümü render edilmiyor.
+  const brandPosts = await getPublishedPosts(brandKey, 3)
 
   return (
     <>
@@ -69,8 +71,8 @@ export default async function BrandHomePage({ params }: Props) {
                 },
                 {
                   icon: '🏅',
-                  title: 'ISO 9001 Kalite Güvencesi',
-                  desc: 'Uluslararası kalite yönetim sistemi sertifikalı hizmet',
+                  title: 'Yetkili Bayi Güvencesi',
+                  desc: 'A.O. Smith ve diğer markaların yetkili satış ve servis noktası',
                 },
                 {
                   icon: '🔧',
@@ -458,23 +460,28 @@ export default async function BrandHomePage({ params }: Props) {
                   href={`/${brandKey}/blog/${post.slug}`}
                   className="group block h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift"
                 >
-                  {/* GÖRSEL: /public/images/blog/${post.slug}.jpg */}
-                  <div className="aspect-[16/9] brand-surface flex items-center justify-center text-5xl relative overflow-hidden">
-                    <span className="transition-transform duration-500 group-hover:scale-125 select-none">
-                      {isAlbSu ? '💧' : '🌱'}
-                    </span>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="img-zoom aspect-[16/9] relative overflow-hidden bg-gray-100">
+                    {post.coverImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        className="img-zoom-target absolute inset-0 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <BrandArtwork variant="blog" className="absolute inset-0 w-full h-full" />
+                    )}
                   </div>
                   <div className="p-5">
                     <p className="text-xs font-semibold uppercase tracking-wide mb-2 text-brand-600">
-                      {post.tags?.[0]}
+                      {post.category ?? ''}
                     </p>
                     <h3 className="font-bold text-gray-900 leading-snug mb-2 group-hover:text-gray-700 transition-colors line-clamp-2">
                       {post.title}
                     </h3>
                     <p className="text-gray-500 text-sm line-clamp-2">{post.excerpt}</p>
                     <p className="text-gray-400 text-xs mt-3">
-                      {new Date(post.publishedAt).toLocaleDateString('tr-TR', {
+                      {new Date(post.publishedAt ?? new Date()).toLocaleDateString('tr-TR', {
                         day: 'numeric', month: 'long', year: 'numeric',
                       })}
                     </p>

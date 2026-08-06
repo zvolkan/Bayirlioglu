@@ -2,40 +2,47 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
-import { MOCK_BLOG_POSTS } from '@/data/mock'
+import { getPublishedPost, getPublishedPosts, readingMinutes } from '@/lib/blog'
+import BrandArtwork from '@/components/ui/BrandArtwork'
 import type { BrandKey } from '@/lib/types'
 
 interface Props {
   params: Promise<{ brand: string; slug: string }>
 }
 
-export async function generateStaticParams() {
-  return MOCK_BLOG_POSTS.map((p) => ({ brand: p.brand, slug: p.slug }))
-}
+// Yazılar veritabanından geliyor ve yönetim panelinden anında
+// değiştirilebiliyor; bu yüzden statik üretilmiyor.
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, brand } = await params
-  const post = MOCK_BLOG_POSTS.find((p) => p.slug === slug && p.brand === brand)
-  if (!post) return {}
+  const post = await getPublishedPost(brand, slug)
+  if (!post) return { title: 'Yazı bulunamadı', robots: { index: false, follow: false } }
   return {
     title: post.title,
-    description: post.excerpt,
+    description: post.excerpt ?? undefined,
+    alternates: { canonical: `/${brand}/blog/${slug}` },
+    openGraph: {
+      type: 'article',
+      title: post.title,
+      description: post.excerpt ?? undefined,
+      images: post.coverImage ? [{ url: post.coverImage, alt: post.title }] : undefined,
+    },
   }
 }
 
 export default async function BlogPostPage({ params }: Props) {
   const { brand, slug } = await params
   const brandKey = brand as BrandKey
-  const post = MOCK_BLOG_POSTS.find((p) => p.slug === slug && p.brand === brandKey)
+  const post = await getPublishedPost(brandKey, slug)
   if (!post) notFound()
 
   const cfg = BRANDS[brandKey] ?? BRANDS['alb-tarim']
-  // Renk artık brand-* sınıflarından geliyor; bu bayrak sadece emoji seçimi için
-  const isAlbSu = brandKey === 'alb-su-aritma'
+  const okumaDakika = readingMinutes(post.content)
 
-  const related = MOCK_BLOG_POSTS.filter(
-    (p) => p.brand === brandKey && p.slug !== slug
-  ).slice(0, 3)
+  const related = (await getPublishedPosts(brandKey, 4))
+    .filter((p) => p.slug !== slug)
+    .slice(0, 3)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -51,7 +58,7 @@ export default async function BlogPostPage({ params }: Props) {
           </nav>
           {post.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-5">
-              {post.tags.map((tag) => (
+              {[post.category].filter(Boolean).map((tag) => (
                 <span key={tag} className="inline-block text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full bg-brand-100 text-brand-700">
                   {tag}
                 </span>
@@ -65,14 +72,14 @@ export default async function BlogPostPage({ params }: Props) {
             <span>✍️ {post.author}</span>
             <span>·</span>
             <span>
-              {new Date(post.publishedAt).toLocaleDateString('tr-TR', {
+              {new Date(post.publishedAt ?? new Date()).toLocaleDateString('tr-TR', {
                 day: 'numeric', month: 'long', year: 'numeric',
               })}
             </span>
-            {post.readTime && (
+            {okumaDakika > 0 && (
               <>
                 <span>·</span>
-                <span>⏱ {post.readTime} dk okuma</span>
+                <span>⏱ {okumaDakika} dk okuma</span>
               </>
             )}
           </div>
@@ -82,10 +89,17 @@ export default async function BlogPostPage({ params }: Props) {
       {/* İçerik */}
       <div className="container-main py-12 max-w-3xl">
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8 md:p-12">
-          {/* Kapak görseli placeholder */}
-          {/* GÖRSEL: {post.coverImage} */}
-          <div className="aspect-[16/9] brand-surface rounded-2xl flex items-center justify-center text-7xl mb-10">
-            {isAlbSu ? '💧' : '🌱'}
+          <div className="aspect-[16/9] rounded-2xl overflow-hidden mb-10 relative bg-gray-100">
+            {post.coverImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={post.coverImage}
+                alt={post.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : (
+              <BrandArtwork variant="blog" className="absolute inset-0 w-full h-full" />
+            )}
           </div>
 
           {/* Özet */}
@@ -95,30 +109,7 @@ export default async function BlogPostPage({ params }: Props) {
 
           {/* İçerik */}
           <div className="prose prose-gray max-w-none text-gray-700 leading-relaxed">
-            {post.content && !post.content.startsWith('<!--') ? (
-              <div dangerouslySetInnerHTML={{ __html: post.content }} />
-            ) : (
-              <div className="space-y-5">
-                <p>
-                  Bu yazımızda <strong>{post.title.toLowerCase()}</strong> konusunu detaylıca ele alıyoruz.
-                  {cfg.name} uzman ekibimiz tarafından hazırlanan bu içerik, sektörün en güncel
-                  bilgilerini ve pratik önerilerini kapsamaktadır.
-                </p>
-                <h2 className="text-xl font-bold text-gray-900 mt-8 mb-3">Temel Bilgiler</h2>
-                <p>
-                  {post.excerpt} Konuyla ilgili daha fazla bilgi almak ve uzman desteği için
-                  müşteri hizmetlerimizle iletişime geçebilirsiniz.
-                </p>
-                <h2 className="text-xl font-bold text-gray-900 mt-8 mb-3">Sonuç</h2>
-                <p>
-                  Daha fazla bilgi almak veya{' '}
-                  <Link href={`/${brandKey}/iletisim`} className="text-brand-600 link-underline">
-                    {cfg.name} ekibiyle iletişime geçmek
-                  </Link>{' '}
-                  için bize ulaşabilirsiniz.
-                </p>
-              </div>
-            )}
+            <div dangerouslySetInnerHTML={{ __html: post.content }} />
           </div>
 
           {/* Etiketler */}
@@ -126,7 +117,7 @@ export default async function BlogPostPage({ params }: Props) {
             <div className="mt-8 pt-6 border-t border-gray-100">
               <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-3">Etiketler</p>
               <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag) => (
+                {[post.category].filter(Boolean).map((tag) => (
                   <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
                     #{tag}
                   </span>
@@ -168,14 +159,23 @@ export default async function BlogPostPage({ params }: Props) {
                   href={`/${brandKey}/blog/${p.slug}`}
                   className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift"
                 >
-                  <div className="aspect-[16/9] brand-surface flex items-center justify-center text-4xl">
-                    {isAlbSu ? '💧' : '🌱'}
+                  <div className="aspect-[16/9] relative overflow-hidden bg-gray-100">
+                    {p.coverImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={p.coverImage}
+                        alt={p.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <BrandArtwork variant="blog" className="absolute inset-0 w-full h-full" />
+                    )}
                   </div>
                   <div className="p-4">
                     <p className="font-bold text-gray-900 text-sm line-clamp-2 group-hover:text-gray-700 transition-colors">
                       {p.title}
                     </p>
-                    {p.readTime && <p className="text-gray-400 text-xs mt-2">{p.readTime} dk</p>}
+                    {p.category && <p className="text-gray-400 text-xs mt-2">{p.category}</p>}
                   </div>
                 </Link>
               ))}

@@ -148,9 +148,8 @@ export default function Header() {
   }
 
   const navPrefix = activeBrandKey ? `/${activeBrandKey}` : ''
-  // Blog içeriği sahte/boş olduğu için yayından çıkarıldı; menüde gösterilmiyor.
+  // Blog artık yönetim panelinden yönetiliyor; menüde yeniden görünüyor.
   const navItems = activeBrand?.nav
-    .filter((item) => !item.href.startsWith('/blog'))
     .map((item) => ({
       ...item,
       href: navPrefix + item.href,
