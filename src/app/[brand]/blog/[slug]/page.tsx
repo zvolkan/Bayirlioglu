@@ -30,10 +30,8 @@ export default async function BlogPostPage({ params }: Props) {
   if (!post) notFound()
 
   const cfg = BRANDS[brandKey] ?? BRANDS['alb-tarim']
+  // Renk artık brand-* sınıflarından geliyor; bu bayrak sadece emoji seçimi için
   const isAlbSu = brandKey === 'alb-su-aritma'
-  const accentText = isAlbSu ? 'text-blue-600' : 'text-green-600'
-  const tagBg = isAlbSu ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-  const heroBg = isAlbSu ? 'from-blue-900 to-blue-950' : 'from-green-900 to-emerald-950'
 
   const related = MOCK_BLOG_POSTS.filter(
     (p) => p.brand === brandKey && p.slug !== slug
@@ -42,7 +40,7 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <div className={`bg-gradient-to-br ${heroBg} py-16`}>
+      <div className="brand-surface py-16">
         <div className="container-main max-w-3xl">
           <nav className="text-sm text-white/50 mb-6 flex flex-wrap gap-2 items-center">
             <Link href={`/${brandKey}`} className="hover:text-white transition-colors">{cfg.name}</Link>
@@ -54,7 +52,7 @@ export default async function BlogPostPage({ params }: Props) {
           {post.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-5">
               {post.tags.map((tag) => (
-                <span key={tag} className={`inline-block text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full ${tagBg}`}>
+                <span key={tag} className="inline-block text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full bg-brand-100 text-brand-700">
                   {tag}
                 </span>
               ))}
@@ -86,7 +84,7 @@ export default async function BlogPostPage({ params }: Props) {
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8 md:p-12">
           {/* Kapak görseli placeholder */}
           {/* GÖRSEL: {post.coverImage} */}
-          <div className={`aspect-[16/9] bg-gradient-to-br ${heroBg} rounded-2xl flex items-center justify-center text-7xl mb-10`}>
+          <div className="aspect-[16/9] brand-surface rounded-2xl flex items-center justify-center text-7xl mb-10">
             {isAlbSu ? '💧' : '🌱'}
           </div>
 
@@ -114,7 +112,7 @@ export default async function BlogPostPage({ params }: Props) {
                 <h2 className="text-xl font-bold text-gray-900 mt-8 mb-3">Sonuç</h2>
                 <p>
                   Daha fazla bilgi almak veya{' '}
-                  <Link href={`/${brandKey}/iletisim`} className={accentText}>
+                  <Link href={`/${brandKey}/iletisim`} className="text-brand-600 link-underline">
                     {cfg.name} ekibiyle iletişime geçmek
                   </Link>{' '}
                   için bize ulaşabilirsiniz.
@@ -168,9 +166,9 @@ export default async function BlogPostPage({ params }: Props) {
                 <Link
                   key={p.slug}
                   href={`/${brandKey}/blog/${p.slug}`}
-                  className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all"
+                  className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift"
                 >
-                  <div className={`aspect-[16/9] bg-gradient-to-br ${heroBg} flex items-center justify-center text-4xl`}>
+                  <div className="aspect-[16/9] brand-surface flex items-center justify-center text-4xl">
                     {isAlbSu ? '💧' : '🌱'}
                   </div>
                   <div className="p-4">

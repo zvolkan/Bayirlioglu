@@ -57,13 +57,13 @@ export default function ProductGallery({ images, productName, fallback = '📦',
   return (
     <div className="flex flex-col">
       {/* Ana görsel */}
-      <div className="bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center min-h-72 md:min-h-[420px] relative overflow-hidden group">
+      <div className="img-zoom bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center min-h-72 md:min-h-[420px] relative overflow-hidden group">
         <ProductImage
           src={active?.url ?? ''}
           alt={active?.alt || productName}
           fallback={fallback}
           fill
-          className="object-contain p-6 transition-transform duration-300 group-hover:scale-[1.03]"
+          className="img-zoom-target object-contain p-6"
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
         />

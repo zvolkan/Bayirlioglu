@@ -29,25 +29,22 @@ export default async function BlogPage({ params }: Props) {
   if (!VALID_BRANDS.includes(brand as BrandKey)) notFound()
 
   const brandKey = brand as BrandKey
+  // Renk artık brand-* sınıflarından geliyor; bu bayrak sadece emoji seçimi için
   const isAlbSu = brandKey === 'alb-su-aritma'
   const cfg = BRANDS[brandKey]
   const posts = MOCK_BLOG_POSTS.filter((p) => p.brand === brandKey)
 
-  const heroBg = isAlbSu ? 'from-blue-900 to-blue-950' : 'from-green-900 to-emerald-950'
-  const tagBg = isAlbSu ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-  const accentText = isAlbSu ? 'text-blue-600' : 'text-green-600'
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <section className={`bg-gradient-to-br ${heroBg} py-16`}>
+      <section className="brand-surface py-16">
         <div className="container-main text-center">
           <nav className="text-sm text-white/50 mb-6">
             <Link href={`/${brandKey}`} className="hover:text-white transition-colors">{cfg.name}</Link>
             <span className="mx-2">/</span>
             <span className="text-white/80">Blog</span>
           </nav>
-          <p className={`font-bold uppercase text-sm tracking-widest mb-3 ${isAlbSu ? 'text-blue-400' : 'text-green-400'}`}>
+          <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-400">
             Blog
           </p>
           <h1 className="text-3xl sm:text-4xl font-black text-white mb-4">
@@ -71,15 +68,15 @@ export default async function BlogPage({ params }: Props) {
             <div className="mb-10">
               <Link
                 href={`/${brandKey}/blog/${posts[0].slug}`}
-                className="group grid md:grid-cols-2 bg-white rounded-3xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300"
+                className="group grid md:grid-cols-2 bg-white rounded-3xl border border-gray-100 overflow-hidden hover-lift"
               >
                 {/* GÖRSEL: {posts[0].coverImage} */}
-                <div className={`bg-gradient-to-br ${heroBg} flex items-center justify-center min-h-52 md:min-h-64 text-7xl`}>
+                <div className="brand-surface flex items-center justify-center min-h-52 md:min-h-64 text-7xl">
                   {isAlbSu ? '💧' : '🌱'}
                 </div>
                 <div className="p-4 sm:p-8 flex flex-col justify-center">
                   {posts[0].tags && posts[0].tags.length > 0 && (
-                    <span className={`inline-block text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full mb-4 w-fit ${tagBg}`}>
+                    <span className="inline-block text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full mb-4 w-fit bg-brand-100 text-brand-700">
                       {posts[0].tags[0]}
                     </span>
                   )}
@@ -113,15 +110,15 @@ export default async function BlogPage({ params }: Props) {
                   <Link
                     key={post.slug}
                     href={`/${brandKey}/blog/${post.slug}`}
-                    className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+                    className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift"
                   >
                     {/* GÖRSEL: {post.coverImage} */}
-                    <div className={`aspect-[16/9] bg-gradient-to-br ${heroBg} flex items-center justify-center text-5xl`}>
+                    <div className="aspect-[16/9] brand-surface flex items-center justify-center text-5xl">
                       {isAlbSu ? '💧' : '🌱'}
                     </div>
                     <div className="p-5">
                       {post.tags && post.tags.length > 0 && (
-                        <span className={`inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full mb-3 ${tagBg}`}>
+                        <span className="inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full mb-3 bg-brand-100 text-brand-700">
                           {post.tags[0]}
                         </span>
                       )}

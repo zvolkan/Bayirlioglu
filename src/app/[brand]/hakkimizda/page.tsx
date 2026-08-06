@@ -3,6 +3,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
 import type { BrandKey } from '@/lib/types'
+import Reveal from '@/components/ui/Reveal'
+import RevealGroup from '@/components/ui/RevealGroup'
 
 const VALID_BRANDS: BrandKey[] = ['alb-tarim', 'alb-su-aritma']
 
@@ -47,17 +49,10 @@ export default async function HakkimizdaPage({ params }: Props) {
   const cfg = BRANDS[brandKey]
   const timeline = isAlbSu ? ALBSU_TIMELINE : TARIM_TIMELINE
 
-  const heroBg = isAlbSu ? 'from-blue-900 to-blue-950' : 'from-green-900 to-emerald-950'
-  const accentText = isAlbSu ? 'text-blue-600' : 'text-green-600'
-  const primaryBtn = isAlbSu ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'
-  const tagColor = isAlbSu ? 'text-blue-400' : 'text-green-400'
-  const dotColor = isAlbSu ? 'bg-blue-500 ring-blue-200' : 'bg-green-500 ring-green-200'
-  const yearColor = isAlbSu ? 'text-blue-600' : 'text-green-600'
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <section className={`bg-gradient-to-br ${heroBg} py-20`}>
+      <section className="brand-surface py-20">
         <div className="container-main">
           <nav className="text-sm text-white/50 mb-8">
             <Link href={`/${brandKey}`} className="hover:text-white">{cfg.name}</Link>
@@ -65,7 +60,7 @@ export default async function HakkimizdaPage({ params }: Props) {
             <span className="text-white/80">Hakkımızda</span>
           </nav>
           <div className="max-w-2xl">
-            <p className={`font-bold uppercase text-sm tracking-widest mb-3 ${tagColor}`}>Biz Kimiz</p>
+            <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-400">Biz Kimiz</p>
             <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight mb-6">
               {cfg.name} Hakkında
             </h1>
@@ -77,7 +72,8 @@ export default async function HakkimizdaPage({ params }: Props) {
       {/* Misyon & Vizyon */}
       <section className="py-16 container-main">
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-8">
+          <RevealGroup itemClassName="h-full">
+          <div className="h-full bg-white rounded-2xl border border-gray-100 p-4 sm:p-8 hover-lift">
             <div className="text-3xl mb-4">🎯</div>
             <h2 className="text-xl font-black text-gray-900 mb-3">Misyonumuz</h2>
             <p className="text-gray-600 leading-relaxed">
@@ -86,7 +82,7 @@ export default async function HakkimizdaPage({ params }: Props) {
                 : 'Türk çiftçisine en kaliteli tarım girdilerini ve teknolojiyi ulaştırarak üretim verimliliğini artırmak ve sürdürülebilir tarımı yaygınlaştırmak.'}
             </p>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-8">
+          <div className="h-full bg-white rounded-2xl border border-gray-100 p-4 sm:p-8 hover-lift">
             <div className="text-3xl mb-4">🔭</div>
             <h2 className="text-xl font-black text-gray-900 mb-3">Vizyonumuz</h2>
             <p className="text-gray-600 leading-relaxed">
@@ -95,29 +91,34 @@ export default async function HakkimizdaPage({ params }: Props) {
                 : 'Bölgenin lider tarım teknolojileri şirketi olmak; dijital tarım çözümleriyle Türk çiftçisini geleceğe taşımak.'}
             </p>
           </div>
+          </RevealGroup>
         </div>
       </section>
 
       {/* Tarihçe */}
       <section className="py-16 bg-white">
         <div className="container-main">
-          <div className="text-center mb-12">
-            <p className={`font-bold uppercase text-sm tracking-widest mb-2 ${accentText}`}>Tarihçe</p>
-            <h2 className="text-3xl font-black text-gray-900">Yolculuğumuz</h2>
-          </div>
+          <Reveal>
+            <div className="text-center mb-12">
+              <p className="font-bold uppercase text-sm tracking-widest mb-2 text-brand-600">Tarihçe</p>
+              <h2 className="text-3xl font-black text-gray-900">Yolculuğumuz</h2>
+            </div>
+          </Reveal>
           <div className="max-w-2xl mx-auto">
             <div className="relative">
               <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200" />
               <div className="space-y-8">
+                <RevealGroup variant="left">
                 {timeline.map((item, i) => (
                   <div key={i} className="relative flex gap-6 pl-16">
-                    <div className={`absolute left-4 top-1 w-4 h-4 rounded-full ring-4 ring-white ${dotColor}`} style={{ transform: 'translateX(-50%)' }} />
+                    <div className="absolute left-4 top-1 w-4 h-4 rounded-full ring-4 ring-white bg-brand-500 ring-brand-200" style={{ transform: 'translateX(-50%)' }} />
                     <div>
-                      <p className={`text-sm font-black ${yearColor} mb-1`}>{item.year}</p>
+                      <p className="text-sm font-black text-brand-600 mb-1">{item.year}</p>
                       <p className="text-gray-700 leading-relaxed">{item.event}</p>
                     </div>
                   </div>
                 ))}
+                </RevealGroup>
               </div>
             </div>
           </div>
@@ -128,16 +129,18 @@ export default async function HakkimizdaPage({ params }: Props) {
       <section className="py-16 bg-gray-50">
         <div className="container-main">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <RevealGroup variant="scale" itemClassName="h-full">
             {cfg.stats.map((s) => (
-              <div key={s.label} className="text-center bg-white rounded-2xl border border-gray-100 p-6">
-                <p className={`text-4xl font-black ${accentText} mb-2`}>{s.value}</p>
+              <div key={s.label} className="h-full text-center bg-white rounded-2xl border border-gray-100 p-6">
+                <p className="text-4xl font-black text-brand-600 mb-2">{s.value}</p>
                 <p className="text-gray-500 text-sm font-medium">{s.label}</p>
               </div>
             ))}
-            <div className="text-center bg-white rounded-2xl border border-gray-100 p-6">
-              <p className={`text-4xl font-black ${accentText} mb-2`}>20+</p>
+            <div className="h-full text-center bg-white rounded-2xl border border-gray-100 p-6">
+              <p className="text-4xl font-black text-brand-600 mb-2">20+</p>
               <p className="text-gray-500 text-sm font-medium">Yıl Deneyim</p>
             </div>
+            </RevealGroup>
           </div>
         </div>
       </section>
@@ -145,24 +148,28 @@ export default async function HakkimizdaPage({ params }: Props) {
       {/* Ekip Placeholder */}
       <section className="py-16 bg-white">
         <div className="container-main text-center">
-          <p className={`font-bold uppercase text-sm tracking-widest mb-3 ${accentText}`}>Ekibimiz</p>
-          <h2 className="text-3xl font-black text-gray-900 mb-4">Uzman Kadromuz</h2>
-          <p className="text-gray-500 max-w-xl mx-auto mb-10">
-            {isAlbSu
-              ? 'Su teknolojileri, klima sistemleri ve elektronik alanlarında 50+ uzman çalışanımız hizmetinizde.'
-              : 'Agronomi, sulama mühendisliği ve tarım teknolojileri alanlarında 100+ uzman ekibimiz ile yanınızdayız.'}
-          </p>
+          <Reveal>
+            <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-600">Ekibimiz</p>
+            <h2 className="text-3xl font-black text-gray-900 mb-4">Uzman Kadromuz</h2>
+            <p className="text-gray-500 max-w-xl mx-auto mb-10">
+              {isAlbSu
+                ? 'Su teknolojileri, klima sistemleri ve elektronik alanlarında 50+ uzman çalışanımız hizmetinizde.'
+                : 'Agronomi, sulama mühendisliği ve tarım teknolojileri alanlarında 100+ uzman ekibimiz ile yanınızdayız.'}
+            </p>
+          </Reveal>
           {/* GÖRSEL: /public/images/team-group.jpg */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto mb-8">
+            <RevealGroup variant="scale">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="aspect-square rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-3xl">
                 👤
               </div>
             ))}
+            </RevealGroup>
           </div>
           <Link
             href={`/${brandKey}/iletisim`}
-            className={`inline-flex items-center gap-2 ${primaryBtn} text-white px-6 py-3 rounded-xl font-semibold transition-colors`}
+            className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors btn-press"
           >
             Bizimle İletişime Geçin
           </Link>

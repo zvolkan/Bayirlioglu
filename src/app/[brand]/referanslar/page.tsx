@@ -3,6 +3,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
 import type { BrandKey } from '@/lib/types'
+import Reveal from '@/components/ui/Reveal'
+import RevealGroup from '@/components/ui/RevealGroup'
 
 const VALID_BRANDS: BrandKey[] = ['alb-su-aritma']
 
@@ -22,14 +24,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // ─── Sektörler ────────────────────────────────────────────────────────────────
 const SECTORS = [
-  { icon: '🏭', label: 'Sanayi & Üretim', count: '150+', color: 'bg-blue-50 border-blue-100' },
-  { icon: '🏥', label: 'Sağlık', count: '60+', color: 'bg-blue-50 border-blue-100' },
-  { icon: '🎓', label: 'Eğitim', count: '45+', color: 'bg-blue-50 border-blue-100' },
-  { icon: '🍽️', label: 'Gıda & Yiyecek', count: '80+', color: 'bg-blue-50 border-blue-100' },
-  { icon: '🏢', label: 'Ofis & Plaza', count: '120+', color: 'bg-blue-50 border-blue-100' },
-  { icon: '🏗️', label: 'Konut & Site', count: '200+', color: 'bg-blue-50 border-blue-100' },
-  { icon: '🏦', label: 'Finans & Kamu', count: '35+', color: 'bg-blue-50 border-blue-100' },
-  { icon: '🏨', label: 'Otel & Turizm', count: '40+', color: 'bg-blue-50 border-blue-100' },
+  { icon: '🏭', label: 'Sanayi & Üretim', count: '150+', color: 'bg-brand-50 border-brand-100' },
+  { icon: '🏥', label: 'Sağlık', count: '60+', color: 'bg-brand-50 border-brand-100' },
+  { icon: '🎓', label: 'Eğitim', count: '45+', color: 'bg-brand-50 border-brand-100' },
+  { icon: '🍽️', label: 'Gıda & Yiyecek', count: '80+', color: 'bg-brand-50 border-brand-100' },
+  { icon: '🏢', label: 'Ofis & Plaza', count: '120+', color: 'bg-brand-50 border-brand-100' },
+  { icon: '🏗️', label: 'Konut & Site', count: '200+', color: 'bg-brand-50 border-brand-100' },
+  { icon: '🏦', label: 'Finans & Kamu', count: '35+', color: 'bg-brand-50 border-brand-100' },
+  { icon: '🏨', label: 'Otel & Turizm', count: '40+', color: 'bg-brand-50 border-brand-100' },
 ]
 
 // ─── Kurumsal Referanslar ─────────────────────────────────────────────────────
@@ -153,7 +155,7 @@ export default async function ReferanslarPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ── HERO ── */}
-      <section className="bg-gradient-to-br from-blue-900 to-blue-950 py-20">
+      <section className="brand-surface py-20">
         <div className="container-main">
           <nav className="text-sm text-white/50 mb-8">
             <Link href={`/${brandKey}`} className="hover:text-white transition-colors">{cfg.name}</Link>
@@ -161,7 +163,7 @@ export default async function ReferanslarPage({ params }: Props) {
             <span className="text-white/80">Referanslarımız</span>
           </nav>
           <div className="max-w-2xl">
-            <p className="font-bold uppercase text-sm tracking-widest mb-3 text-blue-400">
+            <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-400">
               Güven & Deneyim
             </p>
             <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight mb-6">
@@ -179,12 +181,14 @@ export default async function ReferanslarPage({ params }: Props) {
       <section className="py-14 bg-white border-b border-gray-100">
         <div className="container-main">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
+            <RevealGroup variant="scale">
             {STATS.map((s) => (
               <div key={s.label} className="text-center">
-                <p className="text-3xl sm:text-4xl font-black text-blue-600">{s.value}</p>
+                <p className="text-3xl sm:text-4xl font-black text-brand-600">{s.value}</p>
                 <p className="text-sm text-gray-500 mt-1 font-medium">{s.label}</p>
               </div>
             ))}
+            </RevealGroup>
           </div>
         </div>
       </section>
@@ -192,22 +196,26 @@ export default async function ReferanslarPage({ params }: Props) {
       {/* ── SEKTÖRLER ── */}
       <section className="py-16 bg-gray-50">
         <div className="container-main">
-          <div className="text-center mb-12">
-            <p className="font-bold uppercase text-sm tracking-widest mb-2 text-blue-600">Sektörler</p>
-            <h2 className="text-3xl font-black text-gray-900">Hizmet Verdiğimiz Alanlar</h2>
-          </div>
+          <Reveal>
+            <div className="text-center mb-12">
+              <p className="font-bold uppercase text-sm tracking-widest mb-2 text-brand-600">Sektörler</p>
+              <h2 className="text-3xl font-black text-gray-900">Hizmet Verdiğimiz Alanlar</h2>
+            </div>
+          </Reveal>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <RevealGroup itemClassName="h-full">
             {SECTORS.map((s) => (
               <div
                 key={s.label}
-                className={`bg-white rounded-2xl border ${s.color} p-5 text-center hover:shadow-md transition-shadow`}
+                className={`h-full bg-white rounded-2xl border ${s.color} p-5 text-center hover-lift`}
               >
                 <div className="text-3xl mb-3">{s.icon}</div>
                 <p className="font-bold text-gray-900 text-sm mb-1">{s.label}</p>
-                <p className="text-blue-600 text-lg font-black">{s.count}</p>
+                <p className="text-brand-600 text-lg font-black">{s.count}</p>
                 <p className="text-gray-400 text-xs">referans</p>
               </div>
             ))}
+            </RevealGroup>
           </div>
         </div>
       </section>
@@ -215,28 +223,31 @@ export default async function ReferanslarPage({ params }: Props) {
       {/* ── KURUMSAL REFERANSLAR ── */}
       <section className="py-16 bg-white">
         <div className="container-main">
-          <div className="text-center mb-12">
-            <p className="font-bold uppercase text-sm tracking-widest mb-2 text-blue-600">Kurumsal</p>
-            <h2 className="text-3xl font-black text-gray-900">Kurumsal Müşterilerimiz</h2>
-            <p className="text-gray-500 mt-3 max-w-xl mx-auto">
-              Kamu kuruluşlarından özel sektöre, küçük işletmelerden büyük tesislere kadar
-              her ölçekte çözüm üretiyoruz.
-            </p>
-          </div>
+          <Reveal>
+            <div className="text-center mb-12">
+              <p className="font-bold uppercase text-sm tracking-widest mb-2 text-brand-600">Kurumsal</p>
+              <h2 className="text-3xl font-black text-gray-900">Kurumsal Müşterilerimiz</h2>
+              <p className="text-gray-500 mt-3 max-w-xl mx-auto">
+                Kamu kuruluşlarından özel sektöre, küçük işletmelerden büyük tesislere kadar
+                her ölçekte çözüm üretiyoruz.
+              </p>
+            </div>
+          </Reveal>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <RevealGroup itemClassName="h-full">
             {CORPORATE_REFS.map((ref) => (
               <div
                 key={ref.name}
-                className="bg-gray-50 rounded-2xl border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-6"
+                className="group h-full bg-gray-50 rounded-2xl border border-gray-100 hover-lift p-6"
               >
                 {/* Logo placeholder */}
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-2xl mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center text-2xl mb-4 icon-pop">
                   {ref.icon}
                 </div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <h3 className="font-bold text-gray-900 text-sm leading-tight">{ref.name}</h3>
                 </div>
-                <span className="inline-block bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full mb-3">
+                <span className="inline-block bg-brand-100 text-brand-700 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full mb-3">
                   {ref.sector}
                 </span>
                 <p className="text-gray-600 text-xs leading-relaxed mb-4">{ref.desc}</p>
@@ -246,6 +257,7 @@ export default async function ReferanslarPage({ params }: Props) {
                 </div>
               </div>
             ))}
+            </RevealGroup>
           </div>
           <p className="text-center text-gray-400 text-sm mt-8">
             ve 700'den fazla bireysel & kurumsal referansımız daha…
@@ -256,15 +268,18 @@ export default async function ReferanslarPage({ params }: Props) {
       {/* ── MÜŞTERİ YORUMLARI ── */}
       <section className="py-16 bg-gray-50">
         <div className="container-main">
-          <div className="text-center mb-12">
-            <p className="font-bold uppercase text-sm tracking-widest mb-2 text-blue-600">Yorumlar</p>
-            <h2 className="text-3xl font-black text-gray-900">Müşterilerimiz Ne Diyor?</h2>
-          </div>
+          <Reveal>
+            <div className="text-center mb-12">
+              <p className="font-bold uppercase text-sm tracking-widest mb-2 text-brand-600">Yorumlar</p>
+              <h2 className="text-3xl font-black text-gray-900">Müşterilerimiz Ne Diyor?</h2>
+            </div>
+          </Reveal>
           <div className="grid sm:grid-cols-2 gap-6">
+            <RevealGroup itemClassName="h-full">
             {TESTIMONIALS.map((t) => (
               <div
                 key={t.name}
-                className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
+                className="h-full bg-white rounded-2xl border border-gray-100 p-6 hover-lift"
               >
                 {/* Yıldızlar */}
                 <div className="flex gap-0.5 mb-4">
@@ -274,7 +289,7 @@ export default async function ReferanslarPage({ params }: Props) {
                 </div>
                 <p className="text-gray-700 leading-relaxed mb-5 italic">&ldquo;{t.text}&rdquo;</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-black text-xs">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-black text-xs">
                     {t.avatar}
                   </div>
                   <div>
@@ -284,27 +299,30 @@ export default async function ReferanslarPage({ params }: Props) {
                 </div>
               </div>
             ))}
+            </RevealGroup>
           </div>
         </div>
       </section>
 
       {/* ── CTA ── */}
-      <section className="bg-gradient-to-br from-blue-900 to-blue-950 py-16">
+      <section className="brand-surface py-16">
         <div className="container-main text-center text-white">
-          <h2 className="text-3xl font-black mb-4">Siz de Referanslarımız Arasına Katılın</h2>
-          <p className="text-white/70 text-lg mb-8 max-w-xl mx-auto">
-            Ücretsiz su analizi ve kurulum keşfi için hemen iletişime geçin. Size özel çözüm sunalım.
-          </p>
+          <Reveal>
+            <h2 className="text-3xl font-black mb-4">Siz de Referanslarımız Arasına Katılın</h2>
+            <p className="text-white/70 text-lg mb-8 max-w-xl mx-auto">
+              Ücretsiz su analizi ve kurulum keşfi için hemen iletişime geçin. Size özel çözüm sunalım.
+            </p>
+          </Reveal>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href={`/${brandKey}/iletisim`}
-              className="bg-white text-blue-900 px-8 py-4 rounded-xl font-semibold text-base hover:bg-blue-50 transition-colors"
+              className="bg-white text-brand-900 px-8 py-4 rounded-xl font-semibold text-base hover:bg-brand-50 transition-colors btn-press"
             >
               Ücretsiz Keşif Talep Et
             </Link>
             <Link
               href={`/${brandKey}/urunler`}
-              className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-base hover:bg-white/10 transition-colors"
+              className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-base hover:bg-white/10 transition-colors btn-press"
             >
               Ürünlerimizi İncele
             </Link>

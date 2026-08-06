@@ -5,7 +5,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { cn, formatPrice, calculateDiscount } from '@/lib/utils'
-import { BRAND } from '@/lib/constants'
 import { useCartStore } from '@/store/cartStore'
 import { shouldShowRating } from '@/lib/reviews'
 import { toggleFavorite } from '@/app/actions/favorites'
@@ -75,7 +74,7 @@ export default function ProductCard({
       )}
     >
       {/* ─── GÖRSEL ALANI ─────────────────────────────────────────────── */}
-      <Link href={`/${product.brand}/urunler/${product.slug}`} className="relative block aspect-square bg-gray-100 overflow-hidden">
+      <Link href={`/${product.brand}/urunler/${product.slug}`} className="img-zoom relative block aspect-square bg-gray-100 overflow-hidden">
         {/* GÖRSEL: /public/images/products/ klasörüne ürün görsellerini ekleyin */}
         {primaryImage ? (
           <Image
@@ -83,7 +82,7 @@ export default function ProductCard({
             alt={primaryImage.alt || product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            className="img-zoom-target object-cover"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300">
@@ -166,13 +165,11 @@ export default function ProductCard({
           {product.category.name}
         </p>
 
-        {/* Ürün adı */}
+        {/* Ürün adı — hover tonu koyu başlık çubuğu için tanımlı açık renk
+            yerine, beyaz kart üzerinde okunan marka tonu */}
         <Link
           href={`/${product.brand}/urunler/${product.slug}`}
-          className={cn(
-            'font-semibold text-gray-900 line-clamp-2 transition-colors duration-150',
-            BRAND.colors.navHover
-          )}
+          className="font-semibold text-gray-900 line-clamp-2 transition-colors duration-150 hover:text-brand-600"
         >
           {product.name}
         </Link>
@@ -212,12 +209,12 @@ export default function ProductCard({
               <span className="text-sm text-gray-400 line-through">
                 {formatPrice(product.price)}
               </span>
-              <span className={cn('text-xl font-black', BRAND.colors.primaryText)}>
+              <span className="text-xl font-black text-brand-600">
                 {formatPrice(product.salePrice!)}
               </span>
             </>
           ) : (
-            <span className={cn('text-xl font-black', BRAND.colors.primaryText)}>
+            <span className="text-xl font-black text-brand-600">
               {formatPrice(product.price)}
             </span>
           )}
@@ -230,7 +227,7 @@ export default function ProductCard({
           className={cn(
             'btn-press w-full rounded-xl py-2.5 px-4 text-sm font-semibold text-white shadow-sm',
             'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0',
-            BRAND.colors.accentPrimary
+            'bg-brand-600 hover:bg-brand-500 shadow-brand-600/30 focus:ring-brand-500'
           )}
         >
           {isOutOfStock ? 'Tükendi' : 'Sepete Ekle'}

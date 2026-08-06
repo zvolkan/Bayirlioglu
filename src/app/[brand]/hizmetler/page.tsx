@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
 import { TESLIMAT_SURESI } from '@/lib/checkout'
 import type { BrandKey } from '@/lib/types'
+import Reveal from '@/components/ui/Reveal'
+import RevealGroup from '@/components/ui/RevealGroup'
 
 const VALID_BRANDS: BrandKey[] = ['alb-tarim', 'alb-su-aritma']
 
@@ -108,23 +110,17 @@ export default async function HizmetlerPage({ params }: Props) {
   const cfg = BRANDS[brandKey]
   const services = isAlbSu ? ALBSU_SERVICES : TARIM_SERVICES
 
-  const heroBg = isAlbSu ? 'from-blue-900 to-blue-950' : 'from-green-900 to-emerald-950'
-  const accentText = isAlbSu ? 'text-blue-600' : 'text-green-600'
-  const primaryBtn = isAlbSu ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'
-  const cardBorder = isAlbSu ? 'border-blue-100 hover:border-blue-200 hover:shadow-blue-50' : 'border-green-100 hover:border-green-200 hover:shadow-green-50'
-  const tagText = isAlbSu ? 'text-blue-500' : 'text-green-500'
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <section className={`bg-gradient-to-br ${heroBg} py-16`}>
+      <section className="brand-surface py-16">
         <div className="container-main text-center">
           <nav className="text-sm text-white/50 mb-6">
             <Link href={`/${brandKey}`} className="hover:text-white transition-colors">{cfg.name}</Link>
             <span className="mx-2">/</span>
             <span className="text-white/80">Hizmetler</span>
           </nav>
-          <p className={`font-bold uppercase text-sm tracking-widest mb-3 ${isAlbSu ? 'text-blue-400' : 'text-green-400'}`}>
+          <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-400">
             Hizmetlerimiz
           </p>
           <h1 className="text-3xl sm:text-4xl font-black text-white mb-4">
@@ -141,10 +137,11 @@ export default async function HizmetlerPage({ params }: Props) {
       {/* Hizmetler Grid */}
       <section className="py-16 container-main">
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <RevealGroup itemClassName="h-full">
           {services.map((svc) => (
             <div
               key={svc.title}
-              className={`bg-white rounded-2xl border ${cardBorder} p-7 hover:shadow-lg transition-all duration-200`}
+              className="h-full bg-white rounded-2xl border border-brand-100 hover:border-brand-200 p-7 hover-lift"
             >
               <div className="text-4xl mb-5">{svc.icon}</div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">{svc.title}</h3>
@@ -152,27 +149,30 @@ export default async function HizmetlerPage({ params }: Props) {
               <ul className="space-y-2">
                 {svc.features.map((f) => (
                   <li key={f} className="flex items-center gap-2 text-sm text-gray-700">
-                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isAlbSu ? 'bg-blue-500' : 'bg-green-500'}`} />
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-brand-500" />
                     {f}
                   </li>
                 ))}
               </ul>
             </div>
           ))}
+          </RevealGroup>
         </div>
       </section>
 
       {/* CTA */}
-      <section className={`py-16 bg-gradient-to-br ${heroBg}`}>
+      <section className="py-16 brand-surface">
         <div className="container-main text-center">
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">
-            Hizmet Almaya Hazır mısınız?
-          </h2>
-          <p className="text-white/60 mb-8">Uzman ekibimiz sizin için burada.</p>
+          <Reveal>
+            <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">
+              Hizmet Almaya Hazır mısınız?
+            </h2>
+            <p className="text-white/60 mb-8">Uzman ekibimiz sizin için burada.</p>
+          </Reveal>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               href={`/${brandKey}/iletisim`}
-              className={`${primaryBtn} text-white px-8 py-3.5 rounded-xl font-bold transition-colors shadow-lg`}
+              className="bg-brand-600 hover:bg-brand-500 text-white px-8 py-3.5 rounded-xl font-bold transition-colors shadow-lg btn-press"
             >
               Hizmet Talebi Oluştur
             </Link>

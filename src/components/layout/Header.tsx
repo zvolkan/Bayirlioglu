@@ -13,20 +13,14 @@ import MobileUserSection from '@/components/layout/MobileUserSection'
 
 // ─── BRAND SWITCHER ───────────────────────────────────────────────────────────
 
-const BRAND_TABS: { key: BrandKey; label: string; icon: string; activeColor: string }[] = [
-  {
-    key: 'alb-tarim',
-    label: 'ALB Tarım',
-    icon: '🌱',
-    activeColor: 'bg-green-600 text-white shadow-green-700/30 shadow-lg',
-  },
-  {
-    key: 'alb-su-aritma',
-    label: 'Alb Su Teknolojileri',
-    icon: '💧',
-    activeColor: 'bg-blue-600 text-white shadow-blue-700/30 shadow-lg',
-  },
+const BRAND_TABS: { key: BrandKey; label: string; icon: string }[] = [
+  { key: 'alb-tarim', label: 'ALB Tarım', icon: '🌱' },
+  { key: 'alb-su-aritma', label: 'Alb Su Teknolojileri', icon: '💧' },
 ]
+
+// Seçili sekme her zaman o an açık olan markadır, dolayısıyla aktif marka
+// değişkenleri doğru rengi getiriyor; sekme başına ayrı renk gerekmiyor.
+const ACTIVE_TAB_CLASS = 'bg-brand-600 text-white shadow-brand-700/30 shadow-lg'
 
 // ─── HEADER COMPONENT ─────────────────────────────────────────────────────────
 
@@ -69,15 +63,14 @@ export default function Header() {
       ? 'bg-gray-900/95 backdrop-blur-xl shadow-2xl shadow-black/20'
       : 'bg-gray-900'
 
-  const accentColor = activeBrandKey === 'alb-su-aritma'
-    ? 'bg-blue-600 hover:bg-blue-500'
-    : activeBrandKey === 'alb-tarim'
-    ? 'bg-green-600 hover:bg-green-500'
-    : 'bg-gray-700 hover:bg-gray-600'
+  // Marka dışı sayfalarda (grup ana sayfası) marka değişkenleri nötr griye
+  // düştüğü için ayrıca "marka yoksa gri" dalı tutmaya gerek kalmadı.
+  const accentColor = 'bg-brand-600 hover:bg-brand-500'
 
-  const navHover = activeBrandKey === 'alb-su-aritma' ? 'hover:text-blue-300' : 'hover:text-green-300'
-  const dropdownAccent = activeBrandKey === 'alb-su-aritma' ? 'bg-blue-500' : 'bg-green-500'
-  const dropdownDot    = activeBrandKey === 'alb-su-aritma' ? 'bg-blue-400/60' : 'bg-green-400/60'
+  // Nav ve dropdown yalnızca marka sayfalarında görünüyor; buradaki marka
+  // tonları grup ana sayfasına sızmıyor.
+  const navHover = 'hover:text-brand-400'
+  const dropdownDot = 'bg-brand-400/60'
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30)
@@ -207,7 +200,7 @@ export default function Header() {
                     onClick={() => handleBrandSwitch(tab.key)}
                     className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                       activeBrandKey === tab.key
-                        ? tab.activeColor
+                        ? ACTIVE_TAB_CLASS
                         : 'text-white/60 hover:text-white hover:bg-white/10'
                     }`}
                   >
@@ -375,7 +368,7 @@ export default function Header() {
                     onClick={() => { handleBrandSwitch(tab.key); setMenuOpen(false) }}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                       activeBrandKey === tab.key
-                        ? tab.activeColor
+                        ? ACTIVE_TAB_CLASS
                         : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
                     }`}
                   >

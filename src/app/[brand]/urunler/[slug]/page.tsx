@@ -8,6 +8,8 @@ import { getProductBySlug, getRelatedProducts } from '@/lib/queries/products'
 import { shouldShowRating } from '@/lib/reviews'
 import type { BrandKey } from '@/lib/types'
 import QuantityAddToCart from '@/components/product/QuantityAddToCart'
+import Reveal from '@/components/ui/Reveal'
+import RevealGroup from '@/components/ui/RevealGroup'
 import { KARGO_LIMIT, KARGO_UCRETI, TESLIMAT_SURESI } from '@/lib/checkout'
 
 interface Props {
@@ -52,10 +54,10 @@ export default async function ProductDetailPage({ params }: Props) {
   if (!product) notFound()
 
   const cfg = BRANDS[brandKey] ?? BRANDS['alb-tarim']
-  const isAlbSu = brandKey === 'alb-su-aritma'
-  const accentText = isAlbSu ? 'text-blue-600' : 'text-green-600'
-  const primaryBtn = isAlbSu ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'
-  const badgeBg = isAlbSu ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+  // Marka tonları <html data-brand="..."> üzerinden geliyor
+  const accentText = 'text-brand-600'
+  const primaryBtn = 'bg-brand-600 hover:bg-brand-500'
+  const badgeBg = 'bg-brand-100 text-brand-700'
 
   const displayPrice = product.salePrice ?? product.price
   const discount = product.salePrice
@@ -243,7 +245,7 @@ export default async function ProductDetailPage({ params }: Props) {
               <div className="flex flex-col sm:flex-row gap-3 mt-auto">
                 <QuantityAddToCart
                   product={product}
-                  className={`flex-1 ${primaryBtn} text-white py-3.5 px-6 rounded-xl font-bold transition-colors text-center disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`btn-press flex-1 ${primaryBtn} text-white py-3.5 px-6 rounded-xl font-bold text-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0`}
                 />
                 <a
                   href={`https://wa.me/${cfg.whatsapp.phone}?text=${encodeURIComponent(`${cfg.whatsapp.message} Ürün: ${product.name}`)}`}
@@ -276,6 +278,7 @@ export default async function ProductDetailPage({ params }: Props) {
         </div>
 
         {/* ── Detaylı Açıklama ── */}
+        <Reveal>
         <div className="mt-8 bg-white rounded-2xl border border-gray-100 p-4 sm:p-8">
           <h2 className="text-lg font-black text-gray-900 mb-4">Ürün Detayları</h2>
           <p className="text-gray-600 leading-relaxed mb-6">{product.description}</p>
@@ -309,25 +312,29 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
           )}
         </div>
+        </Reveal>
 
         {/* ── İlgili Ürünler ── */}
         {related.length > 0 && (
           <div className="mt-10">
-            <h2 className="text-xl font-black text-gray-900 mb-6">Benzer Ürünler</h2>
+            <Reveal>
+              <h2 className="text-xl font-black text-gray-900 mb-6">Benzer Ürünler</h2>
+            </Reveal>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <RevealGroup itemClassName="h-full">
               {related.map((p) => (
                 <Link
                   key={p.slug}
                   href={`/${brandKey}/urunler/${p.slug}`}
-                  className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+                  className="group block h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift"
                 >
-                  <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl relative overflow-hidden">
+                  <div className="img-zoom aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl relative overflow-hidden">
                     <ProductImage
                       src={p.images?.[0]?.url ?? ''}
                       alt={p.images?.[0]?.alt || p.name}
                       fallback={p.category.icon || '📦'}
                       fill
-                      className="object-contain p-3"
+                      className="img-zoom-target object-contain p-3"
                       sizes="200px"
                     />
                   </div>
@@ -339,6 +346,7 @@ export default async function ProductDetailPage({ params }: Props) {
                   </div>
                 </Link>
               ))}
+              </RevealGroup>
             </div>
           </div>
         )}

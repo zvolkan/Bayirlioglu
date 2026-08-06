@@ -14,19 +14,22 @@ const YASAL_LINKS = [
   { label: 'KVKK Aydınlatma Metni', href: '/kvkk' },
 ]
 
+// İki marka rozeti footer'da yan yana duruyor; bu yüzden aktif markaya bağlı
+// `brand-*` değil, her markanın kendi sabit paleti kullanılıyor — yoksa ikisi
+// aynı renge düşer ve grup ana sayfasında ikisi de griye dönerdi.
 const MARKALAR = [
   {
     key: 'alb-tarim',
     name: 'ALB Tarım',
     desc: 'Gübre, sulama, tarım ilaçları ve ekipman',
-    color: 'bg-green-600',
+    color: 'bg-tarim-600',
     href: '/alb-tarim',
   },
   {
     key: 'alb-su-aritma',
     name: 'Alb Su Teknolojileri',
     desc: 'Su arıtma, klima ve enerji sistemleri',
-    color: 'bg-blue-600',
+    color: 'bg-albsu-600',
     href: '/alb-su-aritma',
   },
 ]

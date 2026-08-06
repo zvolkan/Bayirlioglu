@@ -1,12 +1,15 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import '@/styles/animations.css'
+import '@/styles/brand.css'
 import { BRAND, SITE_CONFIG, ACTIVE_BRAND_KEY } from '@/lib/constants'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 import PageTransition from '@/components/layout/PageTransition'
+import ScrollProgress from '@/components/layout/ScrollProgress'
 import CookieConsent from '@/components/layout/CookieConsent'
 import { Toaster } from 'react-hot-toast'
 
@@ -28,9 +31,29 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+/**
+ * Aktif markayı yoldan çözer.
+ *
+ * Marka renkleri CSS değişkenleriyle geliyor ve Header/Footer kök düzende
+ * olduğu için değişkenlerin <html> üzerinde tanımlı olması gerekiyor.
+ * Middleware her istekte `x-pathname` başlığını gönderiyor.
+ */
+async function resolveBrand(): Promise<'alb-tarim' | 'alb-su-aritma' | 'grup'> {
+  const pathname = (await headers()).get('x-pathname') ?? ''
+  if (pathname.startsWith('/alb-su-aritma')) return 'alb-su-aritma'
+  // Grup ana sayfası kendi kimliğini kullanıyor. Sepet, ödeme, hesap gibi
+  // ortak sayfalarda ana marka olan ALB Tarım geçerli sayılıyor; buralarda
+  // birincil butonlar zaten nötr koyu renkte, marka rengi yalnızca ikincil
+  // vurgu olarak görünüyor.
+  if (pathname === '/') return 'grup'
+  return 'alb-tarim'
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const brand = await resolveBrand()
+
   return (
-    <html lang="tr" className={inter.variable}>
+    <html lang="tr" data-brand={brand} className={inter.variable}>
       <body>
         {/* Klavye kullanıcıları için: sekme ile odaklanınca görünür olur */}
         <a
@@ -62,6 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }),
           }}
         />
+        <ScrollProgress />
         <Header />
         <main id="ana-icerik" tabIndex={-1}>
           <PageTransition>{children}</PageTransition>

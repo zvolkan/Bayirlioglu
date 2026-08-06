@@ -44,7 +44,6 @@ export default function UrunlerContent({
   const addItem = useCartStore((s) => s.addItem)
   const [isPending, startTransition] = useTransition()
 
-  const isAlbSu = brandKey === 'alb-su-aritma'
   const cfg = BRANDS[brandKey] ?? BRANDS['alb-tarim']
 
   // ── URL parametreleri ─────────────────────────────────────────────────────
@@ -58,15 +57,15 @@ export default function UrunlerContent({
   const inStockOnly = searchParams.get('stokta') === '1'
 
   // ── Renk sistemi ─────────────────────────────────────────────────────────
-  const accentText = isAlbSu ? 'text-blue-600' : 'text-green-700'
-  const accentBg = isAlbSu ? 'bg-blue-600' : 'bg-green-600'
-  const accentHover = isAlbSu ? 'hover:bg-blue-500' : 'hover:bg-green-500'
-  const accentBorder = isAlbSu ? 'border-b-blue-600' : 'border-b-green-600'
-  const accentLight = isAlbSu ? 'bg-blue-50/60' : 'bg-green-50/60'
-  const accentTag = isAlbSu ? 'text-blue-500' : 'text-green-600'
-  const pillActive = isAlbSu
-    ? 'bg-blue-600 hover:bg-blue-500 text-white border-transparent shadow-sm'
-    : 'bg-green-600 hover:bg-green-500 text-white border-transparent shadow-sm'
+  // Marka tonları <html data-brand="..."> üzerinden geliyor; burada artık
+  // markaya göre dallanmaya gerek yok.
+  const accentText = 'text-brand-600'
+  const accentBg = 'bg-brand-600'
+  const accentHover = 'hover:bg-brand-500'
+  const accentBorder = 'border-b-brand-600'
+  const accentLight = 'bg-brand-50/60'
+  const accentTag = 'text-brand-500'
+  const pillActive = 'bg-brand-600 hover:bg-brand-500 text-white border-transparent shadow-sm'
   const pillInactive =
     'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:text-gray-800'
 
@@ -703,76 +702,80 @@ function ProductGrid({
         const isOutOfStock = product.stock === 0
 
         return (
+          // Giriş animasyonu ile hover-lift ayrı katmanlarda: `anim-fade-up`
+          // dolgusu transform'u sabitlediği için aynı öğede kalkma çalışmıyor.
           <div
             key={product.slug}
             style={{ animationDelay: `${Math.min(index, 12) * 45}ms` }}
-            className="anim-fade-up group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1.5 hover:border-gray-200 transition-all duration-300 flex flex-col"
+            className="anim-fade-up"
           >
-            {/* Görsel */}
-            <Link href={`/${brandKey}/urunler/${product.slug}`}>
-              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center relative overflow-hidden">
-                <ProductImage
-                  src={primaryImg}
-                  alt={product.name}
-                  fallback={product.category.icon || '📦'}
-                  fill
-                  className="object-contain p-5 group-hover:scale-110 group-hover:-rotate-1 transition-transform duration-500 ease-out"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                />
-                {disc && (
-                  <span className="absolute top-2.5 left-2.5 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 shadow-sm">
-                    -%{disc}
-                  </span>
-                )}
-                {product.isFeatured && !disc && (
-                  <span
-                    className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full text-white z-10 shadow-sm ${accentBg}`}
-                  >
-                    ⭐ Öne Çıkan
-                  </span>
-                )}
-                {isOutOfStock && (
-                  <span className="absolute bottom-2.5 left-2.5 bg-gray-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
-                    Tükendi
-                  </span>
-                )}
-              </div>
-            </Link>
-
-            {/* İçerik */}
-            <div className="p-4 flex flex-col flex-1">
-              <p
-                className={`text-[10px] font-bold uppercase tracking-widest ${accentTag} mb-1 truncate`}
-              >
-                {brandLabel}
-              </p>
+            <div className="group h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift hover:border-gray-200 flex flex-col">
+              {/* Görsel */}
               <Link href={`/${brandKey}/urunler/${product.slug}`}>
-                <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2 group-hover:text-gray-700 transition-colors">
-                  {product.name}
-                </h3>
-              </Link>
-              <div className="mt-auto">
-                <div className="flex items-end gap-2 mb-3">
-                  <p className={`font-black text-lg ${accentText}`}>
-                    {displayPrice.toLocaleString('tr-TR')} ₺
-                  </p>
-                  {product.salePrice && (
-                    <p className="text-gray-400 text-xs line-through mb-0.5">
-                      {product.price.toLocaleString('tr-TR')} ₺
-                    </p>
+                <div className="img-zoom aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center relative overflow-hidden">
+                  <ProductImage
+                    src={primaryImg}
+                    alt={product.name}
+                    fallback={product.category.icon || '📦'}
+                    fill
+                    className="img-zoom-target object-contain p-5"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                  />
+                  {disc && (
+                    <span className="absolute top-2.5 left-2.5 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 shadow-sm">
+                      -%{disc}
+                    </span>
+                  )}
+                  {product.isFeatured && !disc && (
+                    <span
+                      className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full text-white z-10 shadow-sm ${accentBg}`}
+                    >
+                      ⭐ Öne Çıkan
+                    </span>
+                  )}
+                  {isOutOfStock && (
+                    <span className="absolute bottom-2.5 left-2.5 bg-gray-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
+                      Tükendi
+                    </span>
                   )}
                 </div>
-                <button
-                  onClick={() => handleAddToCart(product)}
-                  disabled={isOutOfStock}
-                  className={`btn-press w-full text-sm py-2.5 rounded-xl font-semibold disabled:hover:translate-y-0 ${
-                    isOutOfStock
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : `${accentBg} ${accentHover} text-white`
-                  }`}
+              </Link>
+
+              {/* İçerik */}
+              <div className="p-4 flex flex-col flex-1">
+                <p
+                  className={`text-[10px] font-bold uppercase tracking-widest ${accentTag} mb-1 truncate`}
                 >
-                  {isOutOfStock ? 'Tükendi' : 'Sepete Ekle'}
-                </button>
+                  {brandLabel}
+                </p>
+                <Link href={`/${brandKey}/urunler/${product.slug}`}>
+                  <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2 group-hover:text-gray-700 transition-colors">
+                    {product.name}
+                  </h3>
+                </Link>
+                <div className="mt-auto">
+                  <div className="flex items-end gap-2 mb-3">
+                    <p className={`font-black text-lg ${accentText}`}>
+                      {displayPrice.toLocaleString('tr-TR')} ₺
+                    </p>
+                    {product.salePrice && (
+                      <p className="text-gray-400 text-xs line-through mb-0.5">
+                        {product.price.toLocaleString('tr-TR')} ₺
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    disabled={isOutOfStock}
+                    className={`btn-press w-full text-sm py-2.5 rounded-xl font-semibold disabled:hover:translate-y-0 ${
+                      isOutOfStock
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : `${accentBg} ${accentHover} text-white`
+                    }`}
+                  >
+                    {isOutOfStock ? 'Tükendi' : 'Sepete Ekle'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

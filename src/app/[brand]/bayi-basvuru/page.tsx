@@ -50,11 +50,8 @@ export default function BayiBasvuruPage() {
   const cfg = BRANDS[brandKey] ?? BRANDS['alb-tarim']
   const benefits = isAlbSu ? BENEFITS_ALBSU : BENEFITS_TARIM
 
-  const heroBg = isAlbSu ? 'from-blue-900 to-blue-950' : 'from-green-900 to-emerald-950'
-  const primaryBtn = isAlbSu ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'
-  const accentText = isAlbSu ? 'text-blue-600' : 'text-green-600'
-  const focusBorder = isAlbSu ? 'focus:border-blue-400 focus:ring-blue-400/20' : 'focus:border-green-400 focus:ring-green-400/20'
-  const tagColor = isAlbSu ? 'text-blue-400' : 'text-green-400'
+  // Form odak rengi tek yerde dursun diye değişkende kaldı
+  const focusBorder = 'focus:border-brand-400 focus:ring-brand-400/20'
 
   const {
     register,
@@ -92,14 +89,14 @@ export default function BayiBasvuruPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <section className={`bg-gradient-to-br ${heroBg} py-16`}>
+      <section className="brand-surface py-16">
         <div className="container-main">
           <nav className="text-sm text-white/50 mb-6">
             <Link href={`/${brandKey}`} className="hover:text-white">{cfg.name}</Link>
             <span className="mx-2">/</span>
             <span className="text-white/80">Bayi Başvurusu</span>
           </nav>
-          <p className={`font-bold uppercase text-sm tracking-widest mb-3 ${tagColor}`}>Bayilik</p>
+          <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-400">Bayilik</p>
           <h1 className="text-3xl sm:text-4xl font-black text-white mb-4">
             {cfg.name} Bayisi Olun
           </h1>
@@ -119,7 +116,7 @@ export default function BayiBasvuruPage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {benefits.map((b) => (
-              <div key={b.title} className="flex gap-4 p-5 bg-gray-50 rounded-2xl">
+              <div key={b.title} className="flex gap-4 p-5 bg-gray-50 rounded-2xl hover-lift">
                 <div className="text-2xl">{b.icon}</div>
                 <div>
                   <p className="font-bold text-gray-900 text-sm">{b.title}</p>
@@ -257,9 +254,9 @@ export default function BayiBasvuruPage() {
                   className="mt-1 rounded"
                 />
                 <label htmlFor="terms" className="text-sm text-gray-600">
-                  <Link href="/kullanim-kosullari" className={`${accentText} underline`}>Kullanım koşullarını</Link>{' '}
+                  <Link href="/kullanim-kosullari" className="text-brand-600 underline">Kullanım koşullarını</Link>{' '}
                   ve{' '}
-                  <Link href="/gizlilik" className={`${accentText} underline`}>gizlilik politikasını</Link>{' '}
+                  <Link href="/gizlilik" className="text-brand-600 underline">gizlilik politikasını</Link>{' '}
                   okudum, kabul ediyorum.
                 </label>
               </div>
@@ -268,7 +265,7 @@ export default function BayiBasvuruPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full ${primaryBtn} text-white py-3.5 rounded-xl font-bold transition-colors disabled:opacity-60`}
+                className="w-full bg-brand-600 hover:bg-brand-500 text-white py-3.5 rounded-xl font-bold transition-colors disabled:opacity-60 btn-press"
               >
                 {isSubmitting ? 'Gönderiliyor...' : 'Başvuru Gönder'}
               </button>
