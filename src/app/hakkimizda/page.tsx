@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Hakkımızda | Bayırlıoğlu Grup',
+  title: 'Hakkımızda | Bayırlıoğlu',
   description:
-    '2006 yılından bu yana tarım ve su teknolojileri alanında faaliyet gösteren Bayırlıoğlu Grup hakkında bilgi edinin.',
+    '2006 yılından bu yana tarım ve su teknolojileri alanında faaliyet gösteren Bayırlıoğlu hakkında bilgi edinin.',
 }
 
 // Doğrulanamayan rakamlar kaldırıldı. Gerçek değerleriniz olduğunda buraya
@@ -103,7 +103,7 @@ export default function HakkimizdaPage() {
       <section className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-20 sm:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl text-center text-white">
           <p className="text-gray-400 text-sm font-semibold uppercase tracking-widest mb-3">
-            Bayırlıoğlu Grup
+            Bayırlıoğlu
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Hakkımızda</h1>
           <p className="text-xl text-white/75 font-medium max-w-xl mx-auto">

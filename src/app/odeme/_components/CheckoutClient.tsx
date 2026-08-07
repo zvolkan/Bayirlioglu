@@ -4,11 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useCartStore } from '@/store/cartStore'
 import { KARGO_LIMIT, TESLIMAT_SURESI, calculateTotals } from '@/lib/checkout'
-import { SITE_CONFIG } from '@/lib/constants'
-
-// Sözleşme metinlerinde kullanılacak gerçek alan adı ve iletişim bilgileri
-const SITE_DOMAIN = SITE_CONFIG.url.replace(/^https?:\/\//, '').replace(/\/+$/, '')
-const SITE_EMAIL = SITE_CONFIG.email
+import { ON_BILGILENDIRME, MESAFELI_SATIS, CAYMA_HAKKI } from '@/lib/legal'
 
 type SavedAddress = {
   id: string
@@ -30,82 +26,6 @@ type Props = {
 function formatPrice(n: number) {
   return n.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })
 }
-
-// ── Sözleşme metinleri ────────────────────────────────────────────────────────
-
-const ON_BILGILENDIRME = `ÖN BİLGİLENDİRME FORMU
-
-1. TARAFLAR VE KONU
-İşbu Ön Bilgilendirme Formu'nun konusu, Alıcı ile Satıcı arasındaki Sözleşme'ye ilişkin Kanun ve Yönetmelik hükümleri uyarınca bilgilendirilmesidir. Ayrıca Yönetmelik uyarınca yer verilmesi zorunlu olan hususlar Ön Bilgilendirme Formu'nda yer almaktadır.
-
-2. TANIMLAR
-Ön Bilgilendirme Formu ve Sözleşme'nin uygulanmasında ve yorumlanmasında aşağıda yazılı terimler karşılarındaki yazılı açıklamaları ifade edeceklerdir.
-
-ALICI: Mal veya Hizmeti ticari veya mesleki olmayan amaçlarla edinen, kullanan veya yararlanan gerçek kişiyi,
-SATICI: Bayırlıoğlu Grup (${SITE_DOMAIN}) üzerinden satış yapan firmayı,
-SİTE: ${SITE_DOMAIN} adresini,
-
-3. SATICI BİLGİLERİ
-Ticaret Unvanı: Bayırlıoğlu Grup
-E-posta: ${SITE_EMAIL}
-Web Adresi: ${SITE_DOMAIN}
-Adres: ${SITE_CONFIG.address}
-
-4. TEMEL ÖZELLİKLER
-Mal veya Hizmetin temel nitelikleri Site'de yayınlanan ürün/hizmet sayfalarında belirtilmektedir. Kampanya süresince geçerli olan satış fiyatı Siparişinizi verdiğiniz tarihteki fiyattır.
-
-5. ÖDEME ve TESLİMAT
-Sipariş toplamı, seçilen ödeme yöntemi ile tahsil edilecektir. Teslimat, sipariş onayından itibaren en geç ${TESLIMAT_SURESI} içinde gerçekleştirilecektir.
-
-6. KİŞİSEL VERİLERİN KORUNMASI
-Kişisel verileriniz 6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında korunmaktadır.`
-
-const MESAFELI_SATIS = `MESAFELİ SATIŞ SÖZLEŞMESİ
-
-1. TARAFLAR
-İşbu Mesafeli Satış Sözleşmesi ("Sözleşme"), Alıcı ile Satıcı arasında aşağıda belirtilen hüküm ve şartlar çerçevesinde elektronik ortamda kurulmuştur.
-
-SATICI:
-Ticaret Unvanı: Bayırlıoğlu Grup
-Adres: Anamur, Mersin
-E-posta: ${SITE_EMAIL}
-
-ALICI: Sipariş sırasında beyan edilen ad-soyad, adres ve iletişim bilgilerine sahip kişi.
-
-2. KONU
-İşbu Sözleşme, Alıcının, Satıcı'ya ait ${SITE_DOMAIN} internet sitesinden elektronik ortamda siparişini verdiği ürünlerin satışı ve teslimatına ilişkin olarak 6502 sayılı Tüketicinin Korunması Hakkındaki Kanun ve Mesafeli Sözleşmelere Dair Yönetmelik hükümleri gereğince tarafların hak ve yükümlülüklerini düzenlemektedir.
-
-3. ÜRÜN BİLGİLERİ
-Malın/Ürünün temel özellikleri (türü, miktarı, marka/modeli, rengi, adedi) Satıcı'ya ait internet sitesinde yayınlanmaktadır. Kampanya tarihine kadar geçerli olan satış fiyatı sipariş formunda belirtilmektedir.
-
-4. GENEL HÜKÜMLER
-4.1. Alıcı, Satıcı'ya ait internet sitesinde sözleşme konusu ürünün temel nitelikleri, satış fiyatı ve ödeme şekli ile teslimat ve kargo masraflarına ilişkin ön bilgileri okuyup bilgi sahibi olduğunu ve elektronik ortamda gerekli teyidi verdiğini beyan eder.
-
-4.2. Sözleşme konusu ürün, yasal 30 günlük süreyi aşmamak koşulu ile her bir ürün için Alıcı'nın sipariş formundaki adresine, kargo şirketi aracılığıyla teslim edilecektir.
-
-4.3. Sözleşme konusu ürün, Alıcı'dan başka bir kişi/kuruluşa teslim edilecek ise, teslim edilecek kişi/kuruluşun teslimatı kabul etmemesinden Satıcı sorumlu tutulamaz.
-
-5. CAYMA HAKKI
-Alıcı, 14 gün içinde herhangi bir gerekçe göstermeksizin ve cezai şart ödemeksizin sözleşmeden cayma hakkına sahiptir. Cayma hakkı süresi, hizmet ifasına ilişkin sözleşmelerde sözleşmenin kurulduğu gün; mal teslimine ilişkin sözleşmelerde ise tüketicinin veya tüketici tarafından belirlenen üçüncü kişinin malı teslim aldığı gün başlar.`
-
-const CAYMA_HAKKI = `CAYMA HAKKI
-
-Cayma Hakkı Nedir? Nasıl Kullanılır?
-7/11/2013 tarihli ve 6502 sayılı Tüketicinin Korunması Hakkında Kanunun 48 inci ve 84 üncü maddelerine dayanılarak hazırlanmış olan Mesafeli Sözleşmeler Yönetmeliği'nin ("Yönetmelik") 9. maddesi uyarınca:
-
-Alıcı, on dört gün içinde herhangi bir gerekçe göstermeksizin ve cezai şart ödemeksizin sözleşmeden cayma hakkına sahiptir.
-
-Cayma Hakkının İstisnaları
-Bununla birlikte aynı Yönetmeliği'nin 15. maddesi ile cayma hakkının kullanılamayacağı istisna durumlar belirtilmiştir. Bu istisna durumlar çerçevesinde Alıcı, sözleşme konusu Ürün bakımından Mesafeli Sözleşmeler Yönetmeliği'nin 15. maddesinde cayma hakkının kullanılabileceği ürünlerin istisnalarını yer almaktadır.
-
-Cayma Hakkı Kullanılabilecek Ürünleri Nasıl İade Ederim?
-1. "Hesabım" > "Siparişlerim" > "Sipariş detay" adımlarını takip edin.
-2. İade etmek istediğiniz ürünü seçerek iade talebinde bulunun.
-3. Ürünü orijinal ambalajında, faturasıyla birlikte kargo ile gönderin.
-4. İadeniz onaylandıktan sonra ödemeniz 3-7 iş günü içinde iade edilir.
-
-İletişim
-Cayma hakkı ve iade işlemleri için: ${SITE_EMAIL}`
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -476,6 +396,20 @@ export default function CheckoutClient({ addresses }: Props) {
                     <span className="font-semibold">Mesafeli Satış Sözleşmesi</span>'ni okudum, onaylıyorum.
                   </span>
                 </label>
+
+                {/* Metinler yukarıdaki dar kutularda da duruyor ama sipariş
+                    sonrası geri dönüp okunabilmesi için kalıcı bir sayfa şart. */}
+                <p className="text-xs text-gray-400">
+                  Sözleşmelerin tamamını{' '}
+                  <Link
+                    href="/mesafeli-satis-sozlesmesi"
+                    target="_blank"
+                    className="text-gray-600 underline hover:text-gray-900"
+                  >
+                    ayrı sayfada
+                  </Link>{' '}
+                  okuyabilir, dilerseniz yazdırabilirsiniz.
+                </p>
               </div>
             </div>
 

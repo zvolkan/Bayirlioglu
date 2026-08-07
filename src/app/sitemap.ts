@@ -29,6 +29,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/gizlilik`, lastModified: now, changeFrequency: 'yearly', priority: 0.2 },
     { url: `${base}/kvkk`, lastModified: now, changeFrequency: 'yearly', priority: 0.2 },
     {
+      url: `${base}/mesafeli-satis-sozlesmesi`,
+      lastModified: now,
+      changeFrequency: 'yearly',
+      priority: 0.2,
+    },
+    {
       url: `${base}/kullanim-kosullari`,
       lastModified: now,
       changeFrequency: 'yearly',

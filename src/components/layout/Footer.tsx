@@ -11,6 +11,7 @@ const GRUP_LINKS = [
 const YASAL_LINKS = [
   { label: 'Gizlilik Politikası', href: '/gizlilik' },
   { label: 'Kullanım Koşulları', href: '/kullanim-kosullari' },
+  { label: 'Mesafeli Satış Sözleşmesi', href: '/mesafeli-satis-sozlesmesi' },
   { label: 'İade Politikası', href: '/iade-politikasi' },
   { label: 'KVKK Aydınlatma Metni', href: '/kvkk' },
 ]
@@ -50,12 +51,12 @@ export default function Footer() {
                   BG
                 </div>
                 <span className="text-white font-bold text-lg leading-tight">
-                  Bayırlıoğlu Grup
+                  Bayırlıoğlu
                 </span>
               </Link>
               <p className="text-gray-400 text-sm leading-relaxed">
                 2006 yılından bu yana tarım ve su teknolojileri alanında faaliyet gösteren
-                Bayırlıoğlu Grup, ALB Tarım ve Alb Su Teknolojileri markaları altında
+                Bayırlıoğlu, ALB Tarım ve Alb Su Teknolojileri markaları altında
                 Türkiye genelinde hizmet vermektedir.
               </p>
               <div className="flex items-center gap-3">
@@ -208,7 +209,7 @@ export default function Footer() {
             {/* DOLDURULACAK: Ticaret unvanı, MERSİS ve vergi bilgileri resmi
                 kayıtlardaki hâliyle yazılmalıdır. */}
             <p>
-              <span className="text-gray-500">Ticaret Unvanı:</span> Bayırlıoğlu Grup
+              <span className="text-gray-500">Ticaret Unvanı:</span> Bayırlıoğlu
               {' · '}
               <span className="text-gray-500">Vergi Dairesi / No:</span> —
               {' · '}
@@ -230,7 +231,7 @@ export default function Footer() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
             <p className="text-gray-500 text-sm">
-              © {new Date().getFullYear()} Bayırlıoğlu Grup. Tüm hakları saklıdır.
+              © {new Date().getFullYear()} Bayırlıoğlu. Tüm hakları saklıdır.
             </p>
             <p className="text-gray-600 text-xs">
               ALB Tarım &amp; Alb Su Teknolojileri

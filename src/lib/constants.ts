@@ -133,12 +133,12 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
   },
 };
 
-// ─── BAYIRLIOĞLU GRUP (marka dışı sayfalar: landing, hakkımızda, bayi vb.) ───
+// ─── BAYIRLIOĞLU (marka dışı sayfalar: landing, hakkımızda, bayi vb.) ───
 
 export const GROUP_WHATSAPP = {
   phone: process.env.NEXT_PUBLIC_WHATSAPP_GROUP ?? '905444142254',
-  message: 'Merhaba! Bayırlıoğlu Grup hakkında bilgi almak istiyorum.',
-  tooltip: "Bayırlıoğlu Grup'a WhatsApp'tan yazın!",
+  message: 'Merhaba! Bayırlıoğlu hakkında bilgi almak istiyorum.',
+  tooltip: "Bayırlıoğlu'na WhatsApp'tan yazın!",
 };
 
 // ─── AKTİF MARKA (env'den okur) ──────────────────────────────────────────────

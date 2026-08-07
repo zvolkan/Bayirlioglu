@@ -6,9 +6,9 @@ import RevealGroup from '@/components/ui/RevealGroup'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
 
 export const metadata: Metadata = {
-  title: 'Bayırlıoğlu Grup — ALB Tarım & Alb Su Teknolojileri',
+  title: 'Bayırlıoğlu — ALB Tarım & Alb Su Teknolojileri',
   description:
-    "Bayırlıoğlu Grup bünyesindeki ALB Tarım ve Alb Su Teknolojileri markaları ile tarım, su arıtma ve teknoloji alanlarında Türkiye'ye hizmet veriyoruz.",
+    "Bayırlıoğlu bünyesindeki ALB Tarım ve Alb Su Teknolojileri markaları ile tarım, su arıtma ve teknoloji alanlarında Türkiye'ye hizmet veriyoruz.",
   keywords: ['Bayırlıoğlu', 'ALB Tarım', 'Alb Su Teknolojileri', 'su arıtma', 'tarım ürünleri'],
 }
 
@@ -58,7 +58,7 @@ export default function HomePage() {
     <div className="bg-white">
       {/* ── HERO ── */}
       <section className="relative min-h-[88vh] flex items-center bg-gray-900 overflow-hidden">
-        {/* Arka plan gradient — Bayırlıoğlu Grup: charcoal/stone */}
+        {/* Arka plan gradient — Bayırlıoğlu: charcoal/stone */}
         {/* GÖRSEL: /public/images/bayirlioglu-hero.jpg */}
         <div className="absolute inset-0 bg-gradient-to-br from-neutral-950 via-neutral-900 to-stone-900" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(82,82,82,0.35),transparent_55%)]" />
@@ -164,7 +164,7 @@ export default function HomePage() {
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  Bayırlıoğlu Grup, 2000 yılında kurulan ve bugün iki güçlü markasıyla
+                  Bayırlıoğlu, 2000 yılında kurulan ve bugün iki güçlü markasıyla
                   Türkiye&apos;nin önde gelen çok sektörlü ticaret şirketlerinden biridir.
                 </p>
                 <p>

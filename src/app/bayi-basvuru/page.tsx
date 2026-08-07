@@ -124,7 +124,7 @@ export default function BayiBasvuruPage() {
             <span className="text-white">Bayi Başvurusu</span>
           </nav>
           <p className="text-gray-400 text-sm font-semibold uppercase tracking-widest mb-3">
-            Bayırlıoğlu Grup
+            Bayırlıoğlu
           </p>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Bayimiz Olun

@@ -67,7 +67,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Organization',
-              name: 'Bayırlıoğlu Grup',
+              name: 'Bayırlıoğlu',
               url: SITE_CONFIG.url,
               email: SITE_CONFIG.email,
               telephone: SITE_CONFIG.phone,

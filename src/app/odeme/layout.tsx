@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Ödeme | Bayırlıoğlu Grup',
+  title: 'Ödeme | Bayırlıoğlu',
   description: 'Siparişinizi güvenle tamamlayın.',
   robots: { index: false, follow: false },
 }

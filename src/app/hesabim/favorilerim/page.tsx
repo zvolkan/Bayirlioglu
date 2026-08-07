@@ -10,7 +10,7 @@ import AccountSidebar from '../_components/AccountSidebar'
 import FavoriteCardActions from './_components/FavoriteCardActions'
 
 export const metadata: Metadata = {
-  title: 'Favorilerim | Bayırlıoğlu Grup',
+  title: 'Favorilerim | Bayırlıoğlu',
   robots: { index: false, follow: false },
 }
 

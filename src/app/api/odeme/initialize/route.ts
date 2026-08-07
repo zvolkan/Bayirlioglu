@@ -8,7 +8,7 @@ import { generateOrderNumber, isUniqueConstraintError } from '@/lib/order-number
 import { getSiteUrl } from '@/lib/site-url'
 
 /** Sözleşme metinleri değiştiğinde artırılmalı — hangi sürümün onaylandığı kaydedilir */
-const CONTRACT_VERSION = '2026-08'
+const CONTRACT_VERSION = '2026-08-2'
 
 interface IncomingItem {
   id?: unknown
@@ -251,43 +251,46 @@ export async function POST(req: NextRequest) {
 
   // ── PENDING sipariş — tutar dökümü ve adres kopyasıyla ───────────────────
   const orderData = {
-      userId: user.id,
-      brandId: brand.id,
-      addressId: savedAddressId ? String(savedAddressId) : null,
-      status: 'PENDING',
-      paymentMethod: 'iyzico',
-      paymentStatus: 'pending',
-      subtotal,
-      shippingFee,
-      taxAmount,
-      totalAmount: total,
-      shipFullName: contactName,
-      shipPhone: String(addr.phone ?? ''),
-      shipLine1: String(addr.line1),
-      shipLine2: addr.line2 ? String(addr.line2) : null,
-      shipDistrict: String(addr.district),
-      shipCity: String(addr.city),
-      shipPostalCode: addr.postalCode ? String(addr.postalCode) : null,
-      // Sözleşme onayı — tarih, IP ve metin sürümü uyuşmazlık hâlinde ispat oluşturur
-      contractAcceptedAt: new Date(),
-      contractIp: ip.slice(0, 64),
-      contractVersion: CONTRACT_VERSION,
-      invoiceType,
-      invoiceTitle: invoiceType === 'kurumsal' ? invoice!.title!.trim().slice(0, 200) : null,
-      invoiceTaxId: taxId || null,
-      invoiceTaxOffice:
-        invoiceType === 'kurumsal' ? (invoice?.taxOffice ?? '').trim().slice(0, 100) : null,
-      invoiceEmail: (invoice?.email ?? user.email ?? '').trim().slice(0, 255) || null,
-      items: {
-        create: validated.map((item, index) => ({
-          productId: item.id,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: lineTotals[index],
-          vatRate: item.vatRate,
-          vatAmount: lineVats[index],
-        })),
-      },
+    userId: user.id,
+    brandId: brand.id,
+    addressId: savedAddressId ? String(savedAddressId) : null,
+    // `as const` şart: nesne create() çağrısından ayrı bir değişkene alındığı
+    // için TypeScript bu değeri `string` olarak genişletiyor ve Prisma'nın
+    // `OrderStatus` enum'una atanamıyordu ("Type 'string' is not assignable").
+    status: 'PENDING' as const,
+    paymentMethod: 'iyzico',
+    paymentStatus: 'pending',
+    subtotal,
+    shippingFee,
+    taxAmount,
+    totalAmount: total,
+    shipFullName: contactName,
+    shipPhone: String(addr.phone ?? ''),
+    shipLine1: String(addr.line1),
+    shipLine2: addr.line2 ? String(addr.line2) : null,
+    shipDistrict: String(addr.district),
+    shipCity: String(addr.city),
+    shipPostalCode: addr.postalCode ? String(addr.postalCode) : null,
+    // Sözleşme onayı — tarih, IP ve metin sürümü uyuşmazlık hâlinde ispat oluşturur
+    contractAcceptedAt: new Date(),
+    contractIp: ip.slice(0, 64),
+    contractVersion: CONTRACT_VERSION,
+    invoiceType,
+    invoiceTitle: invoiceType === 'kurumsal' ? invoice!.title!.trim().slice(0, 200) : null,
+    invoiceTaxId: taxId || null,
+    invoiceTaxOffice:
+      invoiceType === 'kurumsal' ? (invoice?.taxOffice ?? '').trim().slice(0, 100) : null,
+    invoiceEmail: (invoice?.email ?? user.email ?? '').trim().slice(0, 255) || null,
+    items: {
+      create: validated.map((item, index) => ({
+        productId: item.id,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        totalPrice: lineTotals[index],
+        vatRate: item.vatRate,
+        vatAmount: lineVats[index],
+      })),
+    },
   }
 
   // Sipariş numarası rastgele üretiliyor; çakışma olasılığı düşük ama sıfır

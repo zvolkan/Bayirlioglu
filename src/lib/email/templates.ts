@@ -35,7 +35,7 @@ function layout(title: string, bodyHtml: string): string {
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
 
         <tr><td style="background:#18181b;padding:20px 28px;">
-          <p style="margin:0;color:#ffffff;font-size:17px;font-weight:700;letter-spacing:.02em;">Bayırlıoğlu Grup</p>
+          <p style="margin:0;color:#ffffff;font-size:17px;font-weight:700;letter-spacing:.02em;">Bayırlıoğlu</p>
         </td></tr>
 
         <tr><td style="padding:28px;">

@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'İade Politikası | Bayırlıoğlu Grup',
-  description: 'Bayırlıoğlu Grup iade ve değişim koşulları hakkında bilgi alın.',
+  title: 'İade Politikası | Bayırlıoğlu',
+  description: 'Bayırlıoğlu iade ve değişim koşulları hakkında bilgi alın.',
 }
 
 const sections = [
@@ -45,7 +45,7 @@ export default function IadePolitikasiPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
         <div className="mb-10">
           <p className="text-gray-400 text-sm font-semibold uppercase tracking-widest mb-2">
-            Bayırlıoğlu Grup
+            Bayırlıoğlu
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">İade Politikası</h1>
           <p className="text-gray-500 text-sm mt-2">Son güncelleme: Ocak 2026</p>

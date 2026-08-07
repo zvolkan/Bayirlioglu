@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { signUp, signInWithGoogle } from '@/app/actions/auth'
 
 export const metadata: Metadata = {
-  title: 'Kayıt Ol | Bayırlıoğlu Grup',
+  title: 'Kayıt Ol | Bayırlıoğlu',
 }
 
 export default async function KayitPage({
@@ -22,7 +22,7 @@ export default async function KayitPage({
             <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center font-black text-white text-sm">
               BG
             </div>
-            <span className="font-bold text-xl text-gray-900">Bayırlıoğlu Grup</span>
+            <span className="font-bold text-xl text-gray-900">Bayırlıoğlu</span>
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Hesap Oluşturun</h1>
           <p className="text-gray-500 text-sm mt-1">Sipariş takibi ve hızlı alışveriş için kayıt olun</p>

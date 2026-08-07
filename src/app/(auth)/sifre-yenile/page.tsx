@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { updatePassword } from '@/app/actions/auth'
 
 export const metadata: Metadata = {
-  title: 'Yeni Şifre Belirle | Bayırlıoğlu Grup',
+  title: 'Yeni Şifre Belirle | Bayırlıoğlu',
   robots: { index: false, follow: false },
 }
 
@@ -38,7 +38,7 @@ export default async function SifreYenilePage({
             <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center font-black text-white text-sm">
               BG
             </div>
-            <span className="font-bold text-xl text-gray-900">Bayırlıoğlu Grup</span>
+            <span className="font-bold text-xl text-gray-900">Bayırlıoğlu</span>
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Yeni Şifre Belirleyin</h1>
           <p className="text-gray-500 text-sm mt-1">{user.email}</p>

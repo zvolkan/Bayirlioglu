@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { requestPasswordReset } from '@/app/actions/auth'
 
 export const metadata: Metadata = {
-  title: 'Şifremi Unuttum | Bayırlıoğlu Grup',
+  title: 'Şifremi Unuttum | Bayırlıoğlu',
   description: 'Hesabınızın şifresini sıfırlamak için e-posta adresinizi girin.',
   robots: { index: false, follow: false },
 }
@@ -23,7 +23,7 @@ export default async function SifremiUnuttumPage({
             <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center font-black text-white text-sm">
               BG
             </div>
-            <span className="font-bold text-xl text-gray-900">Bayırlıoğlu Grup</span>
+            <span className="font-bold text-xl text-gray-900">Bayırlıoğlu</span>
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Şifrenizi mi Unuttunuz?</h1>
           <p className="text-gray-500 text-sm mt-1">

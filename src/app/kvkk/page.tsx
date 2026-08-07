@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'KVKK Aydınlatma Metni | Bayırlıoğlu Grup',
+  title: 'KVKK Aydınlatma Metni | Bayırlıoğlu',
   description: 'Kişisel Verilerin Korunması Kanunu kapsamında aydınlatma metni.',
 }
 
@@ -9,7 +9,7 @@ const sections = [
   {
     title: '1. Veri Sorumlusunun Kimliği',
     content:
-      'Bayırlıoğlu Grup (ALB Tarım ve Alb Su Teknolojileri markaları), 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca veri sorumlusu sıfatıyla aşağıdaki bilgileri paylaşmaktadır.\n\nAdres: Saçkan Kavşağı Doğusu Savcı-Şok Market Yanı, Yeşilyurt, Akdeniz Cd. No:20/22, 33640 Anamur/Mersin\nE-posta: kvkk@bayirlioglu.com',
+      'Bayırlıoğlu (ALB Tarım ve Alb Su Teknolojileri markaları), 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca veri sorumlusu sıfatıyla aşağıdaki bilgileri paylaşmaktadır.\n\nAdres: Saçkan Kavşağı Doğusu Savcı-Şok Market Yanı, Yeşilyurt, Akdeniz Cd. No:20/22, 33640 Anamur/Mersin\nE-posta: kvkk@bayirlioglu.com',
   },
   {
     title: '2. İşlenen Kişisel Veriler',
@@ -49,7 +49,7 @@ export default function KvkkPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
         <div className="mb-10">
           <p className="text-gray-400 text-sm font-semibold uppercase tracking-widest mb-2">
-            Bayırlıoğlu Grup
+            Bayırlıoğlu
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
             KVKK Aydınlatma Metni

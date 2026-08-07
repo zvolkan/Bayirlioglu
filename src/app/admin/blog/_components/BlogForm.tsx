@@ -211,7 +211,7 @@ export default function BlogForm({ brands, defaultValues = {} }: Props) {
               name="author"
               defaultValue={defaultValues.author ?? ''}
               maxLength={120}
-              placeholder="Bayırlıoğlu Grup"
+              placeholder="Bayırlıoğlu"
               className={input}
             />
           </div>

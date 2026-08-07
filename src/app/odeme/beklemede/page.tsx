@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db'
 import { formatOrderNo } from '@/lib/order-number'
 
 export const metadata: Metadata = {
-  title: 'Ödemeniz Doğrulanıyor | Bayırlıoğlu Grup',
+  title: 'Ödemeniz Doğrulanıyor | Bayırlıoğlu',
   robots: { index: false, follow: false },
 }
 

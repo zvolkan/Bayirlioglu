@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { MOCK_SERVICES_TARIM, MOCK_SERVICES_ALBSU } from '@/data/mock'
 
 export const metadata: Metadata = {
-  title: 'Hizmetler | Bayırlıoğlu Grup',
+  title: 'Hizmetler | Bayırlıoğlu',
   description: 'ALB Tarım ve Alb Su Teknolojileri markalarımızın sunduğu profesyonel hizmetler.',
 }
 
@@ -64,7 +64,7 @@ export default function HizmetlerPage() {
       <section className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-16 sm:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl text-center text-white">
           <p className="text-gray-400 text-sm font-semibold uppercase tracking-widest mb-3">
-            Bayırlıoğlu Grup
+            Bayırlıoğlu
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Hizmetlerimiz</h1>
           <p className="text-lg sm:text-xl text-white/75 max-w-2xl mx-auto">

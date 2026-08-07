@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
   <meta name="referrer" content="no-referrer" />
-  <title>Güvenli Ödeme — Bayırlıoğlu Grup</title>
+  <title>Güvenli Ödeme — Bayırlıoğlu</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; min-height: 100vh; }

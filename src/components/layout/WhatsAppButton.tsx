@@ -21,7 +21,7 @@ export default function WhatsAppButton() {
   // Bulunduğumuz bölüme göre WhatsApp hedefi:
   // - /alb-tarim*      → ALB Tarım numarası + ALB Tarım mesajı
   // - /alb-su-aritma*  → ALB Su numarası + ALB Su mesajı
-  // - Bayırlıoğlu landing ve diğer grup sayfaları → ALB Su numarası + Bayırlıoğlu Grup mesajı
+  // - Bayırlıoğlu landing ve diğer grup sayfaları → ALB Su numarası + Bayırlıoğlu mesajı
   const whatsapp = pathname.startsWith('/alb-tarim')
     ? BRANDS['alb-tarim'].whatsapp
     : pathname.startsWith('/alb-su-aritma')

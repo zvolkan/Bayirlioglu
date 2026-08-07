@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { signIn, signInWithGoogle } from '@/app/actions/auth'
 
 export const metadata: Metadata = {
-  title: 'Giriş Yap | Bayırlıoğlu Grup',
+  title: 'Giriş Yap | Bayırlıoğlu',
 }
 
 export default async function GirisPage({
@@ -23,7 +23,7 @@ export default async function GirisPage({
             <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center font-black text-white text-sm">
               BG
             </div>
-            <span className="font-bold text-xl text-gray-900">Bayırlıoğlu Grup</span>
+            <span className="font-bold text-xl text-gray-900">Bayırlıoğlu</span>
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Hesabınıza Giriş Yapın</h1>
           <p className="text-gray-500 text-sm mt-1">Sipariş geçmişinize ve profilinize erişin</p>

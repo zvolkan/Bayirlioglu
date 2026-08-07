@@ -9,7 +9,7 @@ import ProfileForm from './_components/ProfileForm'
 import RepeatOrderButton from './_components/RepeatOrderButton'
 
 export const metadata: Metadata = {
-  title: 'Hesabım | Bayırlıoğlu Grup',
+  title: 'Hesabım | Bayırlıoğlu',
 }
 
 const ORDER_STATUS_LABELS: Record<string, { label: string; color: string }> = {

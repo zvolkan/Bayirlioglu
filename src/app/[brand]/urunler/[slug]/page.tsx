@@ -91,7 +91,7 @@ export default async function ProductDetailPage({ params }: Props) {
           ? 'https://schema.org/InStock'
           : 'https://schema.org/OutOfStock',
       itemCondition: 'https://schema.org/NewCondition',
-      seller: { '@type': 'Organization', name: 'Bayırlıoğlu Grup' },
+      seller: { '@type': 'Organization', name: 'Bayırlıoğlu' },
     },
   }
 

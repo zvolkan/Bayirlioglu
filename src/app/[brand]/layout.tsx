@@ -21,9 +21,9 @@ export async function generateMetadata({ params }: BrandLayoutProps): Promise<Me
       template: `%s | ${cfg.name}`,
     },
     description: cfg.description,
-    keywords: [cfg.name, 'Bayırlıoğlu Grup', ...cfg.nav.map((n) => n.label)],
+    keywords: [cfg.name, 'Bayırlıoğlu', ...cfg.nav.map((n) => n.label)],
     openGraph: {
-      siteName: `${cfg.name} — Bayırlıoğlu Grup`,
+      siteName: `${cfg.name} — Bayırlıoğlu`,
     },
   }
 }

@@ -12,7 +12,7 @@ import { remainingReturnDays } from '@/lib/returns'
 import ReturnRequestPanel from '../_components/ReturnRequestPanel'
 
 export const metadata: Metadata = {
-  title: 'Sipariş Detayı | Bayırlıoğlu Grup',
+  title: 'Sipariş Detayı | Bayırlıoğlu',
 }
 
 const STATUS_MAP: Record<string, { label: string; color: string; icon: string }> = {

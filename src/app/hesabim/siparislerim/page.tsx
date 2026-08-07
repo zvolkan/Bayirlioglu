@@ -11,7 +11,7 @@ import RepeatOrderButton from '../_components/RepeatOrderButton'
 import type { BrandKey } from '@/lib/types'
 
 export const metadata: Metadata = {
-  title: 'Siparişlerim | Bayırlıoğlu Grup',
+  title: 'Siparişlerim | Bayırlıoğlu',
 }
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
