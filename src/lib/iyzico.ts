@@ -144,3 +144,28 @@ export function approvePaymentItem(params: {
     )
   })
 }
+
+/**
+ * Ödeme detayını `paymentId` ile çeker.
+ *
+ * `itemTransactions` dizisi burada da geliyor; kalem işlem kimlikleri
+ * kaydedilmeden önce oluşturulmuş siparişler için tek geri kazanma yolu bu.
+ */
+export function retrievePayment(params: {
+  paymentId: string
+  conversationId: string
+}): Promise<any> {
+  return new Promise((resolve, reject) => {
+    getClient().payment.retrieve(
+      {
+        locale: 'tr',
+        conversationId: params.conversationId,
+        paymentId: params.paymentId,
+      },
+      (err: unknown, result: unknown) => {
+        if (err) reject(err)
+        else resolve(result)
+      },
+    )
+  })
+}
