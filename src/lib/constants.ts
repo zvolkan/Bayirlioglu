@@ -148,6 +148,18 @@ export const ACTIVE_BRAND_KEY: BrandKey =
 
 export const BRAND = BRANDS[ACTIVE_BRAND_KEY];
 
+/**
+ * Şirketin kendi adı — TEK KAYNAK.
+ *
+ * `BRAND.name` aktif MARKAYI verir (ALB Tarım veya Alb Su Teknolojileri).
+ * Gizlilik politikası, kullanım koşulları ve mesafeli satış sözleşmesi gibi
+ * metinler markaya değil ŞİRKETE ait olduğu için `BRAND.name` kullanmak
+ * yanlıştı: gizlilik politikası "ALB Tarım olarak…" diye başlıyordu.
+ *
+ * Kurumsal/hukuki metinlerde bunu, marka sayfalarında `BRAND.name` kullanın.
+ */
+export const COMPANY_NAME = 'Bayırlıoğlu';
+
 // ─── GENEL SABİTLER ───────────────────────────────────────────────────────────
 
 export const SITE_CONFIG = {

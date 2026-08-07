@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { BRAND } from '@/lib/constants'
+import { COMPANY_NAME } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Gizlilik Politikası',
-  description: `${BRAND.name} gizlilik politikası ve kişisel verilerin korunması hakkında bilgi.`,
+  description: `${COMPANY_NAME} gizlilik politikası ve kişisel verilerin korunması hakkında bilgi.`,
 }
 
 export default function GizlilikPage() {
@@ -26,7 +26,7 @@ export default function GizlilikPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Genel Bilgi</h2>
               <p className="text-gray-600 leading-relaxed">
-                {BRAND.name} olarak, müşterilerimizin kişisel verilerinin güvenliği ve gizliliğine büyük önem veriyoruz.
+                {COMPANY_NAME} olarak, müşterilerimizin kişisel verilerinin güvenliği ve gizliliğine büyük önem veriyoruz.
                 Bu Gizlilik Politikası, sitemizi ziyaret ettiğinizde veya hizmetlerimizden faydalandığınızda
                 kişisel verilerinizin nasıl toplandığını, kullanıldığını ve korunduğunu açıklamaktadır.
                 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında hazırlanmıştır.

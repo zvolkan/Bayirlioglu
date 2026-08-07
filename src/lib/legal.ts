@@ -1,4 +1,4 @@
-import { SITE_CONFIG } from './constants'
+import { SITE_CONFIG, COMPANY_NAME } from './constants'
 import { KARGO_LIMIT, KARGO_UCRETI, TESLIMAT_SURESI } from './checkout'
 
 /**
@@ -27,7 +27,7 @@ import { KARGO_LIMIT, KARGO_UCRETI, TESLIMAT_SURESI } from './checkout'
 // güncelleyin.
 
 export const SATICI = {
-  unvan: 'Bayırlıoğlu',
+  unvan: COMPANY_NAME,
   mersis: '', // örn. 0123456789000001
   vergiDairesi: '', // örn. Anamur
   vergiNo: '',

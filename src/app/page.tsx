@@ -84,9 +84,8 @@ export default function HomePage() {
             </span>
 
             <h1 className="anim-fade-up anim-delay-200 text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-6">
-              Bayırlıoğlu
               <span className="gradient-pan block text-transparent bg-clip-text bg-gradient-to-r from-white via-stone-200 to-stone-400">
-                Grup
+                Bayırlıoğlu
               </span>
             </h1>
             <p className="anim-fade-up anim-delay-300 text-lg sm:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed mb-10">

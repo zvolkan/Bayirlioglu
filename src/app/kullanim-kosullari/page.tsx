@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { BRAND } from '@/lib/constants'
+import { COMPANY_NAME } from '@/lib/constants'
 import { TESLIMAT_SURESI } from '@/lib/checkout'
 
 export const metadata: Metadata = {
   title: 'Kullanım Koşulları',
-  description: `${BRAND.name} kullanım koşulları ve satış sözleşmesi.`,
+  description: `${COMPANY_NAME} kullanım koşulları ve satış sözleşmesi.`,
 }
 
 export default function KullanimKosullariPage() {
@@ -26,9 +26,9 @@ export default function KullanimKosullariPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Genel Hükümler</h2>
               <p className="text-gray-600 leading-relaxed">
-                Bu web sitesini kullanarak {BRAND.name} kullanım koşullarını kabul etmiş sayılırsınız.
+                Bu web sitesini kullanarak {COMPANY_NAME} kullanım koşullarını kabul etmiş sayılırsınız.
                 Siteyi kullanmaya devam etmeniz, bu koşulları okuduğunuzu ve anladığınızı gösterir.
-                {BRAND.name}, bu koşulları önceden haber vermeksizin değiştirme hakkını saklı tutar.
+                {COMPANY_NAME}, bu koşulları önceden haber vermeksizin değiştirme hakkını saklı tutar.
               </p>
             </section>
 
@@ -58,7 +58,7 @@ export default function KullanimKosullariPage() {
               <p className="text-gray-600 leading-relaxed">
                 Siparişler, stok durumuna bağlı olarak genellikle {TESLIMAT_SURESI} içinde teslim edilir.
                 Teslimat süresi, bulunduğunuz konuma ve anlaşmalı kargo firmasının kapasitesine göre
-                değişiklik gösterebilir. {BRAND.name}, teslimat gecikmelerinden dolayı sorumluluk kabul etmez.
+                değişiklik gösterebilir. {COMPANY_NAME}, teslimat gecikmelerinden dolayı sorumluluk kabul etmez.
               </p>
             </section>
 
@@ -83,7 +83,7 @@ export default function KullanimKosullariPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Fikri Mülkiyet</h2>
               <p className="text-gray-600 leading-relaxed">
-                Bu web sitesindeki tüm içerikler (metin, görsel, logo, tasarım) {BRAND.name}&apos;ye aittir ve
+                Bu web sitesindeki tüm içerikler (metin, görsel, logo, tasarım) {COMPANY_NAME}&apos;ye aittir ve
                 telif hakkı yasalarıyla korunmaktadır. İzin alınmadan kopyalanamaz veya kullanılamaz.
               </p>
             </section>

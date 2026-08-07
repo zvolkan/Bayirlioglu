@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 const GRUP_LINKS = [
   { label: 'Hakkımızda', href: '/hakkimizda' },
@@ -46,10 +47,16 @@ export default function Footer() {
 
             {/* COL 1 — Grup Kimliği + Sosyal Medya */}
             <div className="flex flex-col gap-5">
-              <Link href="/" className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gray-700 flex items-center justify-center font-black text-sm text-white flex-shrink-0">
-                  BG
-                </div>
+              <Link href="/" className="flex items-center gap-3 group">
+                {/* Header ve ana sayfadaki logonun aynısı — footer koyu zeminde
+                    olduğu için beyaz sürüm kullanılıyor. */}
+                <Image
+                  src="/images/logo-mark-white.svg"
+                  alt="Bayırlıoğlu"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 object-contain flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
+                />
                 <span className="text-white font-bold text-lg leading-tight">
                   Bayırlıoğlu
                 </span>

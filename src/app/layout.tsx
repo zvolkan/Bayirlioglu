@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import '@/styles/animations.css'
 import '@/styles/brand.css'
-import { BRAND, SITE_CONFIG, ACTIVE_BRAND_KEY } from '@/lib/constants'
+import { BRAND, SITE_CONFIG, ACTIVE_BRAND_KEY, COMPANY_NAME } from '@/lib/constants'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
@@ -21,14 +21,17 @@ export const metadata: Metadata = {
   // metadataBase olmadan göreli OG görsel yolları çözülmüyor ve WhatsApp /
   // Facebook paylaşımlarında link önizlemesi görselsiz çıkıyordu.
   metadataBase: new URL(SITE_CONFIG.url),
-  title: { template: `%s | ${BRAND.name}`, default: BRAND.name },
+  // Kurumsal ve hukuki sayfalar bu şablonu kullanıyor; marka sayfaları
+  // kendi metadata'sıyla eziyor. Burada marka adı yazınca gizlilik/kullanım
+  // koşulları başlıklarında "ALB Tarım" çıkıyordu.
+  title: { template: `%s | ${COMPANY_NAME}`, default: COMPANY_NAME },
   description: BRAND.description,
   keywords: ACTIVE_BRAND_KEY === 'alb-tarim'
     ? ['alb tarım', 'gübre', 'sulama sistemi', 'tarım ilaçları', 'organik gübre']
     : ['albsu', 'su arıtma', 'klima', 'su arıtma cihazı', 'ev elektroniği'],
   openGraph: {
     type: 'website', locale: 'tr_TR',
-    siteName: BRAND.name, title: BRAND.name, description: BRAND.description,
+    siteName: COMPANY_NAME, title: COMPANY_NAME, description: BRAND.description,
   },
   robots: { index: true, follow: true },
 }
@@ -67,7 +70,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Organization',
-              name: 'Bayırlıoğlu',
+              name: COMPANY_NAME,
               url: SITE_CONFIG.url,
               email: SITE_CONFIG.email,
               telephone: SITE_CONFIG.phone,
