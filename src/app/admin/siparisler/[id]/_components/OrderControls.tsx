@@ -58,16 +58,30 @@ export default function OrderControls({
   const [confirmRefund, setConfirmRefund] = useState(false)
 
   const handleStatus = () => {
+    // Ödemesi alınmış siparişi iptal etmek iyzico'ya iade isteği gönderiyor;
+    // geri alınamayan bir işlem olduğu için önce onay isteniyor.
+    if (selectedStatus === 'CANCELLED' && canRefund) {
+      const onay = confirm(
+        'Bu siparişin ödemesi tahsil edilmiş.\n\n' +
+          'İptal ederseniz iyzico üzerinden otomatik iade isteği gönderilecek, ' +
+          'stoklar geri yüklenecek ve müşteriye bilgi e-postası gidecek. ' +
+          'Sipariş "İade Edildi" olarak işaretlenecek.\n\n' +
+          'Devam edilsin mi?',
+      )
+      if (!onay) return
+    }
+
     startTransition(async () => {
-      try {
-        await updateOrderStatus(orderId, selectedStatus)
-        toast.success('Sipariş durumu güncellendi')
+      // Sunucu aksiyonundan hata FIRLATMIYORUZ: üretimde fırlatılan hatanın
+      // mesajı Next tarafından gizleniyor ve yönetici genel bir hata ekranı
+      // görüyor. Bunun yerine sonuç nesnesi dönüyor.
+      const result = await updateOrderStatus(orderId, selectedStatus)
+
+      if (result.ok) {
+        toast.success(result.message)
         router.refresh()
-      } catch (error) {
-        // Sunucu açıklayıcı mesaj döndürüyor ("ödemesi tahsil edilmiş, İade Et
-        // butonunu kullanın" gibi); önceden yutulup yerine genel bir metin
-        // gösteriliyordu.
-        toast.error(error instanceof Error ? error.message : 'Durum güncellenemedi')
+      } else {
+        toast.error(result.error, { duration: 6000 })
       }
     })
   }

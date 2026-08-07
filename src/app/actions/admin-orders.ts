@@ -130,31 +130,72 @@ export async function getOrderCountsByStatus() {
 
 // ─── Durum güncelleme ────────────────────────────────────────────────────────
 
-export async function updateOrderStatus(orderId: string, status: string) {
+export async function updateOrderStatus(
+  orderId: string,
+  status: string,
+): Promise<OrderStatusResult> {
   await requireAdmin()
 
   if (!MANUAL_STATUSES.includes(status as OrderStatus)) {
-    throw new Error(
-      status === 'REFUNDED'
-        ? 'İade işlemi durum menüsünden yapılamaz. "Siparişi İade Et" butonunu kullanın.'
-        : 'Geçersiz sipariş durumu',
-    )
+    return {
+      ok: false,
+      error:
+        status === 'REFUNDED'
+          ? 'İade işlemi durum menüsünden yapılamaz. "Siparişi İade Et" butonunu kullanın.'
+          : 'Geçersiz sipariş durumu.',
+    }
   }
 
-  // Ödemesi alınmış siparişi durum menüsünden iptal etmek PARA KAYBIDIR:
-  // müşterinin parası hesapta kalır, düşülen stok geri gelmez, iade e-postası
-  // gitmez. Bu yol kapatılıp iade akışına yönlendiriliyor.
   const existing = await prisma.order.findUnique({
     where: { id: orderId },
     select: { paymentStatus: true, status: true },
   })
-  if (!existing) throw new Error('Sipariş bulunamadı')
+  if (!existing) return { ok: false, error: 'Sipariş bulunamadı.' }
 
+  // ── Ödemesi alınmış siparişin iptali = iade ──────────────────────────────
+  //
+  // Durum menüsünden "İptal Edildi" seçmek eskiden yalnızca durumu yazıyordu:
+  // müşterinin parası hesapta kalıyor, düşülen stok geri gelmiyordu. Sonra bu
+  // yolu hata fırlatarak kapatmıştım — ama sunucu aksiyonundan fırlatılan hata
+  // üretimde mesajı gizlenmiş genel bir hataya dönüşüyor, yönetici de "bir
+  // şeyler ters gitti" ekranı görüyordu.
+  //
+  // Doğrusu: iptal seçildiğinde iyzico'ya iptal/iade isteğini KENDİMİZ
+  // göndermek. `processRefund` önce aynı gün iptalini (cancel), o olmazsa
+  // iadeyi (refund) deniyor; stokları geri yüklüyor ve müşteriye e-posta
+  // atıyor. Gateway başarısız olursa sipariş iade edilmiş sayılmıyor.
   if (status === 'CANCELLED' && existing.paymentStatus === 'paid') {
-    throw new Error(
-      'Bu siparişin ödemesi tahsil edilmiş. Durum menüsünden iptal edilirse para ' +
-        'müşteriye dönmez. "Siparişi İade Et" butonunu kullanın.',
-    )
+    const headerList = await headers()
+    const ip = (headerList.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
+
+    const result = await processRefund({
+      orderId,
+      ip,
+      reason: 'Sipariş yönetici tarafından iptal edildi.',
+    })
+
+    revalidatePath('/admin/siparisler')
+    revalidatePath(`/admin/siparisler/${orderId}`)
+
+    if (!result.ok) {
+      return {
+        ok: false,
+        error: result.needsManualReview
+          ? `${result.error} Sipariş iptal edilmedi — iyzico panelinden kontrol edip elle iade edin.`
+          : result.error,
+      }
+    }
+
+    return {
+      ok: true,
+      // `processRefund` siparişi REFUNDED olarak işaretliyor (para geri
+      // döndüğü için doğrusu bu). Yönetici "İptal Edildi" seçtiği hâlde satırda
+      // "İade Edildi" göreceği için mesajda açıkça söyleniyor.
+      message:
+        result.gateway === 'cancel'
+          ? 'Ödeme iyzico üzerinden iptal edildi (aynı gün iptali), stoklar geri yüklendi. Sipariş "İade Edildi" olarak işaretlendi.'
+          : 'Ödeme iyzico üzerinden iade edildi, stoklar geri yüklendi. Sipariş "İade Edildi" olarak işaretlendi; kartına yansıması 1-7 iş günü sürebilir.',
+    }
   }
 
   const data: Record<string, unknown> = { status }
@@ -175,6 +216,8 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
   revalidatePath('/admin/siparisler')
   revalidatePath(`/admin/siparisler/${orderId}`)
+
+  return { ok: true, message: 'Sipariş durumu güncellendi.' }
 }
 
 // ─── Kargo bilgisi ───────────────────────────────────────────────────────────
@@ -224,6 +267,8 @@ export async function updateOrderNote(orderId: string, note: string) {
 }
 
 // ─── İade ────────────────────────────────────────────────────────────────────
+
+export type OrderStatusResult = { ok: true; message: string } | { ok: false; error: string }
 
 export type RefundResult = { ok: true; message: string } | { ok: false; error: string }
 
