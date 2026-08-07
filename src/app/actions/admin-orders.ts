@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { prisma, type TransactionClient } from '@/lib/db'
 import { verifyAdminToken } from '@/lib/admin-auth'
 import { processRefund } from '@/lib/refund'
+import { approveDeliveredOrder } from '@/lib/iyzico-delivery'
 import {
   notifyOrderShipped,
   notifyOrderDelivered,
@@ -206,18 +207,37 @@ export async function updateOrderStatus(
 
   await prisma.order.update({ where: { id: orderId }, data })
 
+  let extra = ''
+
   // Müşteri bildirimleri — durum gerçekten değiştiyse, tekrar tekrar
   // gönderilmesin diye önceki durumla karşılaştırılıyor.
   if (existing.status !== status) {
     if (status === 'SHIPPED') await notifyOrderShipped(orderId)
-    if (status === 'DELIVERED') await notifyOrderDelivered(orderId)
     if (status === 'CANCELLED') await notifyOrderCancelled(orderId)
+
+    if (status === 'DELIVERED') {
+      await notifyOrderDelivered(orderId)
+
+      // Korumalı Alışveriş kullanan hesaplarda teslimat onayı iyzico'ya
+      // bildirilmeli, yoksa para satıcıya aktarılmaz. Kapalıysa hiçbir istek
+      // gönderilmiyor. Başarısızlık teslimat kaydını bozmaz.
+      const approval = await approveDeliveredOrder(orderId)
+
+      if (approval.attempted) {
+        if (approval.note) {
+          await appendOrderNote(orderId, approval.note)
+          extra = ' Ancak iyzico teslimat onayında sorun çıktı — siparişin yönetici notuna bakın.'
+        } else if (approval.approved > 0) {
+          extra = ` ${approval.approved} kalem iyzico'da onaylandı.`
+        }
+      }
+    }
   }
 
   revalidatePath('/admin/siparisler')
   revalidatePath(`/admin/siparisler/${orderId}`)
 
-  return { ok: true, message: 'Sipariş durumu güncellendi.' }
+  return { ok: true, message: `Sipariş durumu güncellendi.${extra}` }
 }
 
 // ─── Kargo bilgisi ───────────────────────────────────────────────────────────
@@ -334,4 +354,21 @@ export async function updateDealerStatus(id: string, status: string) {
 
   await prisma.dealerApplication.update({ where: { id }, data: { status } })
   revalidatePath('/admin/bayi-basvurulari')
+}
+
+/** Var olan yönetici notunu ezmeden sonuna ekler */
+async function appendOrderNote(orderId: string, note: string): Promise<void> {
+  try {
+    const current = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { adminNote: true },
+    })
+    const merged = [current?.adminNote, note].filter(Boolean).join('\n')
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { adminNote: merged.slice(-2000) },
+    })
+  } catch (error) {
+    console.error('[sipariş] yönetici notu yazılamadı:', orderId, error)
+  }
 }

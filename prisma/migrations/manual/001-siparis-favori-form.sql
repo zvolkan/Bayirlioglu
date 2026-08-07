@@ -261,3 +261,15 @@ CREATE INDEX IF NOT EXISTS blog_posts_slug_idx ON blog_posts (slug);
 
 SELECT 'blog tablosu' AS kontrol, COUNT(*) AS var_mi
 FROM information_schema.tables WHERE table_name = 'blog_posts';
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- EK 6: iyzico kalem işlem kimliği
+-- Korumalı Alışveriş teslimat onayı ve kalem bazlı iade için gerekli.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+ALTER TABLE order_items
+  ADD COLUMN IF NOT EXISTS payment_transaction_id VARCHAR(60);
+
+SELECT 'kalem işlem kimliği' AS kontrol, COUNT(*) AS var_mi
+FROM information_schema.columns
+WHERE table_name = 'order_items' AND column_name = 'payment_transaction_id';

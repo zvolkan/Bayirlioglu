@@ -113,3 +113,34 @@ export function cancelPayment(params: {
     )
   })
 }
+
+/**
+ * Korumalı Alışveriş — kalem onayı (teslimat bildirimi).
+ *
+ * iyzico'nun standart tek satıcılı akışında teslimat bildirimi diye bir adım
+ * YOKTUR; para, hesabınızın ödeme takvimine göre otomatik aktarılır. Bu uç
+ * nokta yalnızca **Korumalı Alışveriş** (pazaryeri / escrow) modeli açık olan
+ * hesaplarda anlamlıdır: orada para, siz kalemi onaylayana kadar iyzico'da
+ * bekletilir.
+ *
+ * DİKKAT: `paymentTransactionId` sepet KALEMİNE ait kimliktir, `paymentId`
+ * değildir. İkisi karıştırılırsa iyzico "işlem bulunamadı" döner.
+ */
+export function approvePaymentItem(params: {
+  paymentTransactionId: string
+  conversationId: string
+}): Promise<any> {
+  return new Promise((resolve, reject) => {
+    getClient().approval.create(
+      {
+        locale: 'tr',
+        conversationId: params.conversationId,
+        paymentTransactionId: params.paymentTransactionId,
+      },
+      (err: unknown, result: unknown) => {
+        if (err) reject(err)
+        else resolve(result)
+      },
+    )
+  })
+}

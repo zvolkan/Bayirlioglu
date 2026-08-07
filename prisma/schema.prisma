@@ -357,6 +357,12 @@ model OrderItem {
   vatRate    Int     @default(20) @map("vat_rate")
   vatAmount  Decimal? @map("vat_amount") @db.Decimal(10, 2)
 
+  // iyzico'nun bu sepet kalemi için ürettiği işlem kimliği.
+  // `paymentId` ile AYNI DEĞİLDİR: paymentId tüm ödemeyi, bu ise tek kalemi
+  // gösterir. Korumalı Alışveriş onayı (teslimat bildirimi) ve kalem bazlı
+  // iade bu kimliği istiyor.
+  paymentTransactionId String? @map("payment_transaction_id") @db.VarChar(60)
+
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
 

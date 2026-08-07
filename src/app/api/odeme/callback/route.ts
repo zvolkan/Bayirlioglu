@@ -124,6 +124,27 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    // ── iyzico kalem işlem kimliklerini sakla ────────────────────────────
+    // Korumalı Alışveriş teslimat onayı ve kalem bazlı iade bu kimliği
+    // istiyor; sonradan hiçbir yerden öğrenilemiyor, yalnızca burada geliyor.
+    // Sipariş onayını bozmaması için ayrı ve sessiz bir blokta.
+    try {
+      const transactions = Array.isArray(result?.itemTransactions)
+        ? (result.itemTransactions as Array<{ itemId?: string; paymentTransactionId?: string }>)
+        : []
+
+      for (const tx of transactions) {
+        if (!tx.itemId || !tx.paymentTransactionId) continue
+        // `itemId` initialize sırasında ürün kimliği olarak gönderilmişti
+        await prisma.orderItem.updateMany({
+          where: { orderId: order.id, productId: tx.itemId },
+          data: { paymentTransactionId: String(tx.paymentTransactionId) },
+        })
+      }
+    } catch (txError) {
+      console.error('[callback] kalem işlem kimlikleri kaydedilemedi:', order.id, txError)
+    }
+
     // Başka bir callback bizden önce işlediyse tekrar stok düşme
     if (confirmed.count === 0) {
       return redirectGet(`${siteUrl}/odeme/basarili?siparis=${order.id}`)
