@@ -230,15 +230,16 @@ export default async function ProductDetailPage({ params }: Props) {
                   🚚 Tahmini teslimat:{' '}
                   <span className="font-semibold text-gray-900">{TESLIMAT_SURESI}</span>
                 </p>
+                {/* Ayraçlı tek satır dar ekranda sarınca "·" yeni satırın
+                    başında öksüz kalıyordu; iki ayrı cümleye bölündü. */}
                 <p>
                   📦 {KARGO_LIMIT} TL ve üzeri siparişlerde{' '}
                   <span className="font-semibold text-green-600">kargo ücretsiz</span>
-                  <span className="text-gray-400">
-                    {' '}
-                    · altında {KARGO_UCRETI.toLocaleString('tr-TR', {
-                      minimumFractionDigits: 2,
-                    })} TL
-                  </span>
+                </p>
+                <p className="text-gray-400">
+                  Bu tutarın altında {KARGO_UCRETI.toLocaleString('tr-TR', {
+                    minimumFractionDigits: 2,
+                  })} TL kargo ücreti eklenir.
                 </p>
               </div>
 

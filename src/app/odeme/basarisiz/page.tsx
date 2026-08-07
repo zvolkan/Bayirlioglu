@@ -41,7 +41,7 @@ export default async function BasarisizPage({ searchParams }: Props) {
 
         <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-sm text-amber-700 mb-8 text-left">
           <p className="font-semibold mb-1">Sık karşılaşılan nedenler:</p>
-          <ul className="space-y-1 list-disc list-inside text-amber-600">
+          <ul className="space-y-1 list-disc list-outside pl-5 text-amber-600 marker:text-amber-400">
             <li>Yetersiz bakiye</li>
             <li>3D Secure onayının verilmemesi</li>
             <li>Kart limitinin aşılması</li>

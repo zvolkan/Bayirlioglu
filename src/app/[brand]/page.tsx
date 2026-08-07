@@ -280,7 +280,7 @@ export default async function BrandHomePage({ params }: Props) {
           <Reveal>
             <div className="text-center mb-12">
               <p className="font-bold uppercase text-sm tracking-widest mb-2 text-brand-400">Avantajlar</p>
-              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 rule-under">Neden {cfg.name}?</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 rule-under rule-center">Neden {cfg.name}?</h2>
             </div>
           </Reveal>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">

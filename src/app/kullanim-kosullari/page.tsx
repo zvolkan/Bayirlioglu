@@ -47,7 +47,7 @@ export default function KullanimKosullariPage() {
                 Siparişleriniz, stok durumuna ve ödemenin onaylanmasına bağlı olarak işleme alınır.
                 Aşağıdaki ödeme yöntemlerini kabul etmekteyiz:
               </p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-2">
+              <ul className="list-disc list-outside pl-5 text-gray-600 space-y-2 marker:text-gray-400">
                 <li>Kredi kartı ve banka kartı (iyzico altyapısı, 3D Secure güvencesiyle)</li>
                 <li>Kredi kartına taksitli ödeme</li>
               </ul>

@@ -185,6 +185,9 @@ export default async function AdminSiparislerPage({
               </tbody>
             </table>
           </div>
+          <p className="sm:hidden px-4 py-2.5 text-[11px] text-gray-400 border-t border-gray-100">
+            Tüm sütunları görmek için tabloyu yana kaydırın →
+          </p>
         </div>
       )}
 

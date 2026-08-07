@@ -666,32 +666,32 @@ export default function ProductForm({
         </div>
 
         {specs.map((spec, idx) => (
-          <div key={idx} className="grid grid-cols-12 gap-3 items-center">
+          <div key={idx} className="grid grid-cols-6 sm:grid-cols-12 gap-2 sm:gap-3 items-center">
             <input
               aria-label={`${idx + 1}. özellik adı`}
               value={spec.name}
               onChange={(e) => updateSpec(idx, 'name', e.target.value)}
               placeholder="Özellik adı"
-              className="col-span-4 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="col-span-6 sm:col-span-4 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <input
               aria-label={`${idx + 1}. özellik değeri`}
               value={spec.value}
               onChange={(e) => updateSpec(idx, 'value', e.target.value)}
               placeholder="Değer"
-              className="col-span-5 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="col-span-3 sm:col-span-5 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <input
               aria-label={`${idx + 1}. özellik birimi`}
               value={spec.unit}
               onChange={(e) => updateSpec(idx, 'unit', e.target.value)}
               placeholder="Birim"
-              className="col-span-2 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="col-span-2 sm:col-span-2 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <button
               type="button"
               onClick={() => removeSpec(idx)}
-              className="col-span-1 text-gray-400 hover:text-red-500 text-xl leading-none"
+              className="col-span-1 flex items-center justify-center h-10 w-10 mx-auto rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 text-xl leading-none"
               title="Sil"
               aria-label={`${idx + 1}. özelliği sil`}
             >

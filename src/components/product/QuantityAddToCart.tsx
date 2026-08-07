@@ -24,7 +24,9 @@ export default function QuantityAddToCart({ product, className = '' }: Props) {
 
   return (
     <div className="flex flex-col sm:flex-row gap-3">
-      <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden shrink-0 self-stretch sm:self-auto">
+      {/* Mobilde kutu tam genişlik oluyor; justify-between olmadan −/+ sola
+          sıkışıp sağda ~200px boşluk kalıyordu. */}
+      <div className="flex items-center justify-between sm:justify-start border border-gray-200 rounded-xl overflow-hidden shrink-0 self-stretch sm:self-auto">
         <button
           type="button"
           onClick={() => setQuantity((q) => clamp(q - 1))}

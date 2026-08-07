@@ -36,7 +36,7 @@ export default function GizlilikPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">2. Toplanan Kişisel Veriler</h2>
               <p className="text-gray-600 leading-relaxed mb-3">Sitemizi kullanırken aşağıdaki kişisel verileri toplayabiliriz:</p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-2">
+              <ul className="list-disc list-outside pl-5 text-gray-600 space-y-2 marker:text-gray-400">
                 <li>Ad, soyad, e-posta adresi ve telefon numarası</li>
                 <li>Teslimat ve fatura adresi bilgileri</li>
                 <li>Sipariş geçmişi ve alışveriş tercihleri</li>
@@ -48,7 +48,7 @@ export default function GizlilikPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">3. Verilerin Kullanım Amaçları</h2>
               <p className="text-gray-600 leading-relaxed mb-3">Kişisel verilerinizi şu amaçlarla kullanıyoruz:</p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-2">
+              <ul className="list-disc list-outside pl-5 text-gray-600 space-y-2 marker:text-gray-400">
                 <li>Siparişlerinizi işlemek ve teslimat sürecini yönetmek</li>
                 <li>Müşteri hizmetleri sunmak ve sorularınızı yanıtlamak</li>
                 <li>Kampanya ve fırsatlar hakkında bilgilendirme yapmak (onayınız dahilinde)</li>
@@ -87,7 +87,7 @@ export default function GizlilikPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Haklarınız</h2>
               <p className="text-gray-600 leading-relaxed mb-3">KVKK kapsamında aşağıdaki haklara sahipsiniz:</p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-2">
+              <ul className="list-disc list-outside pl-5 text-gray-600 space-y-2 marker:text-gray-400">
                 <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
                 <li>Verilerinize erişim ve bunların düzeltilmesini talep etme</li>
                 <li>Verilerinizin silinmesini veya yok edilmesini isteme</li>
