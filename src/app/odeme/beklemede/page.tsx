@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { prisma } from '@/lib/db'
+import { formatOrderNo } from '@/lib/order-number'
 
 export const metadata: Metadata = {
   title: 'Ödemeniz Doğrulanıyor | Bayırlıoğlu Grup',
@@ -19,6 +21,17 @@ export default async function OdemeBeklemedePage({
   searchParams: Promise<{ siparis?: string }>
 }) {
   const { siparis } = await searchParams
+
+  // Kimliği zaten adres çubuğunda olan siparişin müşteriye gösterilen
+  // numarasını çeviriyoruz; destek araması bu numarayla yapılacak.
+  const order = siparis
+    ? await prisma.order
+        .findUnique({
+          where: { id: siparis },
+          select: { id: true, orderNumber: true },
+        })
+        .catch(() => null)
+    : null
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
@@ -53,9 +66,9 @@ export default async function OdemeBeklemedePage({
           </p>
         </div>
 
-        {siparis && (
+        {order && (
           <p className="text-xs text-gray-400 font-mono mb-6 break-all">
-            Sipariş No: {siparis}
+            Sipariş No: {formatOrderNo(order)}
           </p>
         )}
 

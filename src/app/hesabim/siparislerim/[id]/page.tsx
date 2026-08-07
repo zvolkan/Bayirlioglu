@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
+import { formatOrderNo } from '@/lib/order-number'
 import CancelOrderButton from '../_components/CancelOrderButton'
 import RepeatOrderButton from '../../_components/RepeatOrderButton'
 import type { BrandKey } from '@/lib/types'
@@ -129,7 +130,7 @@ export default async function SiparisDetayPage({ params }: Props) {
             </svg>
             Tüm Siparişler
           </Link>
-          <span className="text-xs text-gray-400 font-mono">#{order.id.slice(-8).toUpperCase()}</span>
+          <span className="text-xs text-gray-400 font-mono">#{formatOrderNo(order)}</span>
         </div>
 
         {/* Order summary header */}
@@ -139,7 +140,7 @@ export default async function SiparisDetayPage({ params }: Props) {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
               <div>
                 <p className="text-gray-400 text-xs mb-0.5">Sipariş No</p>
-                <p className="font-semibold text-gray-900 font-mono text-xs">{order.id.slice(-10).toUpperCase()}</p>
+                <p className="font-semibold text-gray-900 font-mono text-xs">{formatOrderNo(order)}</p>
               </div>
               <div>
                 <p className="text-gray-400 text-xs mb-0.5">Sipariş Tarihi</p>

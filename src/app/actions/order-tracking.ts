@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/db'
+import { formatOrderNo, normalizeOrderNoInput } from '@/lib/order-number'
 
 /**
  * Sipariş takibi.
@@ -74,7 +75,7 @@ export async function trackOrder(
   orderNumber: string,
   email: string,
 ): Promise<TrackOrderResponse> {
-  const orderNo = (orderNumber ?? '').trim()
+  const { digits, raw: orderNo } = normalizeOrderNoInput(orderNumber ?? '')
   const mail = (email ?? '').trim().toLowerCase()
 
   if (!orderNo || !mail) {
@@ -84,11 +85,14 @@ export async function trackOrder(
   try {
     const order = await prisma.order.findFirst({
       where: {
-        id: orderNo,
+        // Numara ile de eski cuid ile de bulunabilsin: e-postalardan
+        // kopyalanan eski kimlikler çalışmaya devam etsin.
+        OR: [...(digits ? [{ orderNumber: digits }] : []), { id: orderNo }],
         user: { email: { equals: mail, mode: 'insensitive' } },
       },
       select: {
         id: true,
+        orderNumber: true,
         status: true,
         createdAt: true,
         updatedAt: true,
@@ -156,7 +160,7 @@ export async function trackOrder(
     return {
       ok: true,
       data: {
-        orderNo: order.id,
+        orderNo: formatOrderNo(order),
         status: order.status,
         statusLabel: STATUS_LABELS[order.status] ?? order.status,
         createdAt: formatDateTime(order.createdAt) ?? '',

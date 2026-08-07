@@ -80,7 +80,10 @@ export interface OrderEmailItem {
 }
 
 export interface OrderEmailData {
+  /** Veritabanı kimliği — yalnızca admin panel bağlantısı için */
   orderId: string
+  /** Müşteriye gösterilen sipariş numarası (yalnızca rakam) */
+  orderNo: string
   customerName: string
   items: OrderEmailItem[]
   subtotal: number
@@ -165,7 +168,7 @@ export function orderConfirmationEmail(data: OrderEmailData) {
 
     <p style="margin:0 0 4px;font-size:12px;color:#a1a1aa;">SİPARİŞ NUMARASI</p>
     <p style="margin:0 0 20px;font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:600;">
-      ${escapeHtml(data.orderId)}
+      ${escapeHtml(data.orderNo)}
     </p>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -185,7 +188,7 @@ export function orderConfirmationEmail(data: OrderEmailData) {
   )
 
   const text = [
-    `Siparişiniz alındı — ${data.orderId}`,
+    `Siparişiniz alındı — ${data.orderNo}`,
     '',
     ...data.items.map((i) => `${i.name} × ${i.quantity} ${i.unit} — ${money(i.totalPrice)}`),
     '',
@@ -196,13 +199,13 @@ export function orderConfirmationEmail(data: OrderEmailData) {
     `Siparişleriniz: ${siteUrl}/hesabim/siparislerim`,
   ].join('\n')
 
-  return { subject: `Siparişiniz alındı — ${data.orderId.slice(-8).toUpperCase()}`, html, text }
+  return { subject: `Siparişiniz alındı — ${data.orderNo}`, html, text }
 }
 
 // ─── 2. Kargo bildirimi ──────────────────────────────────────────────────────
 
 export function orderShippedEmail(params: {
-  orderId: string
+  orderNo: string
   customerName: string
   carrier: string
   trackingNumber: string
@@ -234,7 +237,7 @@ export function orderShippedEmail(params: {
     }
 
     <p style="margin:16px 0 0;font-size:12px;color:#a1a1aa;">
-      Sipariş No: ${escapeHtml(params.orderId)}
+      Sipariş No: ${escapeHtml(params.orderNo)}
     </p>
   `,
   )
@@ -244,7 +247,7 @@ export function orderShippedEmail(params: {
     `Kargo firması: ${params.carrier}`,
     `Takip numarası: ${params.trackingNumber}`,
     params.trackingUrl ? `Takip: ${params.trackingUrl}` : `${siteUrl}/siparis-takibi`,
-    `Sipariş No: ${params.orderId}`,
+    `Sipariş No: ${params.orderNo}`,
   ].join('\n')
 
   return { subject: 'Siparişiniz kargoya verildi', html, text }
@@ -258,7 +261,7 @@ export function orderShippedEmail(params: {
  * Cayma hakkı süresi teslim tarihinden itibaren işlediği için bu e-posta aynı
  * zamanda sürenin başladığının yazılı bildirimi oluyor.
  */
-export function orderDeliveredEmail(params: { orderId: string; customerName: string }) {
+export function orderDeliveredEmail(params: { orderNo: string; customerName: string }) {
   const siteUrl = getSiteUrl()
 
   const html = layout(
@@ -267,7 +270,7 @@ export function orderDeliveredEmail(params: { orderId: string; customerName: str
     <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz teslim edildi 📦</p>
     <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
       Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
-        params.orderId,
+        params.orderNo,
       )} numaralı siparişiniz teslim edildi. Bizi tercih ettiğiniz için teşekkür ederiz.
     </p>
 
@@ -285,7 +288,7 @@ export function orderDeliveredEmail(params: { orderId: string; customerName: str
   )
 
   const text = [
-    `${params.orderId} numaralı siparişiniz teslim edildi.`,
+    `${params.orderNo} numaralı siparişiniz teslim edildi.`,
     'Cayma hakkınızı teslim tarihinden itibaren 14 gün içinde kullanabilirsiniz.',
     `İletişim: ${SITE_CONFIG.email} — ${SITE_CONFIG.phone}`,
   ].join('\n')
@@ -301,7 +304,7 @@ export function orderDeliveredEmail(params: { orderId: string; customerName: str
  * olmayan bir iadeyi beklemesini söylememek önemli.
  */
 export function orderCancelledEmail(params: {
-  orderId: string
+  orderNo: string
   customerName: string
   reason?: string
 }) {
@@ -313,7 +316,7 @@ export function orderCancelledEmail(params: {
     <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz iptal edildi</p>
     <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
       Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
-        params.orderId,
+        params.orderNo,
       )} numaralı siparişiniz iptal edildi.
     </p>
 
@@ -332,7 +335,7 @@ export function orderCancelledEmail(params: {
   )
 
   const text = [
-    `${params.orderId} numaralı siparişiniz iptal edildi.`,
+    `${params.orderNo} numaralı siparişiniz iptal edildi.`,
     'Bu sipariş için tahsil edilmiş bir ödeme bulunmuyor.',
     `İletişim: ${SITE_CONFIG.email}`,
   ].join('\n')
@@ -343,7 +346,7 @@ export function orderCancelledEmail(params: {
 // ─── 3. İptal / iade ─────────────────────────────────────────────────────────
 
 export function orderRefundedEmail(params: {
-  orderId: string
+  orderNo: string
   customerName: string
   amount: number
   reason?: string
@@ -354,7 +357,7 @@ export function orderRefundedEmail(params: {
     <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz iptal edildi</p>
     <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
       Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
-        params.orderId,
+        params.orderNo,
       )} numaralı siparişiniz iptal edildi ve
       <strong>${money(params.amount)}</strong> tutarındaki ödemeniz iade işlemine alındı.
     </p>
@@ -371,7 +374,7 @@ export function orderRefundedEmail(params: {
   )
 
   const text = [
-    `${params.orderId} numaralı siparişiniz iptal edildi.`,
+    `${params.orderNo} numaralı siparişiniz iptal edildi.`,
     `İade tutarı: ${money(params.amount)}`,
     'Kartınıza yansıması 1-7 iş günü sürebilir.',
   ].join('\n')
@@ -404,14 +407,14 @@ export function adminNewOrderEmail(data: OrderEmailData) {
   return {
     subject: `Yeni sipariş: ${money(data.total)} — ${data.customerName}`,
     html,
-    text: `Yeni sipariş ${data.orderId} — ${money(data.total)} — ${data.customerName}`,
+    text: `Yeni sipariş ${data.orderNo} — ${money(data.total)} — ${data.customerName}`,
   }
 }
 
 // ─── 5. İade talebi ──────────────────────────────────────────────────────────
 
 export function returnRequestedEmail(params: {
-  orderId: string
+  orderNo: string
   customerName: string
   itemNames: string[]
 }) {
@@ -423,7 +426,7 @@ export function returnRequestedEmail(params: {
     <p style="margin:0 0 6px;font-size:20px;font-weight:700;">İade talebiniz alındı</p>
     <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
       Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
-        params.orderId,
+        params.orderNo,
       )} numaralı siparişiniz için iade talebinizi aldık.
     </p>
 
@@ -448,7 +451,7 @@ export function returnRequestedEmail(params: {
   )
 
   const text = [
-    `${params.orderId} numaralı sipariş için iade talebiniz alındı.`,
+    `${params.orderNo} numaralı sipariş için iade talebiniz alındı.`,
     `Ürünler: ${params.itemNames.join(', ')}`,
     'Onaylandığında ürünü nasıl göndereceğinizi bildireceğiz. Şimdilik göndermeyin.',
   ].join('\n')
@@ -457,7 +460,7 @@ export function returnRequestedEmail(params: {
 }
 
 export function returnDecisionEmail(params: {
-  orderId: string
+  orderNo: string
   customerName: string
   approved: boolean
   adminNote?: string | null
@@ -469,7 +472,7 @@ export function returnDecisionEmail(params: {
     <p style="margin:0 0 6px;font-size:20px;font-weight:700;">İade talebiniz onaylandı</p>
     <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
       Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
-        params.orderId,
+        params.orderNo,
       )} numaralı siparişinize ait iade talebiniz onaylandı.
     </p>
 
@@ -488,7 +491,7 @@ export function returnDecisionEmail(params: {
     <p style="margin:0 0 6px;font-size:20px;font-weight:700;">İade talebiniz hakkında</p>
     <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
       Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
-        params.orderId,
+        params.orderNo,
       )} numaralı siparişinize ait iade talebinizi maalesef karşılayamıyoruz.
     </p>
   `
@@ -518,8 +521,8 @@ export function returnDecisionEmail(params: {
 
   const text = [
     params.approved
-      ? `${params.orderId} numaralı sipariş için iade talebiniz onaylandı.`
-      : `${params.orderId} numaralı sipariş için iade talebiniz karşılanamadı.`,
+      ? `${params.orderNo} numaralı sipariş için iade talebiniz onaylandı.`
+      : `${params.orderNo} numaralı sipariş için iade talebiniz karşılanamadı.`,
     params.approved ? `Ürünü şu adrese gönderin: ${SITE_CONFIG.address}` : '',
     params.adminNote ? `Açıklama: ${params.adminNote}` : '',
     `İletişim: ${SITE_CONFIG.email} — ${SITE_CONFIG.phone}`,
@@ -535,7 +538,7 @@ export function returnDecisionEmail(params: {
 }
 
 export function adminReturnRequestEmail(params: {
-  orderId: string
+  orderNo: string
   customerName: string
   customerEmail: string
   reason: string
@@ -550,7 +553,7 @@ export function adminReturnRequestEmail(params: {
     <p style="margin:0 0 16px;font-size:14px;color:#52525b;line-height:1.7;">
       <strong>${escapeHtml(params.customerName)}</strong> (${escapeHtml(
         params.customerEmail,
-      )}) — sipariş ${escapeHtml(params.orderId)}
+      )}) — sipariş ${escapeHtml(params.orderNo)}
     </p>
 
     <div style="background:#fafafa;border-radius:12px;padding:16px;">
@@ -572,12 +575,12 @@ export function adminReturnRequestEmail(params: {
   )
 
   const text = [
-    `Yeni iade talebi — sipariş ${params.orderId}`,
+    `Yeni iade talebi — sipariş ${params.orderNo}`,
     `Müşteri: ${params.customerName} (${params.customerEmail})`,
     `Ürünler: ${params.itemNames.join(', ')}`,
     `Gerekçe: ${params.reason}`,
     `${siteUrl}/admin/iadeler`,
   ].join('\n')
 
-  return { subject: `Yeni iade talebi — ${params.orderId}`, html, text }
+  return { subject: `Yeni iade talebi — ${params.orderNo}`, html, text }
 }

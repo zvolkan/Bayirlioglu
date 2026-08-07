@@ -75,7 +75,7 @@ export default function SiparisTakibiPage() {
                 id="takip-siparisNo"
                 value={orderNum}
                 onChange={(e) => setOrderNum(e.target.value)}
-                placeholder="Sipariş onayında yer alan numara"
+                placeholder="Örn. 2608074831"
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
               />
             </div>

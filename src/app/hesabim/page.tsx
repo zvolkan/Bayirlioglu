@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
+import { formatOrderNo } from '@/lib/order-number'
 import { signOut } from '@/app/actions/auth'
 import ProfileForm from './_components/ProfileForm'
 import RepeatOrderButton from './_components/RepeatOrderButton'
@@ -209,7 +210,7 @@ export default async function HesabimPage() {
                       <div key={order.id} className="p-5">
                         <div className="flex items-start justify-between gap-4 mb-3">
                           <div>
-                            <p className="text-xs text-gray-400 font-mono mb-0.5">#{order.id.slice(-8).toUpperCase()}</p>
+                            <p className="text-xs text-gray-400 font-mono mb-0.5">#{formatOrderNo(order)}</p>
                             <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
@@ -269,7 +270,7 @@ export default async function HesabimPage() {
                       <div key={order.id} className="p-5">
                         <div className="flex items-start justify-between gap-4 mb-3">
                           <div>
-                            <p className="text-xs text-gray-400 font-mono mb-0.5">#{order.id.slice(-8).toUpperCase()}</p>
+                            <p className="text-xs text-gray-400 font-mono mb-0.5">#{formatOrderNo(order)}</p>
                             <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">

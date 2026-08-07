@@ -71,6 +71,7 @@ export async function processRefund(options: RefundOptions): Promise<RefundOutco
     where: { id: orderId },
     select: {
       id: true,
+      orderNumber: true,
       paymentId: true,
       totalAmount: true,
       stockReduced: true,
@@ -118,7 +119,7 @@ export async function processRefund(options: RefundOptions): Promise<RefundOutco
     try {
       const cancelled = await cancelPayment({
         paymentId: order.paymentId,
-        conversationId: order.id,
+        conversationId: order.orderNumber ?? order.id,
         ip,
       })
       if (cancelled?.status === 'success') gateway = 'cancel'
@@ -133,7 +134,7 @@ export async function processRefund(options: RefundOptions): Promise<RefundOutco
         const refunded = await refundPayment({
           paymentId: order.paymentId,
           price: amount,
-          conversationId: order.id,
+          conversationId: order.orderNumber ?? order.id,
           ip,
         })
         if (refunded?.status === 'success') gateway = 'refund'

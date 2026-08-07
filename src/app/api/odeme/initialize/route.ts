@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
 import { initializeCheckoutForm } from '@/lib/iyzico'
 import { calculateTotals, money, extractVat } from '@/lib/checkout'
+import { generateOrderNumber, isUniqueConstraintError } from '@/lib/order-number'
 import { getSiteUrl } from '@/lib/site-url'
 
 /** Sözleşme metinleri değiştiğinde artırılmalı — hangi sürümün onaylandığı kaydedilir */
@@ -249,8 +250,7 @@ export async function POST(req: NextRequest) {
   const addrLine = `${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}, ${addr.district}`
 
   // ── PENDING sipariş — tutar dökümü ve adres kopyasıyla ───────────────────
-  const order = await prisma.order.create({
-    data: {
+  const orderData = {
       userId: user.id,
       brandId: brand.id,
       addressId: savedAddressId ? String(savedAddressId) : null,
@@ -288,8 +288,38 @@ export async function POST(req: NextRequest) {
           vatAmount: lineVats[index],
         })),
       },
-    },
-  })
+  }
+
+  // Sipariş numarası rastgele üretiliyor; çakışma olasılığı düşük ama sıfır
+  // değil. Önce sorgulayıp sonra yazmak yarış durumunu çözmediği için
+  // veritabanının benzersizlik kısıtına güvenip yeni numarayla tekrar
+  // deniyoruz. Ödeme bu yüzden hiç başlayamamamalı.
+  let order: { id: string; orderNumber: string | null }
+  let attempt = 0
+
+  for (;;) {
+    try {
+      order = await prisma.order.create({
+        data: { ...orderData, orderNumber: generateOrderNumber() },
+        select: { id: true, orderNumber: true },
+      })
+      break
+    } catch (error) {
+      if (attempt < 5 && isUniqueConstraintError(error)) {
+        attempt++
+        continue
+      }
+      console.error('[ödeme] sipariş oluşturulamadı:', error)
+      return NextResponse.json(
+        { error: 'Siparişiniz oluşturulamadı. Lütfen tekrar deneyin.' },
+        { status: 500 },
+      )
+    }
+  }
+
+  // iyzico panelinde ve ekstrede görünen kimlik — müşteriye söylediğimiz
+  // numarayla aynı olsun ki iki tarafı eşleştirmek kolay olsun.
+  const conversationId = order.orderNumber ?? order.id
 
   const basketItems = validated.map((item, index) => ({
     id: item.id,
@@ -313,14 +343,14 @@ export async function POST(req: NextRequest) {
 
   const request = {
     locale: 'tr',
-    conversationId: order.id,
+    conversationId,
     // iyzico kuralı: `price`, basketItems fiyatlarının TOPLAMINA eşit olmalı.
     // basketItems'a kargo kalemi de eklendiği için burada `total` kullanılır;
     // `subtotal` yazılırsa kargolu (500 TL altı) her sipariş reddedilir.
     price: total.toFixed(2),
     paidPrice: total.toFixed(2),
     currency: 'TRY',
-    basketId: order.id,
+    basketId: conversationId,
     paymentGroup: 'PRODUCT',
     callbackUrl: `${siteUrl}/api/odeme/callback`,
     enabledInstallments: [1, 2, 3, 6, 9, 12],

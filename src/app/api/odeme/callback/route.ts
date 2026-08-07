@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
   // ── Siparişi bul ──────────────────────────────────────────────────────────
   let order: {
     id: string
+    orderNumber: string | null
     status: string
     paymentStatus: string | null
     totalAmount: unknown
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
       where: { paymentToken: token },
       select: {
         id: true,
+        orderNumber: true,
         status: true,
         paymentStatus: true,
         totalAmount: true,
@@ -78,7 +80,8 @@ export async function POST(req: NextRequest) {
 
   // ── iyzico doğrulama ──────────────────────────────────────────────────────
   try {
-    const result = await retrieveCheckoutForm(token, order.id)
+    // conversationId ödeme başlatılırken sipariş numarasıyla gönderilmişti
+    const result = await retrieveCheckoutForm(token, order.orderNumber ?? order.id)
 
     const success = result?.status === 'success' && result?.paymentStatus === 'SUCCESS'
 

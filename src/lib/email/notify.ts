@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import { sendEmailSafe, unquote } from './send'
 import { deploymentTag } from '@/lib/deployment'
 import { carrierTrackingUrl } from '@/lib/carrier'
+import { formatOrderNo } from '@/lib/order-number'
 import {
   orderConfirmationEmail,
   orderShippedEmail,
@@ -28,6 +29,7 @@ async function loadOrderForEmail(orderId: string) {
     where: { id: orderId },
     select: {
       id: true,
+      orderNumber: true,
       subtotal: true,
       shippingFee: true,
       totalAmount: true,
@@ -56,6 +58,7 @@ type LoadedOrder = NonNullable<Awaited<ReturnType<typeof loadOrderForEmail>>>
 function toEmailData(order: LoadedOrder): OrderEmailData {
   return {
     orderId: order.id,
+    orderNo: formatOrderNo(order),
     customerName: order.shipFullName ?? order.user.name ?? 'Müşterimiz',
     items: order.items.map(
       (item: {
@@ -187,7 +190,7 @@ export async function notifyOrderShipped(orderId: string): Promise<void> {
     }
 
     const mail = orderShippedEmail({
-      orderId: order.id,
+      orderNo: formatOrderNo(order),
       customerName: order.shipFullName ?? order.user.name ?? 'Müşterimiz',
       carrier: order.carrier,
       trackingNumber: order.trackingNumber,
@@ -222,7 +225,7 @@ export async function notifyOrderDelivered(orderId: string): Promise<void> {
     if (!order?.user.email) return
 
     const mail = orderDeliveredEmail({
-      orderId: order.id,
+      orderNo: formatOrderNo(order),
       customerName: order.shipFullName ?? order.user.name ?? 'Müşterimiz',
     })
 
@@ -255,7 +258,7 @@ export async function notifyOrderCancelled(orderId: string, reason?: string): Pr
     if (!order?.user.email) return
 
     const mail = orderCancelledEmail({
-      orderId: order.id,
+      orderNo: formatOrderNo(order),
       customerName: order.shipFullName ?? order.user.name ?? 'Müşterimiz',
       reason,
     })
@@ -286,7 +289,7 @@ export async function notifyOrderRefunded(orderId: string, reason?: string): Pro
     if (!order?.user.email) return
 
     const mail = orderRefundedEmail({
-      orderId: order.id,
+      orderNo: formatOrderNo(order),
       customerName: order.shipFullName ?? order.user.name ?? 'Müşterimiz',
       amount: Number(order.totalAmount),
       reason,
@@ -317,6 +320,7 @@ async function loadReturnRequest(requestId: string) {
       order: {
         select: {
           id: true,
+          orderNumber: true,
           shipFullName: true,
           items: { select: { id: true, quantity: true, product: { select: { name: true } } } },
         },
@@ -352,7 +356,7 @@ export async function notifyReturnRequested(requestId: string): Promise<void> {
     const itemNames = returnItemNames(request)
 
     const customer = returnRequestedEmail({
-      orderId: request.order.id,
+      orderNo: formatOrderNo(request.order),
       customerName,
       itemNames,
     })
@@ -368,7 +372,7 @@ export async function notifyReturnRequested(requestId: string): Promise<void> {
       : ''
     if (adminTo) {
       const adminMail = adminReturnRequestEmail({
-        orderId: request.order.id,
+        orderNo: formatOrderNo(request.order),
         customerName,
         customerEmail: request.user.email,
         reason: request.reason,
@@ -394,7 +398,7 @@ export async function notifyReturnDecision(requestId: string): Promise<void> {
     if (!request?.user.email) return
 
     const mail = returnDecisionEmail({
-      orderId: request.order.id,
+      orderNo: formatOrderNo(request.order),
       customerName: request.order.shipFullName ?? request.user.name ?? 'Müşterimiz',
       approved: request.status === 'APPROVED',
       adminNote: request.adminNote,

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
+import { formatOrderNo } from '@/lib/order-number'
 import { cancelStalePendingOrders } from '@/app/actions/orders'
 import { signOut } from '@/app/actions/auth'
 import CancelOrderButton from './_components/CancelOrderButton'
@@ -167,7 +168,7 @@ export default async function SiparislerimPage() {
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="text-base flex-shrink-0">{brandEmoji}</span>
                           <div className="min-w-0">
-                            <span className="text-xs font-mono text-gray-400">#{order.id.slice(-8).toUpperCase()}</span>
+                            <span className="text-xs font-mono text-gray-400">#{formatOrderNo(order)}</span>
                             <span className="text-gray-300 mx-1.5">·</span>
                             <span className="text-xs text-gray-500">{formatDate(order.createdAt)}</span>
                           </div>

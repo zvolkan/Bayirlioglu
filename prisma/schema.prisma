@@ -224,6 +224,19 @@ enum OrderStatus {
 
 model Order {
   id            String      @id @default(cuid())
+
+  // Müşteriye gösterilen sipariş numarası — yalnızca rakam.
+  //
+  // `id` bir cuid ("cmsi91lrv0001jl044fw4o5do"); telefonda okunmuyor, elle
+  // yazılamıyor ve kargo/muhasebe evrağına yazılacak bir şeye benzemiyor.
+  // Bu alan YYAAGG + 4 rastgele hane biçiminde 10 haneli bir numara tutuyor
+  // (örn. 2608074831). Rastgele kısım sayesinde sipariş adedi dışarıdan
+  // sayılamıyor; tarih öneki sayesinde yönetici numaraya bakınca günü görüyor.
+  //
+  // `id` iç kimlik olarak kalıyor (adresler, ilişkiler, revalidate yolları).
+  // Eski siparişlerde bu alan boş olabileceği için opsiyonel.
+  orderNumber   String?     @unique @map("order_number") @db.VarChar(20)
+
   userId        String      @map("user_id") @db.Uuid
   addressId     String?     @map("address_id")
   brandId       Int         @map("brand_id")

@@ -87,6 +87,7 @@ export async function getOrdersForAdmin(options?: {
 
   if (search) {
     where.OR = [
+      { orderNumber: { contains: search.replace(/\D/g, '') || search } },
       { id: { contains: search, mode: 'insensitive' } },
       { shipFullName: { contains: search, mode: 'insensitive' } },
       { trackingNumber: { contains: search, mode: 'insensitive' } },

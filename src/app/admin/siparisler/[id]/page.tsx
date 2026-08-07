@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
+import { formatOrderNo } from '@/lib/order-number'
 import { cookies } from 'next/headers'
 import { verifyAdminToken } from '@/lib/admin-auth'
 import { redirect } from 'next/navigation'
@@ -79,12 +80,16 @@ export default async function AdminSiparisDetayPage({
           ← Siparişlere Dön
         </Link>
         <div className="flex items-center gap-3 mt-2 flex-wrap">
-          <h1 className="text-2xl font-bold text-gray-900">Sipariş Detayı</h1>
+          <h1 className="text-2xl font-bold text-gray-900 font-mono">
+            #{formatOrderNo(order)}
+          </h1>
           <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${meta.color}`}>
             {meta.label}
           </span>
         </div>
-        <p className="text-sm text-gray-500 mt-1 font-mono">{order.id}</p>
+        {/* Müşteriye gösterilen numara başlıkta; cuid yalnızca destek/iyzico
+            eşleştirmesi için küçük puntoda duruyor. */}
+        <p className="text-xs text-gray-400 mt-1 font-mono">{order.id}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

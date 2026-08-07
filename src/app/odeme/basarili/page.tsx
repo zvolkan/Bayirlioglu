@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import ClearCart from './_components/ClearCart'
 import { prisma } from '@/lib/db'
+import { formatOrderNo } from '@/lib/order-number'
 import { createClient } from '@/lib/supabase/server'
 
 import type { Metadata } from 'next'
@@ -22,7 +23,12 @@ export default async function BasariliPage({ searchParams }: Props) {
   // Sipariş gerçekten var mı ve bu kullanıcıya mı ait?
   // Eskiden URL'i bilen herkes "Ödemeniz tamamlandı" ekranını görüyor ve
   // sayfayı açan herkesin sepeti (kendi siparişi olmasa bile) siliniyordu.
-  let verified: { id: string; totalAmount: unknown; paymentStatus: string | null } | null = null
+  let verified: {
+    id: string
+    orderNumber: string | null
+    totalAmount: unknown
+    paymentStatus: string | null
+  } | null = null
 
   if (siparis) {
     const supabase = await createClient()
@@ -34,7 +40,7 @@ export default async function BasariliPage({ searchParams }: Props) {
       verified = await prisma.order
         .findFirst({
           where: { id: siparis, userId: user.id },
-          select: { id: true, totalAmount: true, paymentStatus: true },
+          select: { id: true, orderNumber: true, totalAmount: true, paymentStatus: true },
         })
         .catch(() => null)
     }
@@ -67,11 +73,11 @@ export default async function BasariliPage({ searchParams }: Props) {
             : 'Siparişiniz oluşturuldu. Ödeme doğrulaması tamamlandığında bilgilendirileceksiniz.'}
         </p>
 
-        {siparis && (
+        {verified && (
           <div className="bg-gray-50 rounded-xl px-5 py-3 mb-6">
             <p className="text-xs text-gray-400 mb-0.5">Sipariş Numaranız</p>
             <p className="font-mono font-semibold text-gray-900 text-sm tracking-wider">
-              #{siparis.slice(-8).toUpperCase()}
+              {formatOrderNo(verified)}
             </p>
           </div>
         )}

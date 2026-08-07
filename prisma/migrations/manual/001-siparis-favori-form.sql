@@ -273,3 +273,51 @@ ALTER TABLE order_items
 SELECT 'kalem işlem kimliği' AS kontrol, COUNT(*) AS var_mi
 FROM information_schema.columns
 WHERE table_name = 'order_items' AND column_name = 'payment_transaction_id';
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- EK 7: Rakamdan oluşan sipariş numarası
+--
+-- Müşteriye gösterilen numara şimdiye kadar cuid'in son haneleriydi
+-- ("...4FW4O5DO"). Artık her siparişin YYAAGG + 4 rastgele haneden oluşan
+-- 10 haneli kendi numarası var (örn. 2608074831).
+--
+-- Aşağıdaki blok mevcut siparişleri de dolduruyor: numara siparişin KENDİ
+-- oluşturulma tarihinden üretiliyor, yani eski siparişlerin numarası da
+-- tarihine uyuyor. Çakışma olursa döngü yeniden deniyor.
+-- Daha önce çalıştırıldıysa dolu satırlara dokunmuyor.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS order_number VARCHAR(20);
+
+DO $$
+DECLARE
+  kayit   RECORD;
+  aday    TEXT;
+  deneme  INT;
+BEGIN
+  FOR kayit IN SELECT id, created_at FROM orders WHERE order_number IS NULL LOOP
+    deneme := 0;
+    LOOP
+      aday := to_char(kayit.created_at, 'YYMMDD') ||
+              lpad((floor(random() * 10000))::INT::TEXT, 4, '0');
+      EXIT WHEN NOT EXISTS (SELECT 1 FROM orders WHERE order_number = aday);
+      deneme := deneme + 1;
+      IF deneme > 50 THEN
+        -- Aşırı olasılıksız; yine de sonsuz döngüye girmeyelim
+        aday := to_char(kayit.created_at, 'YYMMDD') ||
+                lpad((floor(random() * 100000))::INT::TEXT, 5, '0');
+        EXIT;
+      END IF;
+    END LOOP;
+    UPDATE orders SET order_number = aday WHERE id = kayit.id;
+  END LOOP;
+END $$;
+
+CREATE UNIQUE INDEX IF NOT EXISTS orders_order_number_key
+  ON orders (order_number);
+
+SELECT 'sipariş numarası' AS kontrol,
+       COUNT(*) FILTER (WHERE order_number IS NOT NULL) AS numarali,
+       COUNT(*) FILTER (WHERE order_number IS NULL)     AS numarasiz
+FROM orders;

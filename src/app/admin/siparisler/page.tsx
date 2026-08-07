@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getOrdersForAdmin, getOrderCountsByStatus } from '@/app/actions/admin-orders'
+import { formatOrderNo } from '@/lib/order-number'
 
 export const dynamic = 'force-dynamic'
 
@@ -143,7 +144,7 @@ export default async function AdminSiparislerPage({
                   return (
                     <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
-                        <p className="font-mono text-xs text-gray-900">{order.id.slice(-10)}</p>
+                        <p className="font-mono text-xs text-gray-900">{formatOrderNo(order)}</p>
                         <p className="text-xs text-gray-400 mt-0.5">
                           {formatDate(order.createdAt)}
                         </p>
