@@ -6,6 +6,7 @@ import Link from 'next/link'
 import ProductImage from '@/components/product/ProductImage'
 import FavoriteButton from '@/components/product/FavoriteButton'
 import Icon from '@/components/ui/Icon'
+import { categoryIcon } from '@/lib/category-icon'
 import { BRANDS } from '@/lib/constants'
 import { useCartStore } from '@/store/cartStore'
 import { SORT_OPTIONS, type SortOption } from '@/lib/queries/product-search'
@@ -13,7 +14,7 @@ import type { BrandKey, Product, Category } from '@/lib/types'
 import { toast } from 'react-hot-toast'
 
 // Pill için ortak tip (ALB L1 ve İthal L2 aynı şekle gelir)
-type TypePill = { name: string; icon: string | null; sortOrder: number }
+type TypePill = { name: string; slug: string; icon: string | null; sortOrder: number }
 
 interface Props {
   brandKey: BrandKey
@@ -111,7 +112,7 @@ export default function UrunlerContent({
     return level1Categories
       .filter((c) => c.parentId === albRoot.id)
       .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((c) => ({ name: c.name, icon: c.icon ?? null, sortOrder: c.sortOrder }))
+      .map((c) => ({ name: c.name, slug: c.slug, icon: c.icon ?? null, sortOrder: c.sortOrder }))
   }, [rootCategories, level1Categories])
 
   const ithalTypePills = useMemo((): TypePill[] => {
@@ -128,7 +129,7 @@ export default function UrunlerContent({
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .forEach((c) => {
         if (!seen.has(c.name)) {
-          seen.set(c.name, { name: c.name, icon: c.icon ?? null, sortOrder: c.sortOrder })
+          seen.set(c.name, { name: c.name, slug: c.slug, icon: c.icon ?? null, sortOrder: c.sortOrder })
         }
       })
 
@@ -321,7 +322,7 @@ export default function UrunlerContent({
                           : 'text-gray-500 border-transparent hover:text-gray-800 hover:border-gray-300',
                       ].join(' ')}
                     >
-                      {cat.icon && <span>{cat.icon}</span>}
+                      <Icon name={categoryIcon(cat.slug, cat.icon)} className="w-4 h-4" />
                       <span>{cat.name}</span>
                       {cat.productCount != null && cat.productCount > 0 && (
                         <span
@@ -411,7 +412,7 @@ export default function UrunlerContent({
                       isActive ? `${pillActive} scale-105 shadow-sm` : `${pillInactive} hover:scale-105`
                     }`}
                   >
-                    {pill.icon && <span>{pill.icon}</span>}
+                    <Icon name={categoryIcon(pill.slug, pill.icon)} className="w-3.5 h-3.5" />
                     <span>{pill.name}</span>
                   </button>
                 )

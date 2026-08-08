@@ -26,6 +26,9 @@ export type IconName =
   | 'fikir' | 'egitim' | 'saat' | 'garanti' | 'bardak' | 'gunes'
   | 'vizyon' | 'gida' | 'otel' | 'sera' | 'yazi' | 'yazar' | 'yildiz'
   | 'iklim' | 'fabrika' | 'yasak' | 'kalp-bos' | 'ok-sag'
+  // Kategori ikonları (veritabanındaki emojilerin yerine)
+  | 'alev' | 'dus' | 'temizlik' | 'fan' | 'fis' | 'civata'
+  | 'dunya' | 'magaza' | 'toprak' | 'molekul' | 'zincir'
 
 interface Props {
   name: IconName
@@ -304,6 +307,87 @@ const P: Record<IconName, React.ReactNode> = {
     </>
   ),
   'ok-sag': <path d="M5 12h13M13 7l5 5-5 5" />,
+  alev: (
+    <>
+      <path d="M12 3s1 3-1.5 5.5S7 13 7 15a5 5 0 0 0 10 0c0-2-1.2-3.5-2.5-5" />
+      <path d="M12 20a2.6 2.6 0 0 1-2.6-2.6c0-1.6 2.6-3.7 2.6-3.7s2.6 2.1 2.6 3.7A2.6 2.6 0 0 1 12 20Z" />
+    </>
+  ),
+  dus: (
+    <>
+      <path d="M7 4.5h6a4 4 0 0 1 4 4v1" />
+      <path d="M13 9.5h8" />
+      <path d="M5.5 4.5h3" />
+      <path d="M15 13v.01M17 15.5v.01M19 13v.01M16 18.5v.01M19.5 18v.01" />
+    </>
+  ),
+  temizlik: (
+    <>
+      <path d="M14.5 3.5 9 9" />
+      <path d="M11.5 6.5 17 12" />
+      <path d="M5 20.5c0-3.5 1.5-6 3.5-7.5l3.5 3.5C10.5 18.5 8.5 20.5 5 20.5Z" />
+      <path d="M14 8.5 20.5 15" />
+    </>
+  ),
+  fan: (
+    <>
+      <circle cx="12" cy="12" r="2" />
+      <path d="M12 10c0-3 1-6 3.5-6 2 0 2.5 2.5 0 4.2L12 10Z" />
+      <path d="M14 12c3 0 6 1 6 3.5 0 2-2.5 2.5-4.2 0L14 12Z" />
+      <path d="M10 14c0 3-1 6-3.5 6-2 0-2.5-2.5 0-4.2L10 14Z" />
+      <path d="M10 12c-3 0-6-1-6-3.5 0-2 2.5-2.5 4.2 0L10 12Z" />
+    </>
+  ),
+  fis: (
+    <>
+      <path d="M9 3.5v5M15 3.5v5" />
+      <path d="M6.5 8.5h11v2.5a5.5 5.5 0 0 1-11 0V8.5Z" />
+      <path d="M12 16.5v4" />
+    </>
+  ),
+  civata: (
+    <>
+      <path d="M9 3.5h6l1.5 3.5-1.5 3H9l-1.5-3L9 3.5Z" />
+      <path d="M10 10v10.5h4V10" />
+      <path d="M10 13.5h4M10 17h4" />
+    </>
+  ),
+  dunya: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M3.5 12h17" />
+      <path d="M12 3.5a13 13 0 0 1 0 17a13 13 0 0 1 0-17Z" />
+    </>
+  ),
+  magaza: (
+    <>
+      <path d="M4 9.5h16v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-10Z" />
+      <path d="M3 9.5 5 4.5h14l2 5" />
+      <path d="M9.5 20.5v-6h5v6" />
+    </>
+  ),
+  toprak: (
+    <>
+      <path d="M3 9.5h18" />
+      <path d="M4 9.5v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9" />
+      <path d="M7.5 13h1.5M12 12.5h2M16.5 14.5H18M9 16.5h2M14.5 17H16" />
+      <path d="M8 9.5 9.5 6M15 9.5 13.5 6" />
+    </>
+  ),
+  molekul: (
+    <>
+      <circle cx="6" cy="17" r="2.4" />
+      <circle cx="18" cy="17" r="2.4" />
+      <circle cx="12" cy="6" r="2.4" />
+      <path d="M10.7 8.1 7.3 14.9M13.3 8.1l3.4 6.8M8.4 17h7.2" />
+    </>
+  ),
+  zincir: (
+    <>
+      <path d="M10 13.5a3.5 3.5 0 0 0 5 0l2.5-2.5a3.5 3.5 0 0 0-5-5L11 7.5" />
+      <path d="M14 10.5a3.5 3.5 0 0 0-5 0L6.5 13a3.5 3.5 0 0 0 5 5l1.5-1.5" />
+    </>
+  ),
 }
 
 export default function Icon({ name, className, decorative = true, label }: Props) {

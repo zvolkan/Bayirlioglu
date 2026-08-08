@@ -3,6 +3,9 @@
  * Çalıştır: npx tsx prisma/seed.ts
  */
 
+// NOT: `icon` alanı artık emoji değil, ikon ADI tutuyor (bkz.
+// src/lib/category-icon.ts ve src/components/ui/Icon.tsx).
+// Emoji her işletim sisteminde farklı çiziliyor ve marka rengini almıyordu.
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -41,7 +44,7 @@ async function main() {
     update: {},
     create: {
       brandId: albTarim.id, name: 'Gübreler', slug: 'gubreler',
-      icon: '🌿', sortOrder: 1,
+      icon: 'filiz', sortOrder: 1,
       description: 'Toprak ve yaprak gübreleri, organik çözümler',
     },
   })
@@ -51,7 +54,7 @@ async function main() {
     update: {},
     create: {
       brandId: albTarim.id, name: 'Sulama Sistemleri', slug: 'sulama',
-      icon: '💧', sortOrder: 2,
+      icon: 'damla', sortOrder: 2,
       description: 'Damla sulama, sprinkler ve akıllı sulama çözümleri',
     },
   })
@@ -61,7 +64,7 @@ async function main() {
     update: {},
     create: {
       brandId: albTarim.id, name: 'Tarım İlaçları', slug: 'ilac',
-      icon: '🧪', sortOrder: 3,
+      icon: 'analiz', sortOrder: 3,
       description: 'Herbisitler, fungisitler, insektisitler',
     },
   })
@@ -71,7 +74,7 @@ async function main() {
     update: {},
     create: {
       brandId: albTarim.id, name: 'Toprak İyileştirici', slug: 'toprak',
-      icon: '🪨', sortOrder: 6,
+      icon: 'toprak', sortOrder: 6,
       description: 'pH düzenleyici, humik asit ve toprak kondisyonerleri',
     },
   })
@@ -85,7 +88,7 @@ async function main() {
     update: { sortOrder: 1 },
     create: {
       brandId: albTarim.id, name: 'ALB Tarım Ürünleri', slug: 'alb-tarim-urunleri',
-      icon: '🌱', sortOrder: 1,
+      icon: 'filiz', sortOrder: 1,
       description: 'ALB Tarım markasına ait gübre, sulama ve ilaç ürünleri',
     },
   })
@@ -101,7 +104,7 @@ async function main() {
     update: { sortOrder: 2 },
     create: {
       brandId: albTarim.id, name: 'İthal Ürünler', slug: 'ithal-urunler',
-      icon: '🌍', sortOrder: 2,
+      icon: 'dunya', sortOrder: 2,
       description: 'Dünya markalarından ithal tarım gübre ve ürünleri',
     },
   })
@@ -110,37 +113,37 @@ async function main() {
   await prisma.category.upsert({
     where: { slug: 'taban-gubresi' },
     update: { parentId: catIthalUrunler.id, sortOrder: 1 },
-    create: { brandId: albTarim.id, name: 'Taban Gübresi', slug: 'taban-gubresi', icon: '🪨', sortOrder: 1, parentId: catIthalUrunler.id, description: 'Ekim ve dikim öncesi toprak gübrelemesi' },
+    create: { brandId: albTarim.id, name: 'Taban Gübresi', slug: 'taban-gubresi', icon: 'toprak', sortOrder: 1, parentId: catIthalUrunler.id, description: 'Ekim ve dikim öncesi toprak gübrelemesi' },
   })
   await prisma.category.upsert({
     where: { slug: 'damla-sulama-gubreleri' },
     update: { parentId: catIthalUrunler.id, sortOrder: 2 },
-    create: { brandId: albTarim.id, name: 'Damla Sulama Gübreleri', slug: 'damla-sulama-gubreleri', icon: '💧', sortOrder: 2, parentId: catIthalUrunler.id, description: 'Fertigasyon ve damla sulama uyumlu çözünür gübreler' },
+    create: { brandId: albTarim.id, name: 'Damla Sulama Gübreleri', slug: 'damla-sulama-gubreleri', icon: 'damla', sortOrder: 2, parentId: catIthalUrunler.id, description: 'Fertigasyon ve damla sulama uyumlu çözünür gübreler' },
   })
   await prisma.category.upsert({
     where: { slug: 'yaprak-gubreleri' },
     update: { parentId: catIthalUrunler.id, sortOrder: 3 },
-    create: { brandId: albTarim.id, name: 'Yaprak Gübreleri', slug: 'yaprak-gubreleri', icon: '🌿', sortOrder: 3, parentId: catIthalUrunler.id, description: 'Yapraktan uygulanan hızlı etkili gübreler' },
+    create: { brandId: albTarim.id, name: 'Yaprak Gübreleri', slug: 'yaprak-gubreleri', icon: 'filiz', sortOrder: 3, parentId: catIthalUrunler.id, description: 'Yapraktan uygulanan hızlı etkili gübreler' },
   })
   await prisma.category.upsert({
     where: { slug: 'mikro-elementler' },
     update: { parentId: catIthalUrunler.id, sortOrder: 4 },
-    create: { brandId: albTarim.id, name: 'Mikro Elementler', slug: 'mikro-elementler', icon: '🔬', sortOrder: 4, parentId: catIthalUrunler.id, description: 'Çinko, demir, mangan, bor ve diğer iz elementler' },
+    create: { brandId: albTarim.id, name: 'Mikro Elementler', slug: 'mikro-elementler', icon: 'analiz', sortOrder: 4, parentId: catIthalUrunler.id, description: 'Çinko, demir, mangan, bor ve diğer iz elementler' },
   })
   await prisma.category.upsert({
     where: { slug: 'sivi-gubreler-amino' },
     update: { parentId: catIthalUrunler.id, sortOrder: 5 },
-    create: { brandId: albTarim.id, name: 'Sıvı Gübreler ve Amino Asitler', slug: 'sivi-gubreler-amino', icon: '🧪', sortOrder: 5, parentId: catIthalUrunler.id, description: 'Biostimulant, amino asit ve sıvı NPK formülasyonları' },
+    create: { brandId: albTarim.id, name: 'Sıvı Gübreler ve Amino Asitler', slug: 'sivi-gubreler-amino', icon: 'analiz', sortOrder: 5, parentId: catIthalUrunler.id, description: 'Biostimulant, amino asit ve sıvı NPK formülasyonları' },
   })
   await prisma.category.upsert({
     where: { slug: 'deniz-yosunu-organik' },
     update: { parentId: catIthalUrunler.id, sortOrder: 6 },
-    create: { brandId: albTarim.id, name: 'Deniz Yosunu ve Organik Gübreler', slug: 'deniz-yosunu-organik', icon: '🌊', sortOrder: 6, parentId: catIthalUrunler.id, description: 'Doğal kaynaklı organik biostimulantlar ve deniz yosunu özleri' },
+    create: { brandId: albTarim.id, name: 'Deniz Yosunu ve Organik Gübreler', slug: 'deniz-yosunu-organik', icon: 'damla', sortOrder: 6, parentId: catIthalUrunler.id, description: 'Doğal kaynaklı organik biostimulantlar ve deniz yosunu özleri' },
   })
   await prisma.category.upsert({
     where: { slug: 'diger-ithal-urunler' },
     update: { parentId: catIthalUrunler.id, sortOrder: 7 },
-    create: { brandId: albTarim.id, name: 'Diğer Ürünler', slug: 'diger-ithal-urunler', icon: '📦', sortOrder: 7, parentId: catIthalUrunler.id, description: 'Diğer ithal tarım ürünleri ve özel formülasyonlar' },
+    create: { brandId: albTarim.id, name: 'Diğer Ürünler', slug: 'diger-ithal-urunler', icon: 'paket', sortOrder: 7, parentId: catIthalUrunler.id, description: 'Diğer ithal tarım ürünleri ve özel formülasyonlar' },
   })
 
   const catToptanci = await prisma.category.upsert({
@@ -148,7 +151,7 @@ async function main() {
     update: { sortOrder: 3 },
     create: {
       brandId: albTarim.id, name: 'Toptancısı Olunanlar', slug: 'toptanci-olunanlar',
-      icon: '🤝', sortOrder: 3,
+      icon: 'magaza', sortOrder: 3,
       description: "Türkiye'de toptancısı olduğumuz uluslararası tarım markaları",
     },
   })
@@ -157,27 +160,27 @@ async function main() {
   await prisma.category.upsert({
     where: { slug: 'atlantica-agricola' },
     update: { parentId: catToptanci.id, sortOrder: 1 },
-    create: { brandId: albTarim.id, name: 'Atlantica Agricola', slug: 'atlantica-agricola', icon: '🌊', sortOrder: 1, parentId: catToptanci.id, description: 'Biostimulant ve özel gübre uzmanı İspanyol markası' },
+    create: { brandId: albTarim.id, name: 'Atlantica Agricola', slug: 'atlantica-agricola', icon: 'damla', sortOrder: 1, parentId: catToptanci.id, description: 'Biostimulant ve özel gübre uzmanı İspanyol markası' },
   })
   await prisma.category.upsert({
     where: { slug: 'unittar' },
     update: { parentId: catToptanci.id, sortOrder: 2 },
-    create: { brandId: albTarim.id, name: 'Unittar', slug: 'unittar', icon: '⚗️', sortOrder: 2, parentId: catToptanci.id, description: 'Yüksek saflıkta çözünür gübre formülasyonları' },
+    create: { brandId: albTarim.id, name: 'Unittar', slug: 'unittar', icon: 'analiz', sortOrder: 2, parentId: catToptanci.id, description: 'Yüksek saflıkta çözünür gübre formülasyonları' },
   })
   await prisma.category.upsert({
     where: { slug: 'lances-link' },
     update: { parentId: catToptanci.id, sortOrder: 3 },
-    create: { brandId: albTarim.id, name: "Lance's Link", slug: 'lances-link', icon: '🔗', sortOrder: 3, parentId: catToptanci.id, description: 'Özel bitki besleme ve ürün koruma çözümleri' },
+    create: { brandId: albTarim.id, name: "Lance's Link", slug: 'lances-link', icon: 'zincir', sortOrder: 3, parentId: catToptanci.id, description: 'Özel bitki besleme ve ürün koruma çözümleri' },
   })
   await prisma.category.upsert({
     where: { slug: 'lebosol' },
     update: { parentId: catToptanci.id, sortOrder: 4 },
-    create: { brandId: albTarim.id, name: 'Lebosol', slug: 'lebosol', icon: '🧬', sortOrder: 4, parentId: catToptanci.id, description: 'Alman menşeli mikro element ve yaprak gübre uzmanı' },
+    create: { brandId: albTarim.id, name: 'Lebosol', slug: 'lebosol', icon: 'molekul', sortOrder: 4, parentId: catToptanci.id, description: 'Alman menşeli mikro element ve yaprak gübre uzmanı' },
   })
   await prisma.category.upsert({
     where: { slug: 'tamagro' },
     update: { parentId: catToptanci.id, sortOrder: 5 },
-    create: { brandId: albTarim.id, name: 'Tamagro', slug: 'tamagro', icon: '🌾', sortOrder: 5, parentId: catToptanci.id, description: 'Verim artırıcı tarım teknoloji ürünleri' },
+    create: { brandId: albTarim.id, name: 'Tamagro', slug: 'tamagro', icon: 'filiz', sortOrder: 5, parentId: catToptanci.id, description: 'Verim artırıcı tarım teknoloji ürünleri' },
   })
 
   const catBayilik = await prisma.category.upsert({
@@ -185,7 +188,7 @@ async function main() {
     update: { sortOrder: 4 },
     create: {
       brandId: albTarim.id, name: 'Bayilik Olunanlar', slug: 'bayilik-olunanlar',
-      icon: '🏬', sortOrder: 4,
+      icon: 'magaza', sortOrder: 4,
       description: 'Bölge bayisi olduğumuz uluslararası tarım markaları',
     },
   })
@@ -194,22 +197,22 @@ async function main() {
   await prisma.category.upsert({
     where: { slug: 'timac-agro' },
     update: { parentId: catBayilik.id, sortOrder: 1 },
-    create: { brandId: albTarim.id, name: 'Timac Agro', slug: 'timac-agro', icon: '🏭', sortOrder: 1, parentId: catBayilik.id, description: 'Fransız tarım ve gübre grubu' },
+    create: { brandId: albTarim.id, name: 'Timac Agro', slug: 'timac-agro', icon: 'fabrika', sortOrder: 1, parentId: catBayilik.id, description: 'Fransız tarım ve gübre grubu' },
   })
   await prisma.category.upsert({
     where: { slug: 'bazachem' },
     update: { parentId: catBayilik.id, sortOrder: 2 },
-    create: { brandId: albTarim.id, name: 'Bazachem', slug: 'bazachem', icon: '⚗️', sortOrder: 2, parentId: catBayilik.id, description: 'Özel kimyasal ve gübre formülasyonları' },
+    create: { brandId: albTarim.id, name: 'Bazachem', slug: 'bazachem', icon: 'analiz', sortOrder: 2, parentId: catBayilik.id, description: 'Özel kimyasal ve gübre formülasyonları' },
   })
   await prisma.category.upsert({
     where: { slug: 'haifa-cal' },
     update: { parentId: catBayilik.id, sortOrder: 3 },
-    create: { brandId: albTarim.id, name: 'Haifa Cal', slug: 'haifa-cal', icon: '🌿', sortOrder: 3, parentId: catBayilik.id, description: 'İsrail menşeli kalsiyum ve potasyum ürün serisi' },
+    create: { brandId: albTarim.id, name: 'Haifa Cal', slug: 'haifa-cal', icon: 'filiz', sortOrder: 3, parentId: catBayilik.id, description: 'İsrail menşeli kalsiyum ve potasyum ürün serisi' },
   })
   await prisma.category.upsert({
     where: { slug: 'stoller' },
     update: { parentId: catBayilik.id, sortOrder: 4 },
-    create: { brandId: albTarim.id, name: 'Stoller', slug: 'stoller', icon: '🌱', sortOrder: 4, parentId: catBayilik.id, description: 'Stres yönetimi ve ürün kalitesi odaklı Amerikan markası' },
+    create: { brandId: albTarim.id, name: 'Stoller', slug: 'stoller', icon: 'filiz', sortOrder: 4, parentId: catBayilik.id, description: 'Stres yönetimi ve ürün kalitesi odaklı Amerikan markası' },
   })
 
   console.log('✅ ALB Tarım kategori hiyerarşisi oluşturuldu (4 parent + 20 alt kategori)')
@@ -229,40 +232,40 @@ async function main() {
 
   const catEv = await prisma.category.upsert({
     where: { slug: 'ev' },
-    update: { name: 'Eviniz İçin', icon: '🏠', sortOrder: 1 },
+    update: { name: 'Eviniz İçin', icon: 'ev', sortOrder: 1 },
     create: {
       brandId: albSu.id, name: 'Eviniz İçin', slug: 'ev',
-      icon: '🏠', sortOrder: 1,
+      icon: 'ev', sortOrder: 1,
       description: 'Ev tipi su arıtma, ısıtma ve yumuşatma çözümleri',
     },
   })
 
   const catIsYeri = await prisma.category.upsert({
     where: { slug: 'is-yeri' },
-    update: { name: 'İş Yeriniz İçin', icon: '🏢', sortOrder: 2 },
+    update: { name: 'İş Yeriniz İçin', icon: 'bina', sortOrder: 2 },
     create: {
       brandId: albSu.id, name: 'İş Yeriniz İçin', slug: 'is-yeri',
-      icon: '🏢', sortOrder: 2,
+      icon: 'bina', sortOrder: 2,
       description: 'Ticari, endüstriyel ve kurumsal su teknoloji çözümleri',
     },
   })
 
   const catKucukEvAletleri = await prisma.category.upsert({
     where: { slug: 'kucuk-ev-aletleri' },
-    update: { name: 'Küçük Ev Aletleri', icon: '🔌', sortOrder: 3 },
+    update: { name: 'Küçük Ev Aletleri', icon: 'fis', sortOrder: 3 },
     create: {
       brandId: albSu.id, name: 'Küçük Ev Aletleri', slug: 'kucuk-ev-aletleri',
-      icon: '🔌', sortOrder: 3,
+      icon: 'fis', sortOrder: 3,
       description: 'Klima, vantilatör, robot süpürge ve temizlik aletleri',
     },
   })
 
   const catYedekParca = await prisma.category.upsert({
     where: { slug: 'yedek-parca' },
-    update: { name: 'Yedek Parça & Aksesuar', icon: '🔧', sortOrder: 4 },
+    update: { name: 'Yedek Parça & Aksesuar', icon: 'servis', sortOrder: 4 },
     create: {
       brandId: albSu.id, name: 'Yedek Parça & Aksesuar', slug: 'yedek-parca',
-      icon: '🔧', sortOrder: 4,
+      icon: 'servis', sortOrder: 4,
       description: 'Filtre, membran ve tüm yedek parçalar',
     },
   })
@@ -271,30 +274,30 @@ async function main() {
 
   const catEvSuIsitici = await prisma.category.upsert({
     where: { slug: 'ev-su-isitici' },
-    update: { parentId: catEv.id, name: 'Su Isıtıcıları', icon: '🔥', sortOrder: 1 },
+    update: { parentId: catEv.id, name: 'Su Isıtıcıları', icon: 'alev', sortOrder: 1 },
     create: {
       brandId: albSu.id, name: 'Su Isıtıcıları', slug: 'ev-su-isitici',
-      icon: '🔥', sortOrder: 1, parentId: catEv.id,
+      icon: 'alev', sortOrder: 1, parentId: catEv.id,
       description: 'Elektrikli boiler, şofben ve ısı pompalı su ısıtıcıları',
     },
   })
 
   const catEvSuYumusatma = await prisma.category.upsert({
     where: { slug: 'ev-su-yumusatma' },
-    update: { parentId: catEv.id, name: 'Su Yumuşatma', icon: '💧', sortOrder: 2 },
+    update: { parentId: catEv.id, name: 'Su Yumuşatma', icon: 'damla', sortOrder: 2 },
     create: {
       brandId: albSu.id, name: 'Su Yumuşatma', slug: 'ev-su-yumusatma',
-      icon: '💧', sortOrder: 2, parentId: catEv.id,
+      icon: 'damla', sortOrder: 2, parentId: catEv.id,
       description: 'Ev tipi kireç önleyici ve iyon değiştirici sistemler',
     },
   })
 
   const catEvSuAritma = await prisma.category.upsert({
     where: { slug: 'ev-su-aritma' },
-    update: { parentId: catEv.id, name: 'Su Arıtma', icon: '⚗️', sortOrder: 3 },
+    update: { parentId: catEv.id, name: 'Su Arıtma', icon: 'analiz', sortOrder: 3 },
     create: {
       brandId: albSu.id, name: 'Su Arıtma', slug: 'ev-su-aritma',
-      icon: '⚗️', sortOrder: 3, parentId: catEv.id,
+      icon: 'analiz', sortOrder: 3, parentId: catEv.id,
       description: 'Tezgah altı RO ve alkali su arıtma sistemleri',
     },
   })
@@ -303,40 +306,40 @@ async function main() {
 
   const catSuSebili = await prisma.category.upsert({
     where: { slug: 'su-sebili' },
-    update: { parentId: catIsYeri.id, name: 'Arıtmalı Su Sebili', icon: '🚿', sortOrder: 1 },
+    update: { parentId: catIsYeri.id, name: 'Arıtmalı Su Sebili', icon: 'dus', sortOrder: 1 },
     create: {
       brandId: albSu.id, name: 'Arıtmalı Su Sebili', slug: 'su-sebili',
-      icon: '🚿', sortOrder: 1, parentId: catIsYeri.id,
+      icon: 'dus', sortOrder: 1, parentId: catIsYeri.id,
       description: 'Ofis ve işyeri için entegre filtreli içme suyu sebilleri',
     },
   })
 
   const catEndustriyel = await prisma.category.upsert({
     where: { slug: 'endustriyel' },
-    update: { parentId: catIsYeri.id, name: 'Endüstriyel Sistemler', icon: '🏭', sortOrder: 2 },
+    update: { parentId: catIsYeri.id, name: 'Endüstriyel Sistemler', icon: 'fabrika', sortOrder: 2 },
     create: {
       brandId: albSu.id, name: 'Endüstriyel Sistemler', slug: 'endustriyel',
-      icon: '🏭', sortOrder: 2, parentId: catIsYeri.id,
+      icon: 'fabrika', sortOrder: 2, parentId: catIsYeri.id,
       description: 'Yüksek kapasiteli endüstriyel RO, yumuşatma ve saf su sistemleri',
     },
   })
 
   const catTicariBoiler = await prisma.category.upsert({
     where: { slug: 'ticari-boiler' },
-    update: { parentId: catIsYeri.id, name: 'Ticari Su Isıtıcıları', icon: '♨️', sortOrder: 3 },
+    update: { parentId: catIsYeri.id, name: 'Ticari Su Isıtıcıları', icon: 'alev', sortOrder: 3 },
     create: {
       brandId: albSu.id, name: 'Ticari Su Isıtıcıları', slug: 'ticari-boiler',
-      icon: '♨️', sortOrder: 3, parentId: catIsYeri.id,
+      icon: 'alev', sortOrder: 3, parentId: catIsYeri.id,
       description: 'Büyük kapasiteli otel, tesis ve endüstri tipi boilerler',
     },
   })
 
   const catIsYeriYumusatma = await prisma.category.upsert({
     where: { slug: 'is-yeri-yumusatma' },
-    update: { parentId: catIsYeri.id, name: 'Su Yumuşatma Sistemleri', icon: '💧', sortOrder: 4 },
+    update: { parentId: catIsYeri.id, name: 'Su Yumuşatma Sistemleri', icon: 'damla', sortOrder: 4 },
     create: {
       brandId: albSu.id, name: 'Su Yumuşatma Sistemleri', slug: 'is-yeri-yumusatma',
-      icon: '💧', sortOrder: 4, parentId: catIsYeri.id,
+      icon: 'damla', sortOrder: 4, parentId: catIsYeri.id,
       description: 'Yüksek kapasiteli ticari ve endüstriyel su yumuşatma',
     },
   })
@@ -345,30 +348,30 @@ async function main() {
 
   const catKlima = await prisma.category.upsert({
     where: { slug: 'klima' },
-    update: { parentId: catKucukEvAletleri.id, name: 'Klima Sistemleri', icon: '❄️', sortOrder: 1 },
+    update: { parentId: catKucukEvAletleri.id, name: 'Klima Sistemleri', icon: 'iklim', sortOrder: 1 },
     create: {
       brandId: albSu.id, name: 'Klima Sistemleri', slug: 'klima',
-      icon: '❄️', sortOrder: 1, parentId: catKucukEvAletleri.id,
+      icon: 'iklim', sortOrder: 1, parentId: catKucukEvAletleri.id,
       description: 'Duvar tipi, salon tipi ve kaset tipi inverter klima sistemleri',
     },
   })
 
   const catVantilator = await prisma.category.upsert({
     where: { slug: 'vantilator' },
-    update: { parentId: catKucukEvAletleri.id, name: 'Vantilatör', icon: '🌬️', sortOrder: 2 },
+    update: { parentId: catKucukEvAletleri.id, name: 'Vantilatör', icon: 'fan', sortOrder: 2 },
     create: {
       brandId: albSu.id, name: 'Vantilatör', slug: 'vantilator',
-      icon: '🌬️', sortOrder: 2, parentId: catKucukEvAletleri.id,
+      icon: 'fan', sortOrder: 2, parentId: catKucukEvAletleri.id,
       description: 'Kule tipi ve masa tipi vantilatörler',
     },
   })
 
   const catTemizlik = await prisma.category.upsert({
     where: { slug: 'temizlik' },
-    update: { parentId: catKucukEvAletleri.id, name: 'Temizlik Aletleri', icon: '🧹', sortOrder: 3 },
+    update: { parentId: catKucukEvAletleri.id, name: 'Temizlik Aletleri', icon: 'temizlik', sortOrder: 3 },
     create: {
       brandId: albSu.id, name: 'Temizlik Aletleri', slug: 'temizlik',
-      icon: '🧹', sortOrder: 3, parentId: catKucukEvAletleri.id,
+      icon: 'temizlik', sortOrder: 3, parentId: catKucukEvAletleri.id,
       description: 'Yüksek basınçlı yıkayıcı, elektrikli süpürge ve temizlik robotları',
     },
   })
@@ -377,10 +380,10 @@ async function main() {
 
   const catFiltre = await prisma.category.upsert({
     where: { slug: 'filtre' },
-    update: { parentId: catYedekParca.id, name: 'Filtre & Membran', icon: '🔩', sortOrder: 1 },
+    update: { parentId: catYedekParca.id, name: 'Filtre & Membran', icon: 'civata', sortOrder: 1 },
     create: {
       brandId: albSu.id, name: 'Filtre & Membran', slug: 'filtre',
-      icon: '🔩', sortOrder: 1, parentId: catYedekParca.id,
+      icon: 'civata', sortOrder: 1, parentId: catYedekParca.id,
       description: 'RO membran, karbon filtre, sediment filtre ve yedek parçalar',
     },
   })

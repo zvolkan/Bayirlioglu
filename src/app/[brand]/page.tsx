@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import Icon from '@/components/ui/Icon'
+import { categoryIcon } from '@/lib/category-icon'
 import { BRANDS, SITE_CONFIG } from '@/lib/constants'
 import { TESLIMAT_SURESI } from '@/lib/checkout'
 import { getPublishedPosts } from '@/lib/blog'
@@ -125,8 +126,8 @@ export default async function BrandHomePage({ params }: Props) {
                   {/* Kayan alt aksan çizgisi */}
                   <span className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-b-2xl" />
 
-                  <div className="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center text-lg mb-3 icon-pop group-hover:shadow-lg">
-                    {cat.icon}
+                  <div className="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center mb-3 icon-pop group-hover:shadow-lg">
+                    <Icon name={categoryIcon(cat.slug, cat.icon)} className="w-5 h-5" />
                   </div>
                   <p className="font-bold text-gray-900 text-sm leading-tight">{cat.name}</p>
                   {cat.productCount !== undefined && cat.productCount > 0 && (

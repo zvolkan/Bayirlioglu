@@ -107,8 +107,6 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
           { label: 'Yedek Parça & Aksesuar', href: '/urunler?kullanim=yedek-parca' },
         ],
       },
-      { label: 'Eviniz İçin', href: '/urunler?kullanim=ev' },
-      { label: 'İş Yeriniz İçin', href: '/urunler?kullanim=is-yeri' },
       { label: 'Servis', href: '/hizmetler' },
       { label: 'Referanslar', href: '/referanslar' },
       { label: 'İletişim', href: '/iletisim' },
