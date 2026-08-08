@@ -1,43 +1,55 @@
-import type { IconName } from '@/components/ui/Icon'
+import { IKON_ADLARI, type IconName } from '@/components/ui/Icon'
 
 /**
  * Kategori ikonları — TEK KAYNAK.
  *
  * Kategorilerin ikonu veritabanında (`categories.icon`) emoji olarak
  * duruyordu: 🌿, 💧, 🧪, 🪨, ❄️, 🔌 … Site genelindeki emoji temizliği bunları
- * yakalayamadı, çünkü koddan değil veriden geliyorlar.
+ * yakalayamadı, çünkü koddan değil veriden geliyorlar. Burada kategori
+ * adresine (slug) bakılarak gerçek ikona çevriliyor; veritabanına dokunmak
+ * gerekmiyor.
  *
- * Emojiyi veritabanından silmek yerine burada eşliyoruz. İki sebeple:
+ * ÜÇ AŞAMALI ÇÖZÜMLEME
  *
- * 1. Veritabanına dokunmak gerekmiyor; SQL çalıştırmadan düzeliyor.
- * 2. Kategori yönetim ekranı henüz yok. Olduğunda yönetici ikon adını
- *    (`damla`, `filiz` …) doğrudan yazabilecek — `iconAdiGecerli` kontrolü
- *    veritabanındaki değer geçerli bir ikon adıysa onu kullanıyor.
+ * 1. Tam eşleşme (`ESLEME`).
+ * 2. Ön ek atılıp tekrar denenir. Kategoriler zaman içinde `alb-` ve `ithal-`
+ *    ön ekleriyle ikiye ayrılmış (`alb-taban-gubresi`, `ithal-taban-gubresi`);
+ *    ilk sürümde bu ön ekler hesaba katılmadığı için ALB Tarım tarafındaki
+ *    filtrelerin HEPSİ yedek ikona düşüyordu.
+ * 3. Anahtar kelime. Yeni bir kategori eklendiğinde (örn. `alb-sivi-gubre-2`)
+ *    listeye yazılmasa bile adında "gubre" geçtiği için doğru ikonu alır.
  *
- * Listede olmayan bir kategori için `paket` ikonu düşüyor, yani yeni kategori
- * eklendiğinde boşluk görünmüyor.
+ * Hiçbiri tutmazsa `paket` düşer — boşluk görünmez.
  */
 
 const ESLEME: Record<string, IconName> = {
-  // ── ALB Tarım ──────────────────────────────────────────────────────────
+  // ── Kök kategoriler ────────────────────────────────────────────────────
   'alb-tarim-urunleri': 'filiz',
   'ithal-urunler': 'dunya',
   'toptanci-olunanlar': 'magaza',
   'bayilik-olunanlar': 'magaza',
+  ev: 'ev',
+  'is-yeri': 'bina',
+  'kucuk-ev-aletleri': 'fis',
+  'yedek-parca': 'servis',
 
+  // ── Tarım ürün tipleri ─────────────────────────────────────────────────
+  // Bu altı kategori ürün listesinde YAN YANA rozet olarak çıkıyor; her birine
+  // ayrı ikon verilmesi şart, yoksa filtre satırı tek tip görünüyor.
   gubreler: 'filiz',
   'taban-gubresi': 'toprak',
+  'toprak-iyilestirici': 'katman',
   toprak: 'toprak',
   'damla-sulama-gubreleri': 'damla',
-  'yaprak-gubreleri': 'filiz',
+  'yaprak-gubreleri': 'yaprak',
   'mikro-elementler': 'analiz',
   'sivi-gubreler-amino': 'molekul',
-  'deniz-yosunu-organik': 'filiz',
+  'deniz-yosunu-organik': 'yosun',
   'diger-ithal-urunler': 'paket',
   sulama: 'damla',
   ilac: 'analiz',
 
-  // Tedarikçi markaları — adları zaten ayırt edici, ortak bir rozet yeterli
+  // ── Tedarikçi markaları ────────────────────────────────────────────────
   'timac-agro': 'fabrika',
   bazachem: 'kalite',
   'haifa-cal': 'kalite',
@@ -48,12 +60,7 @@ const ESLEME: Record<string, IconName> = {
   lebosol: 'molekul',
   tamagro: 'kalite',
 
-  // ── Alb Su Teknolojileri ───────────────────────────────────────────────
-  ev: 'ev',
-  'is-yeri': 'bina',
-  'kucuk-ev-aletleri': 'fis',
-  'yedek-parca': 'servis',
-
+  // ── Su teknolojileri ───────────────────────────────────────────────────
   'ev-su-aritma': 'damla',
   'ev-su-yumusatma': 'damla',
   'is-yeri-yumusatma': 'damla',
@@ -67,18 +74,59 @@ const ESLEME: Record<string, IconName> = {
   temizlik: 'temizlik',
 }
 
+/** Kategoriler zamanla bu ön eklerle ikiye ayrıldı; ikon aynı kalmalı */
+const ON_EKLER = ['alb-', 'ithal-', 'ev-', 'is-yeri-']
+
+/** Listede olmayan kategoriler için ad tabanlı tahmin (sıra önemli) */
+const ANAHTARLAR: [RegExp, IconName][] = [
+  [/isitici|boiler|sofben|kombi/, 'alev'],
+  [/sebil/, 'dus'],
+  [/klima/, 'iklim'],
+  [/vantilator|fan/, 'fan'],
+  [/temizlik|supurge/, 'temizlik'],
+  [/filtre|membran/, 'civata'],
+  [/endustriyel|fabrika/, 'fabrika'],
+  [/amino|molekul/, 'molekul'],
+  [/element|ilac|analiz|kimya/, 'analiz'],
+  [/yosun|deniz|alg/, 'yosun'],
+  [/iyilestirici|katman|kompost|humik/, 'katman'],
+  [/toprak/, 'toprak'],
+  [/yaprak|foliar/, 'yaprak'],
+  [/gubre|organik|tohum|fide/, 'filiz'],
+  [/su|sulama|yumusatma|aritma|damla/, 'damla'],
+  [/parca|aksesuar|yedek/, 'servis'],
+  [/aletleri|elektronik/, 'fis'],
+]
+
 /**
  * Kategori için ikon adı döndürür.
  *
- * @param slug  Kategori adresi (örn. "damla-sulama-gubreleri")
- * @param dbIcon  Veritabanındaki `icon` değeri; ileride ikon adı tutarsa kullanılır
+ * @param slug   Kategori adresi (örn. "alb-damla-sulama-gubreleri")
+ * @param dbIcon Veritabanındaki `icon` değeri; ileride ikon adı tutarsa kullanılır
  */
 export function categoryIcon(
   slug: string | null | undefined,
   dbIcon?: string | null,
 ): IconName {
-  if (slug && ESLEME[slug]) return ESLEME[slug]
-  // Veritabanına ikon adı yazılmışsa (emoji değil) ona güven
-  if (dbIcon && /^[a-z][a-z-]{2,}$/.test(dbIcon)) return dbIcon as IconName
+  // Veritabanına emoji değil GEÇERLİ bir ikon adı yazılmışsa ona öncelik ver.
+  // Listede olmayan bir ad (örn. "leaf") kabul edilirse ikon hiç çizilmez,
+  // rozette boşluk kalır; o yüzden burada doğrulanıyor.
+  if (dbIcon && IKON_ADLARI.has(dbIcon)) return dbIcon as IconName
+
+  if (!slug) return 'paket'
+
+  if (ESLEME[slug]) return ESLEME[slug]
+
+  for (const on of ON_EKLER) {
+    if (slug.startsWith(on)) {
+      const kalan = slug.slice(on.length)
+      if (ESLEME[kalan]) return ESLEME[kalan]
+    }
+  }
+
+  for (const [kalip, ikon] of ANAHTARLAR) {
+    if (kalip.test(slug)) return ikon
+  }
+
   return 'paket'
 }

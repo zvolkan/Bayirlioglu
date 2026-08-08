@@ -29,6 +29,7 @@ export type IconName =
   // Kategori ikonları (veritabanındaki emojilerin yerine)
   | 'alev' | 'dus' | 'temizlik' | 'fan' | 'fis' | 'civata'
   | 'dunya' | 'magaza' | 'toprak' | 'molekul' | 'zincir'
+  | 'katman' | 'yaprak' | 'yosun'
 
 interface Props {
   name: IconName
@@ -388,7 +389,40 @@ const P: Record<IconName, React.ReactNode> = {
       <path d="M14 10.5a3.5 3.5 0 0 0-5 0L6.5 13a3.5 3.5 0 0 0 5 5l1.5-1.5" />
     </>
   ),
+  // Toprak iyileştirici — toprak katmanları. `toprak` (saksı) ile aynı satırda
+  // yan yana durduğu için bilerek farklı bir siluet.
+  katman: (
+    <>
+      <path d="M3.5 7.5h17" />
+      <path d="M3.5 12h17" />
+      <path d="M3.5 16.5h17" />
+      <path d="M8 4.2v2.6M13.5 3.6v3.2M17.5 4.6v2.2" />
+      <path d="M7 14v1M11.5 13.8v1.4M16 14.2v.8M9.5 18.4v1.2M14.5 18.2v1.4" />
+    </>
+  ),
+  // Yaprak gübreleri — tek yaprak, damarlı
+  yaprak: (
+    <>
+      <path d="M20.5 3.5C11 3.5 5.5 7.6 5.5 14a6.5 6.5 0 0 0 6.5 6.5c6 0 8.5-6 8.5-17Z" />
+      <path d="M9.2 17.6C11.2 12.2 14.6 8.4 19 6" />
+    </>
+  ),
+  // Deniz yosunu ve organik gübreler — dalga üstünde yosun
+  yosun: (
+    <>
+      <path d="M9.5 20.5c-2-2.6-2.8-5.6-2.4-9C7.5 8 9 5.6 11.5 3.5" />
+      <path d="M11.5 12c1.6-.6 2.6-1.9 3-3.9M9 15.6c-1.5-.5-2.5-1.6-3-3.3M12 17.6c1.9-.5 3.2-1.7 3.9-3.6" />
+      <path d="M3 20.5c1.5 0 1.5-1.4 3-1.4s1.5 1.4 3 1.4 1.5-1.4 3-1.4 1.5 1.4 3 1.4 1.5-1.4 3-1.4 1.5 1.4 3 1.4" />
+    </>
+  ),
 }
+
+/**
+ * Var olan ikon adları. Veritabanından gelen serbest metinlerin (kategori
+ * `icon` sütunu) gerçekten çizilebilir bir ikona karşılık gelip gelmediğini
+ * doğrulamak için kullanılıyor — yoksa boşluk çizilirdi.
+ */
+export const IKON_ADLARI = new Set(Object.keys(P))
 
 export default function Icon({ name, className, decorative = true, label }: Props) {
   const node = P[name]

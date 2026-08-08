@@ -185,11 +185,13 @@ export const SITE_CONFIG = {
   mapsUrl:
     'https://www.google.com/maps/place//data=!4m2!3m1!1s0x14dc3d918f947551:0x35f4224c2a7044c3?sa=X&ved=1t:8290&ictx=111',
   workingHours: 'Pzt – Cmt: 08:30 – 19:00',
+  // Yalnızca gerçekten var olan hesaplar. Burası arama motoruna verilen
+  // `sameAs` listesini besliyor; olmayan bir profili buraya yazmak Google'a
+  // yanlış kurum eşleştirmesi yaptırır. Facebook / X / YouTube hesabı
+  // açılırsa buraya eklenmesi yeterli, footer ayrıca güncellenmeli.
   socialMedia: {
-    instagram: 'https://instagram.com/albgrup',
-    facebook: 'https://facebook.com/albgrup',
-    youtube: 'https://youtube.com/@albgrup',
-    twitter: 'https://twitter.com/albgrup',
+    instagramTarim: 'https://www.instagram.com/alb.tarim',
+    instagramSu: 'https://www.instagram.com/albsuteknolojileri',
   },
 };
 
