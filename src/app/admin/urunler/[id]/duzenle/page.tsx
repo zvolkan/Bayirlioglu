@@ -35,7 +35,9 @@ export default async function DuzenleUrunPage({
 
   async function handleUpdate(formData: FormData) {
     'use server'
-    await updateProduct(id, formData)
+    // Sonucu DÖNDÜRMEK şart: aksiyon doğrulama hatasını sonuç nesnesiyle
+    // bildiriyor, sarmalayıcı yutarsa form hatayı hiç göremez.
+    return updateProduct(id, formData)
   }
 
   return (

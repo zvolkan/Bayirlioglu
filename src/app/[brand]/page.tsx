@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { BRANDS } from '@/lib/constants'
+import Icon from '@/components/ui/Icon'
+import { BRANDS, SITE_CONFIG } from '@/lib/constants'
 import { TESLIMAT_SURESI } from '@/lib/checkout'
 import { getPublishedPosts } from '@/lib/blog'
 import BrandArtwork from '@/components/ui/BrandArtwork'
@@ -65,23 +66,23 @@ export default async function BrandHomePage({ params }: Props) {
               <RevealGroup itemClassName="h-full" variant="scale">
               {[
                 {
-                  icon: '💧',
+                  icon: 'damla' as const,
                   title: 'Dünya Markası Membranlar',
                   desc: 'A.O. Smith, FAW & NSF onaylı ters osmoz membranlı sistemler',
                 },
                 {
-                  icon: '🏅',
+                  icon: 'odul' as const,
                   title: 'Yetkili Bayi Güvencesi',
                   desc: 'A.O. Smith ve diğer markaların yetkili satış ve servis noktası',
                 },
                 {
-                  icon: '🔧',
+                  icon: 'servis' as const,
                   title: 'Ücretsiz Profesyonel Montaj',
                   desc: 'Sertifikalı teknisyenler, aynı gün kurulum imkânı',
                 },
               ].map((item) => (
                 <div key={item.title} className="flex items-center gap-4 px-6 py-4 h-full">
-                  <div className="text-3xl shrink-0">{item.icon}</div>
+                  <Icon name={item.icon} className="w-8 h-8 shrink-0 text-brand-600" />
                   <div>
                     <p className="font-bold text-gray-900 text-sm">{item.title}</p>
                     <p className="text-gray-500 text-xs mt-0.5">{item.desc}</p>
@@ -156,24 +157,24 @@ export default async function BrandHomePage({ params }: Props) {
               <RevealGroup itemClassName="h-full">
               {[
                 {
-                  icon: '🏠',
+                  icon: 'ev' as const,
                   title: 'Evinizde',
                   desc: 'Tezgah altı RO ve alkali su cihazlarıyla aile sağlığınızı koruyun. Çay, kahve ve yemeklerinizde farkı hissedeceksiniz.',
                   href: `/${brandKey}/urunler?kullanim=ev`,
                   cta: 'Ev Tipi Ürünler',
                 },
                 {
-                  icon: '☕',
+                  icon: 'bardak' as const,
                   title: 'Cafe & Restoranda',
                   desc: 'Yoğun su tüketiminde kalite + tasarruf. Cafe, restoran, pastane ve çay ocakları için yüksek kapasiteli çözümler.',
-                  href: `/${brandKey}/urunler?kullanim=isyeri`,
+                  href: `/${brandKey}/urunler?kullanim=is-yeri`,
                   cta: 'İş Yeri Çözümleri',
                 },
                 {
-                  icon: '🏢',
+                  icon: 'bina' as const,
                   title: 'Ofisinizde',
                   desc: 'Arıtmalı su sebilleriyle çalışanlarınıza sağlıklı su sunun. Pratik, ekonomik ve her bütçeye uygun çözümler.',
-                  href: `/${brandKey}/urunler?kategori=su-sebili`,
+                  href: `/${brandKey}/urunler?kullanim=is-yeri&kategori=su-sebili`,
                   cta: 'Arıtmalı Su Sebilleri',
                 },
               ].map((item) => (
@@ -182,7 +183,7 @@ export default async function BrandHomePage({ params }: Props) {
                   href={item.href}
                   className="group bg-white/5 border border-white/10 rounded-2xl p-7 hover:bg-white/12 hover:border-white/20 hover-lift flex flex-col h-full"
                 >
-                  <div className="text-4xl mb-4">{item.icon}</div>
+                  <Icon name={item.icon} className="w-9 h-9 mb-4 text-brand-600" />
                   <h3 className="text-xl font-black text-white mb-2">{item.title}</h3>
                   <p className="text-white/60 text-sm leading-relaxed mb-5 flex-1">{item.desc}</p>
                   <span className="text-brand-400 text-sm font-semibold group-hover:text-brand-accent transition-colors arrow-slide">
@@ -232,8 +233,8 @@ export default async function BrandHomePage({ params }: Props) {
                           className="object-contain p-2 transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-4xl transition-transform duration-300 group-hover:scale-110">
-                          {product.category.icon || '📦'}
+                        <div className="w-full h-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                          <Icon name="paket" className="w-10 h-10 text-gray-300" />
                         </div>
                       )}
 
@@ -287,21 +288,21 @@ export default async function BrandHomePage({ params }: Props) {
             <RevealGroup itemClassName="h-full">
             {(isAlbSu
               ? [
-                  { icon: '🔬', title: 'İleri Teknoloji', desc: 'Dünya markası ürünleri en uygun fiyatlarla sunuyoruz.' },
-                  { icon: '🛠️', title: 'Profesyonel Montaj', desc: 'Sertifikalı teknisyenlerimiz kurulumu üstlenir.' },
-                  { icon: '📞', title: '7/24 Teknik Destek', desc: 'Arızanızı en kısa sürede çözüyoruz.' },
-                  { icon: '🛡️', title: '2 Yıl Garanti', desc: 'Tüm ürünlerimizde tam garanti güvencesi.' },
+                  { icon: 'analiz' as const, title: 'İleri Teknoloji', desc: 'Dünya markası ürünleri en uygun fiyatlarla sunuyoruz.' },
+                  { icon: 'servis' as const, title: 'Profesyonel Montaj', desc: 'Sertifikalı teknisyenlerimiz kurulumu üstlenir.' },
+                  { icon: 'telefon' as const, title: 'Teknik Destek', desc: `${SITE_CONFIG.workingHours} saatlerinde bize ulaşabilirsiniz.` },
+                  { icon: 'garanti' as const, title: 'Garanti', desc: 'Ürün garantisi markaya ve modele göre 2 ile 5 yıl arasında değişir.' },
                 ]
               : [
-                  { icon: '🌿', title: 'Organik Sertifikalı', desc: 'Ürünlerimiz organik tarım standartlarına uygundur.' },
-                  { icon: '🚜', title: 'Saha Danışmanlık', desc: 'Uzman agronomlarımız tarlada yanınızda.' },
-                  { icon: '🚚', title: 'Hızlı Teslimat', desc: `81 ile ${TESLIMAT_SURESI} içinde teslimat.` },
-                  { icon: '💰', title: 'Uygun Fiyat', desc: 'Çiftçi dostu fiyatlarla kaliteli ürünler.' },
+                  { icon: 'filiz' as const, title: 'Geniş Ürün Seçeneği', desc: 'Tarla, sera ve bahçe için gübre, ilaç ve sulama malzemesi bir arada.' },
+                  { icon: 'traktor' as const, title: 'Saha Danışmanlık', desc: 'Uzman agronomlarımız tarlada yanınızda.' },
+                  { icon: 'kargo' as const, title: 'Hızlı Teslimat', desc: `81 ile ${TESLIMAT_SURESI} içinde teslimat.` },
+                  { icon: 'fiyat' as const, title: 'Uygun Fiyat', desc: 'Çiftçi dostu fiyatlarla kaliteli ürünler.' },
                 ]
             ).map((item) => (
               <div key={item.title} className="group h-full text-center p-6 rounded-2xl border border-gray-100 hover:border-gray-200 hover-lift">
-                <div className="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center text-3xl mb-4 mx-auto icon-pop group-hover:shadow-md">
-                  {item.icon}
+                <div className="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center mb-4 mx-auto icon-pop group-hover:shadow-md">
+                  <Icon name={item.icon} className="w-7 h-7 text-brand-600" />
                 </div>
                 <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
@@ -334,37 +335,37 @@ export default async function BrandHomePage({ params }: Props) {
               <RevealGroup itemClassName="h-full">
               {[
                 {
-                  icon: '🏭',
+                  icon: 'fabrika' as const,
                   title: 'Endüstriyel RO Sistemleri',
                   desc: "500 lt/saat'ten 50.000 lt/saate kadar yüksek kapasiteli ters osmoz sistemleri. Üretim hattı, kazan suyu, proses suyu uygulamaları.",
                   tags: ['Fabrika', 'Üretim Tesisi'],
                 },
                 {
-                  icon: '💎',
+                  icon: 'kalite' as const,
                   title: 'Su Yumuşatma Sistemleri',
                   desc: 'İyon değiştirici reçine teknolojisi ile sertliği sıfıra indirin. Kazan ömrünü uzatın, kireç sorunundan kalıcı olarak kurtulun.',
                   tags: ['Otel', 'Sanayi'],
                 },
                 {
-                  icon: '⚗️',
+                  icon: 'analiz' as const,
                   title: 'Alkali İyonize Su Sistemleri',
-                  desc: 'pH 8-10 aralığında alkali su üretimi. Bireysel ve ticari kullanım için yüksek ORP değerli, antioksidan zengin su.',
+                  desc: 'pH 8-10 aralığında alkali su üretimi. Bireysel ve ticari kullanım için farklı kapasitelerde cihaz seçenekleri.',
                   tags: ['Sağlık Klinik', 'Cafe & Restoran'],
                 },
                 {
-                  icon: '🔬',
+                  icon: 'analiz' as const,
                   title: 'Demineralizasyon Üniteleri',
-                  desc: 'Tıbbi, laboratuvar ve elektronik üretim için 0 TDS saf su üretimi. GMP sertifikalı tasarım seçenekleri.',
+                  desc: 'Tıbbi, laboratuvar ve elektronik üretim için 0 TDS saf su üretimi. Kapasiteye göre proje bazlı tasarlanır.',
                   tags: ['Hastane', 'Laboratuvar'],
                 },
                 {
-                  icon: '☀️',
+                  icon: 'gunes' as const,
                   title: 'UV Sterilizasyon Sistemleri',
                   desc: 'Kimyasal kullanmadan bakteriyolojik arıtma. İçme suyu, yüzme havuzu ve gıda üretim uygulamaları için.',
                   tags: ['Gıda', 'Havuz'],
                 },
                 {
-                  icon: '🔧',
+                  icon: 'servis' as const,
                   title: 'Periyodik Bakım Kontratı',
                   desc: 'Yıllık veya 6 aylık bakım paketleriyle sisteminiz sürekli verimli çalışır. Filtre değişimi, dezenfeksiyon ve teknik kontrol.',
                   tags: ['Tüm Sektörler'],
@@ -374,8 +375,8 @@ export default async function BrandHomePage({ params }: Props) {
                   key={item.title}
                   className="group h-full bg-white rounded-2xl border border-brand-100 p-6 hover:border-brand-200 hover-lift"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-brand-600 text-white flex items-center justify-center text-2xl mb-4 icon-pop">
-                    {item.icon}
+                  <div className="w-12 h-12 rounded-xl bg-brand-600 text-white flex items-center justify-center mb-4 icon-pop">
+                    <Icon name={item.icon} className="w-6 h-6" />
                   </div>
                   <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
                   <p className="text-gray-600 text-sm leading-relaxed mb-4">{item.desc}</p>
@@ -410,7 +411,7 @@ export default async function BrandHomePage({ params }: Props) {
             <div className="brand-surface gradient-pan rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
               <div className="relative">
-                <p className="text-5xl mb-4 float-soft">🔬</p>
+                <Icon name="analiz" className="w-12 h-12 mx-auto mb-4 float-soft" />
                 <h3 className="text-2xl sm:text-3xl font-black mb-3">Ücretsiz Su Analizi</h3>
                 <p className="text-white/80 text-base mb-6 max-w-xl mx-auto">
                   Evinizin veya işyerinizin suyunu ücretsiz analiz ediyoruz.

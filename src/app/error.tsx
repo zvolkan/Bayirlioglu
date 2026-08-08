@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import Icon from '@/components/ui/Icon'
 
 /**
  * Genel hata sınırı.
@@ -23,7 +24,7 @@ export default function Error({
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
       <div className="text-center max-w-md">
-        <div className="text-6xl mb-6">⚠️</div>
+        <Icon name="uyari" className="w-14 h-14 mx-auto mb-6 text-amber-500" />
         <h1 className="text-2xl font-bold text-gray-900 mb-3">Bir şeyler ters gitti</h1>
         <p className="text-gray-500 leading-relaxed mb-8">
           Sayfa yüklenirken beklenmeyen bir hata oluştu. Tekrar denemek isterseniz aşağıdaki

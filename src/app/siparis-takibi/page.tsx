@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { carrierTrackingUrl } from '@/lib/carrier'
+import Icon from '@/components/ui/Icon'
 import { trackOrder, type TrackingResult } from '@/app/actions/order-tracking'
 
 /**
@@ -39,8 +40,17 @@ export default function SiparisTakibiPage() {
     setLoading(true)
     setResult(null)
 
-    // Gerçek sipariş sorgusu — eskiden burada sabit bir mock sonuç dönüyordu
-    const response = await trackOrder(orderNum, email)
+    // Gerçek sipariş sorgusu — eskiden burada sabit bir mock sonuç dönüyordu.
+    // try/catch şart: istek hata verirse setLoading(false) hiç çalışmıyor,
+    // buton kalıcı olarak "Sorgulanıyor…" durumunda kalıyordu.
+    let response
+    try {
+      response = await trackOrder(orderNum, email)
+    } catch {
+      setLoading(false)
+      setError('Sorgulama sırasında bir sorun oluştu. Lütfen tekrar deneyin.')
+      return
+    }
 
     setLoading(false)
 
@@ -115,7 +125,10 @@ export default function SiparisTakibiPage() {
                 Sorgulanıyor…
               </>
             ) : (
-              '🔍 Siparişi Sorgula'
+              <>
+                <Icon name="arama" className="w-4 h-4" />
+                Siparişi Sorgula
+              </>
             )}
           </button>
 
@@ -153,7 +166,7 @@ export default function SiparisTakibiPage() {
 
             {result.steps.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-4xl mb-3">🚫</p>
+                <Icon name="yasak" className="w-9 h-9 mx-auto mb-3 text-gray-300" />
                 <p className="font-semibold text-gray-800">{result.statusLabel}</p>
                 <p className="text-sm text-gray-500 mt-1">
                   Bu sipariş için takip bilgisi bulunmuyor.
@@ -183,7 +196,7 @@ export default function SiparisTakibiPage() {
                                   : 'bg-gray-100 border-gray-200 text-gray-300',
                             )}
                           >
-                            {isDone ? '✓' : step.icon}
+                            <Icon name={isDone ? 'onay' : step.icon} className="w-5 h-5" />
                           </div>
 
                           <div className="flex-1 pt-1.5">

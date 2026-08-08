@@ -8,6 +8,7 @@ import { cancelStalePendingOrders } from '@/app/actions/orders'
 import { signOut } from '@/app/actions/auth'
 import CancelOrderButton from './_components/CancelOrderButton'
 import RepeatOrderButton from '../_components/RepeatOrderButton'
+import Icon, { type IconName } from '@/components/ui/Icon'
 import type { BrandKey } from '@/lib/types'
 
 export const metadata: Metadata = {
@@ -72,11 +73,11 @@ export default async function SiparislerimPage() {
     .slice(0, 2)
     .toUpperCase()
 
-  const sidebarLinks = [
-    { href: '/hesabim',              label: 'Hesabım',      icon: '👤' },
-    { href: '/hesabim/siparislerim', label: 'Siparişlerim', icon: '📦' },
-    { href: '/hesabim/adreslerim',   label: 'Adreslerim',   icon: '📍' },
-    { href: '/hesabim/favorilerim',  label: 'Favorilerim',  icon: '❤️' },
+  const sidebarLinks: { href: string; label: string; icon: IconName }[] = [
+    { href: '/hesabim',              label: 'Hesabım',      icon: 'kullanici' },
+    { href: '/hesabim/siparislerim', label: 'Siparişlerim', icon: 'paket' },
+    { href: '/hesabim/adreslerim',   label: 'Adreslerim',   icon: 'konum' },
+    { href: '/hesabim/favorilerim',  label: 'Favorilerim',  icon: 'favori' },
   ]
 
   return (
@@ -115,7 +116,7 @@ export default async function SiparislerimPage() {
                         : 'text-gray-600 hover:bg-gray-50'
                     }`}
                   >
-                    <span>{link.icon}</span>
+                    <Icon name={link.icon} className="w-5 h-5" />
                     {link.label}
                   </Link>
                 ))}
@@ -124,7 +125,7 @@ export default async function SiparislerimPage() {
                     type="submit"
                     className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors mt-1"
                   >
-                    <span>🚪</span>
+                    <Icon name="cikis" className="w-5 h-5" />
                     Çıkış Yap
                   </button>
                 </form>
@@ -141,7 +142,7 @@ export default async function SiparislerimPage() {
 
             {orders.length === 0 ? (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-                <p className="text-4xl mb-4">📦</p>
+                <Icon name="paket" className="w-9 h-9 mx-auto mb-4 text-gray-300" />
                 <p className="text-gray-500 text-sm mb-4">Henüz siparişiniz bulunmuyor.</p>
                 <Link
                   href="/"
@@ -155,7 +156,7 @@ export default async function SiparislerimPage() {
                 {orders.map((order) => {
                   const status = STATUS_MAP[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700 border-gray-200' }
                   const isAlbTarim = order.brand.key === 'alb-tarim'
-                  const brandEmoji = isAlbTarim ? '🌾' : '💧'
+                  const brandIcon: IconName = isAlbTarim ? 'filiz' : 'damla'
                   const dotColor = isAlbTarim ? 'bg-green-400' : 'bg-blue-400'
                   const cancellable = ['PENDING', 'CONFIRMED'].includes(order.status)
                   const shipped = ['SHIPPED', 'DELIVERED'].includes(order.status)
@@ -166,7 +167,7 @@ export default async function SiparislerimPage() {
                       {/* Header row */}
                       <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 py-4 border-b border-gray-100">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-base flex-shrink-0">{brandEmoji}</span>
+                          <Icon name={brandIcon} className="w-4 h-4 flex-shrink-0 text-gray-500" />
                           <div className="min-w-0">
                             <span className="text-xs font-mono text-gray-400">#{formatOrderNo(order)}</span>
                             <span className="text-gray-300 mx-1.5">·</span>
@@ -201,12 +202,14 @@ export default async function SiparislerimPage() {
                           {cancellable && (
                             <CancelOrderButton orderId={order.id} isPaid={order.paymentStatus === 'paid'} />
                           )}
-                          {shipped && (
+                          {/* Takip numarası girilmemişse buton takip
+                              bilgisi olmayan bir sayfaya götürüyordu. */}
+                          {shipped && order.trackingNumber && (
                             <Link
                               href={`/hesabim/siparislerim/${order.id}`}
                               className="text-xs px-3 py-1.5 rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors font-medium"
                             >
-                              📦 Kargo Takip
+                              Kargo Takip
                             </Link>
                           )}
                           {isAlbTarim && (

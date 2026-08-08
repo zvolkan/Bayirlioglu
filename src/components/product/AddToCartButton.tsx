@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useCartStore } from '@/store/cartStore'
 import { toast } from 'react-hot-toast'
+import Icon from '@/components/ui/Icon'
 import type { Product } from '@/lib/types'
 
 interface AddToCartButtonProps {
@@ -55,7 +56,14 @@ export default function AddToCartButton({
       disabled={disabled}
       className={className}
     >
-      {added ? '✓ Eklendi' : label}
+      {added ? (
+        <span className="inline-flex items-center gap-1.5">
+          <Icon name="onay" className="w-4 h-4" />
+          Eklendi
+        </span>
+      ) : (
+        label
+      )}
     </button>
   )
 }

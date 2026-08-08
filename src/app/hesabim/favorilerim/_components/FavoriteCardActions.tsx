@@ -74,7 +74,21 @@ export default function FavoriteCardActions({ product }: { product: FavoriteProd
       updatedAt: '',
     }
 
+    // Sepet deposu stok tavanında ve tükenmiş üründe sessizce hiçbir şey
+    // yapmıyor; öncesi/sonrası karşılaştırılmadan "eklendi" demek yanlış
+    // bilgi veriyordu.
+    const before = useCartStore.getState().items.find((i) => i.product.id === product.id)?.quantity ?? 0
     addItem(cartProduct, 1)
+    const after = useCartStore.getState().items.find((i) => i.product.id === product.id)?.quantity ?? 0
+
+    if (after <= before) {
+      toast.error(
+        after === 0
+          ? 'Bu ürün şu anda stokta yok.'
+          : `Stokta en fazla ${after} adet var, sepetinizde zaten o kadar mevcut.`,
+      )
+      return
+    }
     toast.success(`${product.name} sepete eklendi`)
   }
 

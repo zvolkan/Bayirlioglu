@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requestPasswordReset } from '@/app/actions/auth'
+import Icon from '@/components/ui/Icon'
 
 export const metadata: Metadata = {
   title: 'Şifremi Unuttum | Bayırlıoğlu',
@@ -35,7 +36,7 @@ export default async function SifremiUnuttumPage({
           {params.gonderildi ? (
             <div className="text-center">
               <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center text-3xl mx-auto mb-4">
-                ✉️
+                <Icon name="eposta" className="w-7 h-7 text-green-600" />
               </div>
               <p className="text-gray-800 font-semibold mb-2">Bağlantı gönderildi</p>
               <p className="text-gray-500 text-sm leading-relaxed">

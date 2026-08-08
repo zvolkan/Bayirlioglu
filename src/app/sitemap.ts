@@ -70,6 +70,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     },
     {
+      url: `${base}/${key}/referanslar`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    },
+    {
       url: `${base}/${key}/iletisim`,
       lastModified: now,
       changeFrequency: 'monthly' as const,

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
 import { getPublishedPosts } from '@/lib/blog'
 import BrandArtwork from '@/components/ui/BrandArtwork'
+import Icon from '@/components/ui/Icon'
 import type { BrandKey } from '@/lib/types'
 
 const VALID_BRANDS: BrandKey[] = ['alb-tarim', 'alb-su-aritma']
@@ -66,7 +67,7 @@ export default async function BlogPage({ params }: Props) {
       <div className="container-main py-12">
         {posts.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-5xl mb-4">📝</p>
+            <Icon name="yazi" className="w-12 h-12 mb-4 mx-auto text-gray-300" />
             <p className="text-gray-500">Henüz blog yazısı bulunmuyor.</p>
           </div>
         ) : (

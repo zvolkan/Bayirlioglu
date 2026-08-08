@@ -1,9 +1,11 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getSiteUrl } from '@/lib/site-url'
 import { BRANDS } from '@/lib/constants'
 import { getPublishedPost, getPublishedPosts, readingMinutes } from '@/lib/blog'
 import BrandArtwork from '@/components/ui/BrandArtwork'
+import Icon from '@/components/ui/Icon'
 import type { BrandKey } from '@/lib/types'
 
 interface Props {
@@ -67,7 +69,7 @@ export default async function BlogPostPage({ params }: Props) {
             {post.title}
           </h1>
           <div className="flex flex-wrap items-center gap-4 text-sm text-white/50">
-            <span>✍️ {post.author}</span>
+            <span className="inline-flex items-center gap-1.5"><Icon name="yazar" className="w-4 h-4" /> {post.author}</span>
             <span>·</span>
             <span>
               {new Date(post.publishedAt ?? new Date()).toLocaleDateString('tr-TR', {
@@ -77,7 +79,7 @@ export default async function BlogPostPage({ params }: Props) {
             {okumaDakika > 0 && (
               <>
                 <span>·</span>
-                <span>⏱ {okumaDakika} dk okuma</span>
+                <span className="inline-flex items-center gap-1.5"><Icon name="saat" className="w-4 h-4" /> {okumaDakika} dk okuma</span>
               </>
             )}
           </div>
@@ -131,7 +133,9 @@ export default async function BlogPostPage({ params }: Props) {
               ← Tüm Yazılar
             </Link>
             <a
-              href={`https://wa.me/?text=${encodeURIComponent(post.title + ' — ' + cfg.name)}`}
+              href={`https://wa.me/?text=${encodeURIComponent(
+                  `${post.title} — ${getSiteUrl()}/${brandKey}/blog/${post.slug}`,
+                )}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-sm font-semibold bg-[#25D366] text-white px-4 py-2 rounded-xl hover:bg-[#1aad50] transition-colors"

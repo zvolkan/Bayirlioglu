@@ -159,7 +159,7 @@ export function orderConfirmationEmail(data: OrderEmailData) {
   const html = layout(
     'Siparişiniz Alındı',
     `
-    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz alındı 🎉</p>
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz alındı</p>
     <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
       Merhaba ${escapeHtml(data.customerName)}, ödemeniz başarıyla tamamlandı.
       Siparişiniz hazırlanmaya alındı; kargoya verildiğinde takip numarasını
@@ -216,7 +216,7 @@ export function orderShippedEmail(params: {
   const html = layout(
     'Siparişiniz Kargoya Verildi',
     `
-    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz yola çıktı 🚚</p>
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz yola çıktı</p>
     <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
       Merhaba ${escapeHtml(params.customerName)}, siparişiniz kargoya teslim edildi.
     </p>
@@ -267,7 +267,7 @@ export function orderDeliveredEmail(params: { orderNo: string; customerName: str
   const html = layout(
     'Siparişiniz Teslim Edildi',
     `
-    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz teslim edildi 📦</p>
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Siparişiniz teslim edildi</p>
     <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
       Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
         params.orderNo,

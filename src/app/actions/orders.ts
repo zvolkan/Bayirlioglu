@@ -157,15 +157,17 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderResult> {
 
 // ─── Profil güncelle ─────────────────────────────────────────────────────────
 
-export async function updateProfile(formData: FormData) {
+export async function updateProfile(formData: FormData): Promise<FormResult> {
   const user = await getAuthUser()
 
   const name = ((formData.get('name') as string) ?? '').trim().slice(0, 150)
   const phone = ((formData.get('phone') as string) ?? '').trim().slice(0, 20)
 
-  if (name && name.length < 2) throw new Error('Ad soyad en az 2 karakter olmalıdır.')
+  if (name && name.length < 2) {
+    return { ok: false, error: 'Ad soyad en az 2 karakter olmalıdır.' }
+  }
   if (phone && phone.replace(/\D/g, '').length < 10) {
-    throw new Error('Geçerli bir telefon numarası girin.')
+    return { ok: false, error: 'Geçerli bir telefon numarası girin.' }
   }
 
   // Kullanıcı satırı yoksa oluştur — Supabase kaydı ile DB senkron değilse
@@ -182,8 +184,20 @@ export async function updateProfile(formData: FormData) {
   })
 
   revalidatePath('/hesabim')
+  return { ok: true }
 }
 
+
+/**
+ * Form işlemlerinin ortak dönüş tipi.
+ *
+ * Bu aksiyonlar eskiden `return 'Geçerli bir telefon numarası girin.'`
+ * yapıyordu. Next.js üretim derlemesinde sunucu aksiyonundan fırlatılan hata
+ * mesajını GİZLİYOR; istemciye yalnızca anlamsız bir digest ulaşıyor. Sonuçta
+ * kullanıcı hangi alanın hatalı olduğunu asla öğrenemiyor, formu dolduramıyordu.
+ * Bu yüzden hata fırlatmak yerine sonuç nesnesi dönülüyor.
+ */
+export type FormResult = { ok: true } | { ok: false; error: string }
 
 // ─── Adres doğrulama ─────────────────────────────────────────────────────────
 
@@ -203,7 +217,7 @@ interface AddressInput {
  * Eskiden `formData.get(...) as string` doğrudan Prisma'ya gidiyordu; boş alan
  * null hatası, uzun alan da P2000 ("value too long") hatası veriyordu.
  */
-function parseAddressForm(formData: FormData): AddressInput {
+function parseAddressForm(formData: FormData): AddressInput | string {
   const text = (key: string, max: number) =>
     ((formData.get(key) as string | null) ?? '').trim().slice(0, max)
 
@@ -213,11 +227,11 @@ function parseAddressForm(formData: FormData): AddressInput {
   const district = text('district', 100)
   const city = text('city', 100)
 
-  if (fullName.length < 2) throw new Error('Ad soyad en az 2 karakter olmalıdır.')
-  if (phone.replace(/\D/g, '').length < 10) throw new Error('Geçerli bir telefon numarası girin.')
-  if (line1.length < 5) throw new Error('Adres en az 5 karakter olmalıdır.')
-  if (district.length < 2) throw new Error('İlçe bilgisi gereklidir.')
-  if (city.length < 2) throw new Error('İl bilgisi gereklidir.')
+  if (fullName.length < 2) return 'Ad soyad en az 2 karakter olmalıdır.'
+  if (phone.replace(/\D/g, '').length < 10) return 'Geçerli bir telefon numarası girin.'
+  if (line1.length < 5) return 'Adres en az 5 karakter olmalıdır.'
+  if (district.length < 2) return 'İlçe bilgisi gereklidir.'
+  if (city.length < 2) return 'İl bilgisi gereklidir.'
 
   return {
     label: text('label', 50) || 'Adresim',
@@ -233,10 +247,12 @@ function parseAddressForm(formData: FormData): AddressInput {
 
 // ─── Adres ekle ──────────────────────────────────────────────────────────────
 
-export async function addAddress(formData: FormData) {
+export async function addAddress(formData: FormData): Promise<FormResult> {
   const user = await getAuthUser()
 
-  const input = parseAddressForm(formData)
+  const parsed = parseAddressForm(formData)
+  if (typeof parsed === 'string') return { ok: false, error: parsed }
+  const input = parsed
   const isDefault = formData.get('isDefault') === 'on'
 
   // İlk adres otomatik varsayılan olsun
@@ -260,17 +276,20 @@ export async function addAddress(formData: FormData) {
 
   revalidatePath('/hesabim')
   revalidatePath('/hesabim/adreslerim')
+  return { ok: true }
 }
 
 // ─── Adres güncelle ──────────────────────────────────────────────────────────
 
-export async function updateAddress(addressId: string, formData: FormData) {
+export async function updateAddress(addressId: string, formData: FormData): Promise<FormResult> {
   const user = await getAuthUser()
 
   // `addAddress` doğrulamadan geçiyordu ama burada ham değerler doğrudan
   // Prisma'ya yazılıyordu: boş ad soyad null hatası, 300 karakterlik adres
   // P2000 hatası veriyordu. Aynı doğrulayıcı kullanılıyor.
-  const input = parseAddressForm(formData)
+  const parsed = parseAddressForm(formData)
+  if (typeof parsed === 'string') return { ok: false, error: parsed }
+  const input = parsed
   const isDefault = formData.get('isDefault') === 'on'
 
   await prisma.$transaction(async (tx: TransactionClient) => {
@@ -289,6 +308,7 @@ export async function updateAddress(addressId: string, formData: FormData) {
 
   revalidatePath('/hesabim')
   revalidatePath('/hesabim/adreslerim')
+  return { ok: true }
 }
 
 // ─── Adres sil ────────────────────────────────────────────────────────────────

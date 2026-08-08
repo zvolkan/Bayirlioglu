@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
 import { formatOrderNo } from '@/lib/order-number'
 import { signOut } from '@/app/actions/auth'
+import Icon from '@/components/ui/Icon'
 import ProfileForm from './_components/ProfileForm'
 import RepeatOrderButton from './_components/RepeatOrderButton'
 
@@ -108,13 +109,13 @@ export default async function HesabimPage() {
         {/* Özet kartlar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
-            { label: 'ALB Tarım Sipariş',    value: albTarimOrders.length,  icon: '🌾' },
-            { label: 'Alb Su Sipariş',        value: albSuOrders.length,     icon: '💧' },
-            { label: 'Kayıtlı Adres',         value: user.addresses.length,  icon: '📍' },
-            { label: 'Toplam Sipariş',         value: user.orders.length,    icon: '📦' },
+            { label: 'ALB Tarım Sipariş',    value: albTarimOrders.length,  icon: 'filiz' as const },
+            { label: 'Alb Su Sipariş',        value: albSuOrders.length,     icon: 'damla' as const },
+            { label: 'Kayıtlı Adres',         value: user.addresses.length,  icon: 'konum' as const },
+            { label: 'Toplam Sipariş',         value: user.orders.length,    icon: 'paket' as const },
           ].map((stat) => (
             <div key={stat.label} className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
-              <div className="text-2xl mb-1">{stat.icon}</div>
+              <Icon name={stat.icon} className="w-6 h-6 mx-auto mb-1 text-gray-400" />
               <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
               <div className="text-xs text-gray-400 mt-0.5">{stat.label}</div>
             </div>
@@ -154,15 +155,15 @@ export default async function HesabimPage() {
                         >
                           Düzenle
                         </Link>
-                        <form action={async () => {
-                          'use server'
-                          const { deleteAddress } = await import('@/app/actions/orders')
-                          await deleteAddress(addr.id)
-                        }}>
-                          <button type="submit" className="text-xs text-red-600 hover:text-red-700 font-medium border border-red-200 rounded-lg px-3 py-1.5 transition-colors">
-                            Sil
-                          </button>
-                        </form>
+                        {/* Silme onay adımı yoktu: tek dokunuşla adres
+                            gidiyordu. /hesabim/adreslerim'deki iki adımlı
+                            akışa yönlendiriliyor. */}
+                        <Link
+                          href="/hesabim/adreslerim"
+                          className="text-xs text-gray-600 hover:text-gray-900 font-medium border border-gray-300 rounded-lg px-3 py-1.5 transition-colors"
+                        >
+                          Sil / Yönet
+                        </Link>
                       </div>
                     </div>
                   ))}
@@ -184,7 +185,9 @@ export default async function HesabimPage() {
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between p-5 border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-sm">🌾</div>
+                  <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-sm">
+                    <Icon name="filiz" className="w-4 h-4 text-white" />
+                  </div>
                   <h2 className="font-semibold text-gray-900">ALB Tarım Siparişleri</h2>
                 </div>
                 <Link href="/alb-tarim/urunler" className="text-xs text-green-600 font-semibold hover:underline">
@@ -244,7 +247,9 @@ export default async function HesabimPage() {
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between p-5 border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-sm">💧</div>
+                  <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-sm">
+                    <Icon name="damla" className="w-4 h-4 text-white" />
+                  </div>
                   <h2 className="font-semibold text-gray-900">Alb Su Teknolojileri Siparişleri</h2>
                 </div>
                 <Link href="/alb-su-aritma/urunler" className="text-xs text-blue-600 font-semibold hover:underline">

@@ -1,9 +1,14 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { KURULUS_YILI, SITE_CONFIG } from '@/lib/constants'
 
 const GRUP_LINKS = [
   { label: 'Hakkımızda', href: '/hakkimizda' },
   { label: 'Hizmetler', href: '/hizmetler' },
+  // Sipariş takibi sayfası yalnızca giriş yapmış kullanıcının sipariş
+  // detayından erişilebiliyordu; oysa asıl işi e-postasını kaybetmiş
+  // misafir müşterinin siparişini bulması.
+  { label: 'Sipariş Takibi', href: '/siparis-takibi' },
   { label: 'Blog', href: '/blog' },
   { label: 'Bayi Başvurusu', href: '/bayi-basvuru' },
   { label: 'İletişim', href: '/iletisim' },
@@ -31,7 +36,7 @@ const MARKALAR = [
   {
     key: 'alb-su-aritma',
     name: 'Alb Su Teknolojileri',
-    desc: 'Su arıtma, klima ve enerji sistemleri',
+    desc: 'Su arıtma, klima ve elektronik sistemler',
     color: 'bg-albsu-600',
     href: '/alb-su-aritma',
   },
@@ -62,7 +67,7 @@ export default function Footer() {
                 </span>
               </Link>
               <p className="text-gray-400 text-sm leading-relaxed">
-                2006 yılından bu yana tarım ve su teknolojileri alanında faaliyet gösteren
+                {KURULUS_YILI} yılından bu yana tarım ve su teknolojileri alanında faaliyet gösteren
                 Bayırlıoğlu, ALB Tarım ve Alb Su Teknolojileri markaları altında
                 Türkiye genelinde hizmet vermektedir.
               </p>
@@ -200,7 +205,7 @@ export default function Footer() {
                   <svg className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-gray-400 text-sm">Pzt – Cmt: 08:30 – 19:00</span>
+                  <span className="text-gray-400 text-sm">{SITE_CONFIG.workingHours}</span>
                 </li>
               </ul>
             </div>

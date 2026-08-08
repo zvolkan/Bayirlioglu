@@ -2,23 +2,24 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Icon, { type IconName } from '@/components/ui/Icon'
 
 interface Props {
   src: string
   alt: string
-  fallback?: string
+  fallback?: IconName
   className?: string
   fill?: boolean
   sizes?: string
   priority?: boolean
 }
 
-export default function ProductImage({ src, alt, fallback = '📦', className, fill, sizes, priority }: Props) {
+export default function ProductImage({ src, alt, fallback = 'paket', className, fill, sizes, priority }: Props) {
   const [error, setError] = useState(false)
 
   if (!src || error) {
     return (
-      <span className="text-[80px] opacity-40 select-none">{fallback}</span>
+      <Icon name={fallback} className="w-20 h-20 text-gray-300" />
     )
   }
 

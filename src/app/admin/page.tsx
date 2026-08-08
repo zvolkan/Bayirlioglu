@@ -3,6 +3,7 @@ import { adminLogout } from '@/app/actions/admin'
 import { getOrderCountsByStatus } from '@/app/actions/admin-orders'
 import { getOpenReturnCount } from '@/app/actions/returns'
 import { prisma } from '@/lib/db'
+import Icon from '@/components/ui/Icon'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,10 +49,16 @@ export default async function AdminPage() {
           <p className="text-xs text-gray-400 uppercase tracking-wide">Yeni Bayi Başvurusu</p>
           <p className="text-2xl font-black text-gray-900 mt-1">{newApplications}</p>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5">
+        {/* Sayı gösterip hiçbir yere gitmiyordu; hangi ürün olduğunu görmenin
+            yolu yoktu. Ürün listesine bağlandı. */}
+        <Link
+          href="/admin/urunler/alb-tarim"
+          className="bg-white rounded-2xl shadow-sm p-5 block hover:shadow-md transition-shadow"
+        >
           <p className="text-xs text-gray-400 uppercase tracking-wide">Stoğu Azalan</p>
           <p className="text-2xl font-black text-orange-600 mt-1">{lowStock}</p>
-        </div>
+          <p className="text-[11px] text-gray-400 mt-1">Ürün listesini aç →</p>
+        </Link>
         <div className="bg-white rounded-2xl shadow-sm p-5">
           <p className="text-xs text-gray-400 uppercase tracking-wide">Bekleyen İade</p>
           <p className={`text-2xl font-black mt-1 ${openReturns > 0 ? 'text-red-600' : 'text-gray-900'}`}>
@@ -70,7 +77,7 @@ export default async function AdminPage() {
             href="/admin/siparisler"
             className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-gray-100 group"
           >
-            <div className="text-3xl mb-3 icon-pop">📦</div>
+            <div className="mb-3 icon-pop"><Icon name="paket" className="w-8 h-8 text-gray-700" /></div>
             <h3 className="text-base font-bold text-gray-900">Siparişler</h3>
             <p className="text-sm text-gray-400 mt-1">
               Durum güncelle, kargo bilgisi gir, iade et
@@ -81,7 +88,7 @@ export default async function AdminPage() {
             href="/admin/blog"
             className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-gray-100 group"
           >
-            <div className="text-3xl mb-3 icon-pop">✍️</div>
+            <div className="mb-3 icon-pop"><Icon name="yazar" className="w-8 h-8 text-gray-700" /></div>
             <h3 className="text-base font-bold text-gray-900">Blog Yazıları</h3>
             <p className="text-sm text-gray-400 mt-1">Yazı ekle, düzenle, yayına al</p>
           </Link>
@@ -90,7 +97,7 @@ export default async function AdminPage() {
             href="/admin/iadeler"
             className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-gray-100 group"
           >
-            <div className="text-3xl mb-3 icon-pop">↩️</div>
+            <div className="mb-3 icon-pop"><Icon name="yenile" className="w-8 h-8 text-gray-700" /></div>
             <h3 className="text-base font-bold text-gray-900">
               İade Talepleri
               {openReturns > 0 && (
@@ -106,7 +113,7 @@ export default async function AdminPage() {
             href="/admin/mesajlar"
             className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-gray-100 group"
           >
-            <div className="text-3xl mb-3 icon-pop">✉️</div>
+            <div className="mb-3 icon-pop"><Icon name="eposta" className="w-8 h-8 text-gray-700" /></div>
             <h3 className="text-base font-bold text-gray-900">
               İletişim Mesajları
               {unreadMessages > 0 && (
@@ -122,7 +129,7 @@ export default async function AdminPage() {
             href="/admin/bayi-basvurulari"
             className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-gray-100 group"
           >
-            <div className="text-3xl mb-3 icon-pop">🤝</div>
+            <div className="mb-3 icon-pop"><Icon name="garanti" className="w-8 h-8 text-gray-700" /></div>
             <h3 className="text-base font-bold text-gray-900">
               Bayi Başvuruları
               {newApplications > 0 && (
@@ -146,7 +153,7 @@ export default async function AdminPage() {
             href="/admin/urunler/alb-tarim"
             className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-green-100 group"
           >
-            <div className="text-3xl mb-3 icon-pop">🌿</div>
+            <div className="mb-3 icon-pop"><Icon name="filiz" className="w-8 h-8 text-green-600" /></div>
             <h3 className="text-base font-bold text-gray-900 group-hover:text-green-700 transition-colors">
               ALB Tarım
             </h3>
@@ -157,7 +164,7 @@ export default async function AdminPage() {
             href="/admin/urunler/alb-su-aritma"
             className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-blue-100 group"
           >
-            <div className="text-3xl mb-3 icon-pop">💧</div>
+            <div className="mb-3 icon-pop"><Icon name="damla" className="w-8 h-8 text-blue-600" /></div>
             <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
               ALB Su Teknolojileri
             </h3>

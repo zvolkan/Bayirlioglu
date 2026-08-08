@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useCartStore } from '@/store/cartStore'
+import Icon from '@/components/ui/Icon'
 import { KARGO_LIMIT, TESLIMAT_SURESI, calculateTotals } from '@/lib/checkout'
 import { ON_BILGILENDIRME, MESAFELI_SATIS, CAYMA_HAKKI } from '@/lib/legal'
 
@@ -71,7 +72,7 @@ export default function CheckoutClient({ addresses }: Props) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
         <div className="text-center max-w-sm">
-          <div className="text-5xl mb-4">🛒</div>
+          <Icon name="sepet" className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <h1 className="text-xl font-bold text-gray-900 mb-2">Sepetiniz boş</h1>
           <p className="text-gray-500 text-sm mb-6">Ödeme yapabilmek için sepetinize ürün ekleyin.</p>
           <Link href="/" className="inline-block px-6 py-3 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700 transition-colors">
@@ -415,7 +416,7 @@ export default function CheckoutClient({ addresses }: Props) {
 
             {/* Güvenlik notu */}
             <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700">
-              <span className="text-xl flex-shrink-0">🔒</span>
+              <Icon name="kilit" className="w-5 h-5 flex-shrink-0" />
               <span>Ödemeniz İyzico güvencesiyle SSL şifreli bağlantı üzerinden gerçekleşir. Kart bilgileriniz sitemizde saklanmaz.</span>
             </div>
           </div>
@@ -482,7 +483,7 @@ export default function CheckoutClient({ addresses }: Props) {
                   </>
                 ) : (
                   <>
-                    <span>🔐</span>
+                    <Icon name="kilit" className="w-4 h-4" />
                     Güvenli Ödemeye Geç
                   </>
                 )}

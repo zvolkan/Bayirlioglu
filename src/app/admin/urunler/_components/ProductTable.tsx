@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { toggleProductActive, toggleProductFeatured } from '@/app/actions/admin'
 import DeleteButton from './DeleteButton'
+import Icon from '@/components/ui/Icon'
 import type { getProductsForAdmin } from '@/app/actions/admin'
 
 type Product = Awaited<ReturnType<typeof getProductsForAdmin>>[number]
@@ -67,7 +68,7 @@ export default function ProductTable({ products }: ProductTableProps) {
                           className="w-full h-full object-contain"
                         />
                       ) : (
-                        <span className="text-gray-300 text-xl">📦</span>
+                        <Icon name="paket" className="w-6 h-6 text-gray-300" />
                       )}
                     </div>
                   </td>

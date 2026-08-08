@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BRANDS } from '@/lib/constants'
 import type { BrandKey } from '@/lib/types'
+import Icon from '@/components/ui/Icon'
 import Reveal from '@/components/ui/Reveal'
 import RevealGroup from '@/components/ui/RevealGroup'
 import BrandArtwork from '@/components/ui/BrandArtwork'
@@ -23,22 +24,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-const TARIM_TIMELINE = [
-  { year: '2000', event: 'ALB Tarım kuruldu. İlk depomuz Anamur\'da açıldı.' },
-  { year: '2005', event: 'Ulusal dağıtım ağımızı kurarak 50 ile ulaştık.' },
-  { year: '2010', event: 'Organik tarım sertifikası alındı, 5.000 çiftçi milini geçtik.' },
-  { year: '2015', event: 'Online satış platformumuz devreye girdi.' },
-  { year: '2020', event: 'Kargo ağı genişletildi, 81 ile teslimat yapılmaya başlandı.' },
-  { year: '2025', event: 'Dijital tarım danışmanlık platformumuz hayata geçirildi.' },
-]
+type TimelineItem = { year: string; event: string }
 
-const ALBSU_TIMELINE = [
-  { year: '2003', event: 'Albsu, su arıtma alanında yolculuğuna başladı.' },
-  { year: '2008', event: 'İlk klima ve iklimlendirme ürünleri portföye eklendi.' },
-  { year: '2017', event: 'Akıllı ev elektroniği ürünleri satışa sunuldu.' },
-  { year: '2021', event: '1.000 başarılı montaj hedefi aşıldı.' },
-  { year: '2025', event: 'Türkiye\'nin önde gelen su teknolojileri markası konumuna yükseldi.' },
-]
+// TARİHÇE — şimdilik boş.
+//
+// Buradaki yıllar ve olaylar uydurmaydı: ulusal dağıtım ağı, organik tarım
+// sertifikası, "1.000 başarılı montaj", "Türkiye'nin önde gelen markası" ve
+// 2025'te açılan bir dijital danışmanlık platformu. Hiçbiri gerçek değildi ve
+// kuruluş yılı da sitenin geri kalanıyla çelişiyordu.
+//
+// Gerçekten yaşanmış birkaç dönüm noktasını (dükkânın açılışı, bir markanın
+// bayiliğinin alınması, yeni dükkân veya depo, yeni ürün grubu) yılıyla
+// birlikte gönderin; bu listeye eklensin. Dizi boşken bölüm hiç görünmüyor.
+const TARIM_TIMELINE: TimelineItem[] = []
+
+const ALBSU_TIMELINE: TimelineItem[] = []
 
 export default async function HakkimizdaPage({ params }: Props) {
   const { brand } = await params
@@ -74,7 +74,7 @@ export default async function HakkimizdaPage({ params }: Props) {
         <div className="grid md:grid-cols-2 gap-8">
           <RevealGroup itemClassName="h-full">
           <div className="h-full bg-white rounded-2xl border border-gray-100 p-4 sm:p-8 hover-lift">
-            <div className="text-3xl mb-4">🎯</div>
+            <div className="mb-4"><Icon name="hedef" className="w-8 h-8 text-brand-600" /></div>
             <h2 className="text-xl font-black text-gray-900 mb-3">Misyonumuz</h2>
             <p className="text-gray-600 leading-relaxed">
               {isAlbSu
@@ -83,7 +83,7 @@ export default async function HakkimizdaPage({ params }: Props) {
             </p>
           </div>
           <div className="h-full bg-white rounded-2xl border border-gray-100 p-4 sm:p-8 hover-lift">
-            <div className="text-3xl mb-4">🔭</div>
+            <div className="mb-4"><Icon name="vizyon" className="w-8 h-8 text-brand-600" /></div>
             <h2 className="text-xl font-black text-gray-900 mb-3">Vizyonumuz</h2>
             <p className="text-gray-600 leading-relaxed">
               {isAlbSu
@@ -95,7 +95,8 @@ export default async function HakkimizdaPage({ params }: Props) {
         </div>
       </section>
 
-      {/* Tarihçe */}
+      {/* Tarihçe — liste boşsa bölüm hiç render edilmiyor */}
+      {timeline.length > 0 && (
       <section className="py-16 bg-white">
         <div className="container-main">
           <Reveal>
@@ -124,6 +125,7 @@ export default async function HakkimizdaPage({ params }: Props) {
           </div>
         </div>
       </section>
+      )}
 
       {/* İstatistikler */}
       <section className="py-16 bg-gray-50">

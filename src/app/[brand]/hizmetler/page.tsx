@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { BRANDS } from '@/lib/constants'
+import { BRANDS, SITE_CONFIG } from '@/lib/constants'
 import { TESLIMAT_SURESI } from '@/lib/checkout'
 import type { BrandKey } from '@/lib/types'
+import Icon, { type IconName } from '@/components/ui/Icon'
 import Reveal from '@/components/ui/Reveal'
 import RevealGroup from '@/components/ui/RevealGroup'
 
@@ -23,78 +24,75 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-const TARIM_SERVICES = [
+const TARIM_SERVICES: { icon: IconName; title: string; desc: string; features: string[] }[] = [
   {
-    icon: '🌾',
+    icon: 'filiz',
     title: 'Tarım Danışmanlığı',
     desc: 'Uzman agronomlarımız tarladan sofraya tüm süreçte yanınızda. Toprak analizi, ürün seçimi ve gübreleme planlaması.',
     features: ['Toprak analizi', 'Ürün seçim danışmanlığı', 'Gübreleme planı', 'Hasat sonrası rehberlik'],
   },
   {
-    icon: '🚜',
+    icon: 'traktor',
     title: 'Saha Ziyareti',
-    desc: 'Uzmanlarımız tarlınıza gelir, yerinde inceleme yaparak en doğru çözümü sunar.',
-    features: ['Ücretsiz saha analizi', 'Drone ile tarla görüntüleme', 'Verim haritalaması', 'Özel aksiyonm planı'],
+    desc: 'Uzmanlarımız tarlanıza gelir, yerinde inceleme yaparak en doğru çözümü sunar.',
+    features: ['Ücretsiz saha analizi', 'Yerinde toprak ve bitki gözlemi', 'Özel aksiyon planı'],
   },
   {
-    icon: '💧',
+    icon: 'damla',
     title: 'Sulama Sistem Kurulumu',
     desc: 'Damla sulama ve yağmurlama sistemlerini profesyonel ekibimiz tasarlar ve kurar.',
     features: ['Tasarım ve hesaplama', 'Malzeme tedariki', 'Profesyonel montaj', 'Devreye alma ve eğitim'],
   },
+  // "Çiftçi Eğitimi" hizmeti kaldırıldı: seminer, sertifika programı ve online
+  // eğitim gibi bir faaliyet sitenin hiçbir yerinde yok. Böyle bir çalışmanız
+  // varsa yeniden ekleyelim.
   {
-    icon: '📚',
-    title: 'Çiftçi Eğitimi',
-    desc: 'Modern tarım tekniklerini öğrenmek için düzenli seminerler ve online eğitimler.',
-    features: ['Online seminerler', 'Yerinde uygulamalı eğitim', 'Sertifika programları', 'Teknik broşür ve rehberler'],
-  },
-  {
-    icon: '🚚',
+    icon: 'kargo',
     title: 'Hızlı Teslimat',
     desc: `81 ile uzanan dağıtım ağımızla siparişleriniz ${TESLIMAT_SURESI} içinde kapınızda.`,
     features: ['81 il teslimat', TESLIMAT_SURESI, 'Soğuk zincir ürünler', 'Takip numarası ile anlık izleme'],
   },
   {
-    icon: '🔧',
+    icon: 'servis',
     title: 'Teknik Servis',
     desc: 'Sulama sistemleri ve tarım ekipmanlarınız için bakım ve onarım hizmeti.',
-    features: ['Periyodik bakım', 'Arıza tespiti', 'Yedek parça temini', '24 saat destek hattı'],
+    features: ['Periyodik bakım', 'Arıza tespiti', 'Yedek parça temini', `Destek hattı: ${SITE_CONFIG.workingHours}`],
   },
 ]
 
-const ALBSU_SERVICES = [
+const ALBSU_SERVICES: { icon: IconName; title: string; desc: string; features: string[] }[] = [
   {
-    icon: '🔬',
+    icon: 'analiz',
     title: 'Su Analizi',
     desc: 'Suyunuzun kalitesini ücretsiz analiz ediyoruz, ihtiyacınıza en uygun sistemi öneriyoruz.',
     features: ['Ücretsiz su kalite testi', 'Sertifikalı laboratuvar analizi', 'Sistem önerileri', 'Karşılaştırmalı rapor'],
   },
   {
-    icon: '🛠️',
+    icon: 'servis',
     title: 'Profesyonel Montaj',
     desc: 'Sertifikalı teknisyenlerimiz tüm kurulumu güvenle yapar, sisteminizi devreye alır.',
     features: ['Ücretsiz keşif', 'Sertifikalı montaj', 'Test ve devreye alma', 'Kullanım eğitimi'],
   },
   {
-    icon: '🔄',
+    icon: 'yenile',
     title: 'Filtre Değişimi',
     desc: 'Düzenli filtre değişimi ve bakım programlarıyla sisteminizin verimliliğini koruyun.',
     features: ['Periyodik filtre değişimi', 'Sistem temizliği', 'Performans kontrolü', 'Hatırlatma servisi'],
   },
   {
-    icon: '📞',
-    title: '7/24 Teknik Destek',
-    desc: 'Gece gündüz yanınızdayız. Arıza durumlarında en kısa sürede müdahale ediyoruz.',
-    features: ['7/24 destek hattı', 'Uzaktan tanı', '4 saat müdahale garantisi', 'Online takip sistemi'],
+    icon: 'telefon',
+    title: 'Teknik Destek',
+    desc: 'Arıza ve bakım taleplerinizi çalışma saatlerimiz içinde alıyor, sıraya göre en kısa sürede dönüyoruz.',
+    features: [`Destek hattı: ${SITE_CONFIG.workingHours}`, 'Uzaktan tanı', 'Yerinde servis', 'Online takip sistemi'],
   },
   {
-    icon: '❄️',
+    icon: 'iklim',
     title: 'Klima Bakımı',
     desc: 'Sezon başı ve sezon sonu klima bakımıyla enerji verimliliğini artırın.',
     features: ['Gaz dolumu', 'Filtre temizliği', 'Performans testi', 'Garanti kapsamında bakım'],
   },
   {
-    icon: '🏠',
+    icon: 'ev',
     title: 'Akıllı Ev Çözümleri',
     desc: 'Evinizi akıllı sistemlerle donatın, enerji tasarrufu sağlayın ve konforlu yaşayın.',
     features: ['Akıllı termostat', 'Su kalite monitörü', 'Uzaktan kontrol', 'Enerji takip paneli'],
@@ -129,7 +127,7 @@ export default async function HizmetlerPage({ params }: Props) {
           <p className="text-white/60 max-w-xl mx-auto">
             {isAlbSu
               ? 'Kurulumdan bakıma, teknik destekten akıllı çözümlere kadar her aşamada yanınızdayız.'
-              : 'Danışmanlıktan saha ziyaretine, eğitimden teknik servise kadar çiftçimizi destekliyoruz.'}
+              : 'Danışmanlıktan saha ziyaretine, sulama kurulumundan teknik servise kadar çiftçimizi destekliyoruz.'}
           </p>
         </div>
       </section>
@@ -143,7 +141,7 @@ export default async function HizmetlerPage({ params }: Props) {
               key={svc.title}
               className="h-full bg-white rounded-2xl border border-brand-100 hover:border-brand-200 p-7 hover-lift"
             >
-              <div className="text-4xl mb-5">{svc.icon}</div>
+              <div className="mb-5"><Icon name={svc.icon} className="w-9 h-9 text-brand-600" /></div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">{svc.title}</h3>
               <p className="text-gray-600 text-sm leading-relaxed mb-5">{svc.desc}</p>
               <ul className="space-y-2">

@@ -202,7 +202,22 @@ interface ProductInput {
  * boş veya geçersiz girdide NaN oluşup "Invalid value" hatasıyla admin genel
  * hata sayfasına düşüyordu.
  */
-function parseProductForm(formData: FormData): ProductInput {
+/**
+ * Ürün formu işlemlerinin dönüş tipi.
+ *
+ * Bu aksiyonlar eskiden `throw new Error('İndirimli fiyat, normal fiyattan
+ * düşük olmalıdır.')` gibi net mesajlar fırlatıyordu. Next.js üretim
+ * derlemesinde sunucu aksiyonundan fırlatılan hatanın MESAJINI GİZLİYOR;
+ * istemciye yalnızca anlamsız bir digest ulaşıyor. Yani yönetici formu
+ * kaydedemiyor ama neden kaydedemediğini de göremiyordu. Hata fırlatmak
+ * yerine sonuç nesnesi dönülüyor.
+ *
+ * Başarı durumunda fonksiyon `redirect()` ile bittiği için hiç dönmüyor.
+ */
+export type ProductActionResult = { ok: false; error: string }
+
+/** Doğrulama hatasında mesajı, başarıda ayrıştırılmış girdiyi döner */
+function parseProductForm(formData: FormData): ProductInput | string {
   const num = (key: string): number => {
     const raw = (formData.get(key) as string | null)?.trim()
     const value = Number(raw)
@@ -217,31 +232,31 @@ function parseProductForm(formData: FormData): ProductInput {
   const salePriceRaw = (formData.get('salePrice') as string | null)?.trim()
   const stockRaw = (formData.get('stockQuantity') as string | null)?.trim()
 
-  if (!name || name.length < 2) throw new Error('Ürün adı en az 2 karakter olmalıdır.')
-  if (name.length > 255) throw new Error('Ürün adı çok uzun (en fazla 255 karakter).')
+  if (!name || name.length < 2) return 'Ürün adı en az 2 karakter olmalıdır.'
+  if (name.length > 255) return 'Ürün adı çok uzun (en fazla 255 karakter).'
 
-  if (!slug) throw new Error('Slug (URL adı) zorunludur.')
+  if (!slug) return 'Slug (URL adı) zorunludur.'
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-    throw new Error('Slug yalnızca küçük harf, rakam ve tire içerebilir (örn. "taban-gubresi").')
+    return 'Slug yalnızca küçük harf, rakam ve tire içerebilir (örn. "taban-gubresi").'
   }
 
-  if (!Number.isInteger(categoryId) || categoryId <= 0) throw new Error('Geçerli bir alt kategori seçin.')
-  if (!Number.isInteger(brandId) || brandId <= 0) throw new Error('Geçerli bir marka seçin.')
+  if (!Number.isInteger(categoryId) || categoryId <= 0) return 'Geçerli bir alt kategori seçin.'
+  if (!Number.isInteger(brandId) || brandId <= 0) return 'Geçerli bir marka seçin.'
 
-  if (!Number.isFinite(price) || price < 0) throw new Error('Geçerli bir fiyat girin.')
-  if (price > 9_999_999) throw new Error('Fiyat çok yüksek.')
+  if (!Number.isFinite(price) || price < 0) return 'Geçerli bir fiyat girin.'
+  if (price > 9_999_999) return 'Fiyat çok yüksek.'
 
   let salePrice: number | null = null
   if (salePriceRaw) {
     const value = Number(salePriceRaw)
-    if (!Number.isFinite(value) || value < 0) throw new Error('Geçerli bir indirimli fiyat girin.')
-    if (value >= price) throw new Error('İndirimli fiyat, normal fiyattan düşük olmalıdır.')
+    if (!Number.isFinite(value) || value < 0) return 'Geçerli bir indirimli fiyat girin.'
+    if (value >= price) return 'İndirimli fiyat, normal fiyattan düşük olmalıdır.'
     salePrice = value
   }
 
   const stockQuantity = stockRaw ? Number(stockRaw) : 0
   if (!Number.isInteger(stockQuantity) || stockQuantity < 0) {
-    throw new Error('Stok adedi 0 veya daha büyük bir tam sayı olmalıdır.')
+    return 'Stok adedi 0 veya daha büyük bir tam sayı olmalıdır.'
   }
 
   return {
@@ -282,18 +297,30 @@ function friendlyPrismaError(error: unknown): string {
 
 // ─── CREATE ───────────────────────────────────────────────────────────────────
 
-export async function createProduct(formData: FormData) {
-  await requireAdmin()
+export async function createProduct(formData: FormData): Promise<ProductActionResult | void> {
+  try {
+    await requireAdmin()
+  } catch {
+    return { ok: false, error: 'Oturumunuz sona ermiş görünüyor. Lütfen yeniden giriş yapın.' }
+  }
 
   const imageFile = formData.get('imageFile') as File | null
   let imageUrl = formData.get('imageUrl') as string | null
 
-  // Dosya yükleme
-  const input = parseProductForm(formData)
+  const parsed = parseProductForm(formData)
+  if (typeof parsed === 'string') return { ok: false, error: parsed }
+  const input = parsed
 
   if (imageFile && imageFile.size > 0) {
-    const ext = (imageFile.name.split('.').pop() ?? 'jpg').replace(/[^a-zA-Z0-9]/g, '')
-    imageUrl = await uploadProductImage(imageFile, `${input.slug}.${ext}`)
+    try {
+      const ext = (imageFile.name.split('.').pop() ?? 'jpg').replace(/[^a-zA-Z0-9]/g, '')
+      imageUrl = await uploadProductImage(imageFile, `${input.slug}.${ext}`)
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : 'Görsel yüklenemedi.',
+      }
+    }
   }
 
   let product: { id: string }
@@ -311,10 +338,12 @@ export async function createProduct(formData: FormData) {
     })
   } catch (error) {
     console.error('[admin] ürün oluşturulamadı:', error)
-    throw new Error(friendlyPrismaError(error))
+    return { ok: false, error: friendlyPrismaError(error) }
   }
 
-  // Teknik özellikler
+  // Teknik özellikler — buradaki bir hata ürünü geri almaz, ürün kaydedildi.
+  // Bu yüzden sessizce loglanıp akış sürdürülüyor.
+  try {
   const specsRaw = formData.get('specs') as string
   if (specsRaw) {
     const specs = JSON.parse(specsRaw) as Array<{ name: string; value: string; unit?: string }>
@@ -333,9 +362,16 @@ export async function createProduct(formData: FormData) {
       }
     }
   }
+  } catch (error) {
+    console.error('[admin] teknik özellikler kaydedilemedi:', error)
+  }
 
   const redirectBrand = (formData.get('redirectBrand') as string) || 'alb-tarim'
-  revalidatePath('/admin/urunler')
+  // '/admin/urunler' yalnızca /admin'e yönlendiren bir kabuk; asıl
+  // listeler marka adreslerinde. Eskiden var olmayan bir yol
+  // yenileniyordu.
+  revalidatePath('/admin/urunler/alb-tarim')
+  revalidatePath('/admin/urunler/alb-su-aritma')
   revalidatePath(`/alb-tarim/urunler`)
   revalidatePath(`/alb-su-aritma/urunler`)
   redirect(`/admin/urunler/${redirectBrand}`)
@@ -343,25 +379,41 @@ export async function createProduct(formData: FormData) {
 
 // ─── UPDATE ───────────────────────────────────────────────────────────────────
 
-export async function updateProduct(id: string, formData: FormData) {
-  await requireAdmin()
+export async function updateProduct(
+  id: string,
+  formData: FormData,
+): Promise<ProductActionResult | void> {
+  try {
+    await requireAdmin()
+  } catch {
+    return { ok: false, error: 'Oturumunuz sona ermiş görünüyor. Lütfen yeniden giriş yapın.' }
+  }
 
   const imageFile = formData.get('imageFile') as File | null
   let imageUrl = formData.get('imageUrl') as string | null
   const replaceImage = formData.get('replaceImage') === 'true'
 
-  const input = parseProductForm(formData)
+  const parsed = parseProductForm(formData)
+  if (typeof parsed === 'string') return { ok: false, error: parsed }
+  const input = parsed
 
   if (imageFile && imageFile.size > 0) {
-    const ext = (imageFile.name.split('.').pop() ?? 'jpg').replace(/[^a-zA-Z0-9]/g, '')
-    imageUrl = await uploadProductImage(imageFile, `${input.slug}.${ext}`)
+    try {
+      const ext = (imageFile.name.split('.').pop() ?? 'jpg').replace(/[^a-zA-Z0-9]/g, '')
+      imageUrl = await uploadProductImage(imageFile, `${input.slug}.${ext}`)
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : 'Görsel yüklenemedi.',
+      }
+    }
   }
 
   try {
     await prisma.product.update({ where: { id }, data: input })
   } catch (error) {
     console.error('[admin] ürün güncellenemedi:', id, error)
-    throw new Error(friendlyPrismaError(error))
+    return { ok: false, error: friendlyPrismaError(error) }
   }
 
   // Kapak görselini güncelle.
@@ -416,7 +468,11 @@ export async function updateProduct(id: string, formData: FormData) {
   }
 
   const redirectBrand = (formData.get('redirectBrand') as string) || 'alb-tarim'
-  revalidatePath('/admin/urunler')
+  // '/admin/urunler' yalnızca /admin'e yönlendiren bir kabuk; asıl
+  // listeler marka adreslerinde. Eskiden var olmayan bir yol
+  // yenileniyordu.
+  revalidatePath('/admin/urunler/alb-tarim')
+  revalidatePath('/admin/urunler/alb-su-aritma')
   revalidatePath(`/alb-tarim/urunler`)
   revalidatePath(`/alb-su-aritma/urunler`)
   redirect(`/admin/urunler/${redirectBrand}`)
@@ -450,7 +506,11 @@ export async function deleteProduct(id: string): Promise<DeleteProductResult> {
       where: { id },
       data: { isActive: false, isFeatured: false },
     })
-    revalidatePath('/admin/urunler')
+    // '/admin/urunler' yalnızca /admin'e yönlendiren bir kabuk; asıl
+  // listeler marka adreslerinde. Eskiden var olmayan bir yol
+  // yenileniyordu.
+  revalidatePath('/admin/urunler/alb-tarim')
+  revalidatePath('/admin/urunler/alb-su-aritma')
     revalidatePath('/alb-tarim/urunler')
     revalidatePath('/alb-su-aritma/urunler')
     return { ok: true, archived: true, orderCount }
@@ -470,7 +530,11 @@ export async function deleteProduct(id: string): Promise<DeleteProductResult> {
       }
     }
 
-    revalidatePath('/admin/urunler')
+    // '/admin/urunler' yalnızca /admin'e yönlendiren bir kabuk; asıl
+  // listeler marka adreslerinde. Eskiden var olmayan bir yol
+  // yenileniyordu.
+  revalidatePath('/admin/urunler/alb-tarim')
+  revalidatePath('/admin/urunler/alb-su-aritma')
     revalidatePath('/alb-tarim/urunler')
     revalidatePath('/alb-su-aritma/urunler')
     return { ok: true, archived: false }
@@ -489,12 +553,20 @@ export async function toggleProductActive(id: string, current: boolean) {
   await requireAdmin()
 
   await prisma.product.update({ where: { id }, data: { isActive: !current } })
-  revalidatePath('/admin/urunler')
+  // '/admin/urunler' yalnızca /admin'e yönlendiren bir kabuk; asıl
+  // listeler marka adreslerinde. Eskiden var olmayan bir yol
+  // yenileniyordu.
+  revalidatePath('/admin/urunler/alb-tarim')
+  revalidatePath('/admin/urunler/alb-su-aritma')
 }
 
 export async function toggleProductFeatured(id: string, current: boolean) {
   await requireAdmin()
 
   await prisma.product.update({ where: { id }, data: { isFeatured: !current } })
-  revalidatePath('/admin/urunler')
+  // '/admin/urunler' yalnızca /admin'e yönlendiren bir kabuk; asıl
+  // listeler marka adreslerinde. Eskiden var olmayan bir yol
+  // yenileniyordu.
+  revalidatePath('/admin/urunler/alb-tarim')
+  revalidatePath('/admin/urunler/alb-su-aritma')
 }

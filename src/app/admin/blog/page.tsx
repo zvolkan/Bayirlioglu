@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getBlogPostsForAdmin } from '@/app/actions/blog'
 import PublishToggle from './_components/PublishToggle'
+import Icon from '@/components/ui/Icon'
 
 export const dynamic = 'force-dynamic'
 
@@ -41,7 +42,7 @@ export default async function AdminBlogPage() {
 
       {posts.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
-          <p className="text-4xl mb-3">✍️</p>
+          <Icon name="yazar" className="w-9 h-9 mb-3 mx-auto text-gray-300" />
           <p className="text-gray-500 mb-4">Henüz yazı yok.</p>
           <Link
             href="/admin/blog/yeni"

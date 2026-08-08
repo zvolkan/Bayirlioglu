@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Icon, { type IconName } from '@/components/ui/Icon'
+import { KURULUS_YILI, SITE_CONFIG } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Hakkımızda | Bayırlıoğlu',
-  description:
-    '2006 yılından bu yana tarım ve su teknolojileri alanında faaliyet gösteren Bayırlıoğlu hakkında bilgi edinin.',
+  description: `${KURULUS_YILI} yılından bu yana tarım ve su teknolojileri alanında faaliyet gösteren Bayırlıoğlu hakkında bilgi edinin.`,
 }
 
 // Doğrulanamayan rakamlar kaldırıldı. Gerçek değerleriniz olduğunda buraya
@@ -16,28 +17,38 @@ const stats = [
   { value: '11 Marka', label: 'Yetkili Tedarik' },
 ]
 
-const values = [
+const values: { title: string; description: string; icon: IconName }[] = [
   {
-    title: 'Misyonumuz',
+    title: 'İşimiz',
     description:
-      'Çiftçilerimize ve bireysel müşterilerimize yüksek kaliteli ürünler ve profesyonel hizmetlerle modern tarım ile su teknolojilerini en erişilebilir şekilde sunmak.',
-    icon: '🎯',
+      'Çiftçiye gübre, tarım ilacı ve sulama malzemesi; ev ile iş yerlerine su arıtma sistemi satıyoruz. Su arıtmada kurulumu ve bakımı kendi ekibimiz yapıyor.',
+    icon: 'hedef',
   },
   {
-    title: 'Vizyonumuz',
+    title: 'Hedefimiz',
     description:
-      "Türkiye'nin lider tarım ve su teknolojileri holding'i olarak sürdürülebilir, verimli ve çevre dostu çözümlerle sektörde referans grup olmak.",
-    icon: '🌟',
+      'Doğru ürünü önermek, siparişi zamanında teslim etmek ve satıştan sonra da telefonla ulaşılabilir olmak. Bölgede işini bilen bir dükkân olarak kalmak istiyoruz.',
+    icon: 'odul',
   },
   {
-    title: 'Değerlerimiz',
+    title: 'Çalışma Şeklimiz',
     description:
-      'Müşteri memnuniyeti, dürüstlük, yenilikçilik ve sürdürülebilirlik ilkeleri tüm iş süreçlerimizin temelini oluşturmaktadır.',
-    icon: '💎',
+      'Elimizde olmayan ürünü varmış gibi göstermiyor, bilmediğimiz konuda tavsiye vermiyoruz. Fiyatı ve teslim süresini baştan açık söylüyoruz.',
+    icon: 'kalite',
   },
 ]
 
-const markalar = [
+const markalar: {
+  name: string
+  color: string
+  textColor: string
+  bgLight: string
+  borderColor: string
+  href: string
+  desc: string
+  kuruluş: string
+  icon: IconName
+}[] = [
   {
     name: 'ALB Tarım',
     color: 'bg-green-600',
@@ -46,8 +57,8 @@ const markalar = [
     borderColor: 'border-green-200',
     href: '/alb-tarim',
     desc: 'Organik gübreler, sulama sistemleri, tarım ilaçları ve ekipmanları alanında faaliyet göstermektedir. Çiftçilerimize uygun fiyat, hızlı teslimat ve uzman tarım danışmanlığı sunmaktadır.',
-    kuruluş: '2006',
-    icon: '🌾',
+    kuruluş: String(KURULUS_YILI),
+    icon: 'filiz',
   },
   {
     name: 'Alb Su Teknolojileri',
@@ -56,34 +67,20 @@ const markalar = [
     bgLight: 'bg-blue-50',
     borderColor: 'border-blue-200',
     href: '/alb-su-aritma',
-    desc: 'Su arıtma sistemleri, klima ve iklimlendirme çözümleri alanında faaliyet göstermektedir. Profesyonel montaj, filtre değişimi ve 7/24 teknik servis hizmeti sunmaktadır.',
+    desc: `Su arıtma sistemleri, klima ve iklimlendirme çözümleri alanında faaliyet göstermektedir. Montaj ve filtre değişimini kendi ekibi yapar; teknik servis ${SITE_CONFIG.workingHours} saatlerinde hizmet verir.`,
     kuruluş: '2015',
-    icon: '💧',
+    icon: 'damla',
   },
 ]
 
-const team = [
-  {
-    name: 'Ahmet Bayırlıoğlu',
-    title: 'Yönetim Kurulu Başkanı',
-    description: '20 yıllık sektör deneyimiyle grubun kurucu ortağı ve vizyoner lideri.',
-  },
-  {
-    name: 'Mehmet Yılmaz',
-    title: 'Satış Direktörü',
-    description: 'Bayi ağı ve kurumsal satış süreçlerini yöneten deneyimli satış profesyoneli.',
-  },
-  {
-    name: 'Dr. Elif Kaya',
-    title: 'Teknik Direktör',
-    description: 'Ziraat mühendisi ve su teknolojileri uzmanı, Ar-Ge süreçlerinin sorumlusu.',
-  },
-  {
-    name: 'Fatma Demir',
-    title: 'Müşteri Hizmetleri Müdürü',
-    description: 'Müşteri deneyimini en üst düzeye çıkarmak için çalışan ekibimizin lideri.',
-  },
-]
+// EKİP — şimdilik boş.
+//
+// Burada dört uydurma kişi vardı (isimler, unvanlar ve "vizyoner lider" gibi
+// tanıtım cümleleri gerçek çalışanlara ait değildi).
+//
+// Ekipte gerçekten kim varsa adını, görevini ve bir cümlelik tanıtımını
+// gönderin, buraya eklensin. Dizi boşken bölüm hiç görünmüyor.
+const team: Array<{ name: string; title: string; description: string }> = []
 
 // BELGELER — şimdilik boş.
 //
@@ -107,7 +104,8 @@ export default function HakkimizdaPage() {
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Hakkımızda</h1>
           <p className="text-xl text-white/75 font-medium max-w-xl mx-auto">
-            2006'dan Bu Yana Tarım ve Su Teknolojilerinde Güvenilir Çözüm Ortağınız
+            Anamur&apos;da {KURULUS_YILI} yılında kurulduk; tarım girdileri ve su arıtma
+            sistemleri satıyoruz.
           </p>
         </div>
       </section>
@@ -119,10 +117,9 @@ export default function HakkimizdaPage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Hikayemiz</h2>
             <div className="prose prose-lg text-gray-700 space-y-4">
               <p>
-                Bayırlıoğlu ailesi, 2006 yılında Mersin'in bereketli toprakları Anamur'da küçük
-                bir tarım deposuyla bu yolculuğa başladı. Kurucu Ahmet Bayırlıoğlu'nun çiftçilere
-                dürüst ve kaliteli ürün sunma vizyonu, kısa sürede bölge çiftçilerinin güvenini
-                kazandı.
+                Bayırlıoğlu ailesi, {KURULUS_YILI} yılında Mersin'in Anamur ilçesinde küçük bir
+                tarım deposuyla işe başladı. O günden beri aynı ilçede, çoğunlukla aynı
+                çiftçilerle çalışıyoruz.
               </p>
               <p>
                 Yıllar içinde gübre ve tohum ürünlerinin yanı sıra damla sulama sistemleriyle
@@ -132,8 +129,8 @@ export default function HakkimizdaPage() {
               </p>
               <p>
                 Bugün Anamur merkezli olarak Türkiye'nin 81 iline kargo ile ürün gönderiyoruz.
-                500'den fazla ürün ve uzman kadromuzla tarım ve su teknolojileri alanında
-                güvenilir çözüm ortağınız olmaya devam ediyoruz.
+                Tarım girdileri ve su arıtma sistemlerinde ürün seçiminden kuruluma kadar
+                yanınızda olmaya devam ediyoruz.
               </p>
             </div>
           </div>
@@ -157,7 +154,7 @@ export default function HakkimizdaPage() {
               >
                 <div className="flex items-center gap-4 mb-5">
                   <div className={`${m.color} w-12 h-12 rounded-xl flex items-center justify-center text-2xl`}>
-                    {m.icon}
+                    <Icon name={m.icon} className="w-6 h-6 text-white" />
                   </div>
                   <div>
                     <h3 className={`text-xl font-bold ${m.textColor}`}>{m.name}</h3>
@@ -182,7 +179,7 @@ export default function HakkimizdaPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              Misyon, Vizyon & Değerler
+              Ne Yapıyoruz, Nasıl Çalışıyoruz?
             </h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -191,7 +188,7 @@ export default function HakkimizdaPage() {
                 key={item.title}
                 className="bg-gray-50 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 sm:p-8 text-center"
               >
-                <div className="text-5xl mb-5">{item.icon}</div>
+                <div className="mb-5 flex justify-center"><Icon name={item.icon} className="w-12 h-12 text-gray-700" /></div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
                 <p className="text-gray-600 leading-relaxed">{item.description}</p>
               </div>
@@ -214,7 +211,8 @@ export default function HakkimizdaPage() {
         </div>
       </section>
 
-      {/* Ekip */}
+      {/* Ekip — ekip listesi boşsa bölüm hiç render edilmiyor */}
+      {team.length > 0 && (
       <section className="py-16 sm:py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="text-center mb-12">
@@ -228,7 +226,7 @@ export default function HakkimizdaPage() {
                 className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow text-center p-6"
               >
                 <div className="w-20 h-20 mx-auto rounded-full bg-gray-100 mb-4 flex items-center justify-center text-2xl">
-                  👤
+                  <Icon name="kullanici" className="w-6 h-6 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-1">{member.name}</h3>
                 <p className="text-sm font-semibold text-gray-500 mb-3">{member.title}</p>
@@ -238,6 +236,7 @@ export default function HakkimizdaPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Sertifikalar — belge listesi boşsa bölüm hiç render edilmiyor */}
       {certifications.length > 0 && (
@@ -256,7 +255,7 @@ export default function HakkimizdaPage() {
                 className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-6 text-center"
               >
                 <div className="w-14 h-14 mx-auto rounded-xl bg-gray-100 mb-4 flex items-center justify-center text-2xl">
-                  🏅
+                  <Icon name="odul" className="w-6 h-6 text-gray-400" />
                 </div>
                 <h3 className="font-bold text-gray-900 mb-1">{cert.name}</h3>
                 <p className="text-gray-500 text-sm">{cert.description}</p>

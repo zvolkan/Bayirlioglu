@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useCartStore } from '@/store/cartStore'
 import toast from 'react-hot-toast'
 import { getRepeatOrderItems } from '@/app/actions/orders'
+import Icon from '@/components/ui/Icon'
 import type { BrandKey } from '@/lib/types'
 
 type Props = {
@@ -88,7 +89,10 @@ export default function RepeatOrderButton({ orderId, brandKey }: Props) {
           Ekleniyor...
         </>
       ) : (
-        <>🔄 Siparişi Tekrarla</>
+        <>
+          <Icon name="yenile" className="w-4 h-4" />
+          Siparişi Tekrarla
+        </>
       )}
     </button>
   )

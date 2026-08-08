@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
 import { ACTIVE_BRAND_KEY } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import Icon from '@/components/ui/Icon'
 import AccountSidebar from '../_components/AccountSidebar'
 import AddressCardActions from './_components/AddressCardActions'
 
@@ -83,7 +84,7 @@ export default async function AdreslerimPage() {
 
             {addresses.length === 0 ? (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-                <p className="text-5xl mb-4">📍</p>
+                <Icon name="konum" className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   Kayıtlı adresiniz yok
                 </h3>

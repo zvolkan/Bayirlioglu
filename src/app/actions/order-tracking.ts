@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/db'
 import { formatOrderNo, normalizeOrderNoInput } from '@/lib/order-number'
+import type { IconName } from '@/components/ui/Icon'
 
 /**
  * Sipariş takibi.
@@ -17,7 +18,7 @@ import { formatOrderNo, normalizeOrderNoInput } from '@/lib/order-number'
 export interface TrackingStep {
   id: number
   label: string
-  icon: string
+  icon: IconName
   date: string | null
   done: boolean
 }
@@ -123,35 +124,35 @@ export async function trackOrder(
       {
         id: 1,
         label: 'Sipariş Alındı',
-        icon: '📋',
+        icon: 'belge',
         date: formatDateTime(order.createdAt),
         done: activeStep >= 1,
       },
       {
         id: 2,
         label: 'Onaylandı',
-        icon: '✅',
+        icon: 'onay-daire',
         date: activeStep >= 2 ? formatDateTime(paidAt) : null,
         done: activeStep >= 2,
       },
       {
         id: 3,
         label: 'Hazırlanıyor',
-        icon: '📦',
+        icon: 'paket',
         date: null,
         done: activeStep >= 3,
       },
       {
         id: 4,
         label: 'Kargoya Verildi',
-        icon: '🚚',
+        icon: 'kargo',
         date: formatDateTime(order.shippedAt),
         done: activeStep >= 4,
       },
       {
         id: 5,
         label: 'Teslim Edildi',
-        icon: '🏠',
+        icon: 'ev',
         date: formatDateTime(order.deliveredAt),
         done: activeStep >= 5,
       },

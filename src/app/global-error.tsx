@@ -1,5 +1,7 @@
 'use client'
 
+import Icon from '@/components/ui/Icon'
+
 /**
  * Kök layout'un kendisi çökerse devreye giren son çare hata ekranı.
  * Kendi <html>/<body> etiketlerini içermek zorundadır.
@@ -28,7 +30,9 @@ export default function GlobalError({
         }}
       >
         <div style={{ textAlign: 'center', maxWidth: 420 }}>
-          <div style={{ fontSize: 56, marginBottom: 16 }}>⚠️</div>
+          <div style={{ width: 56, height: 56, margin: '0 auto 16px', color: '#f59e0b' }}>
+            <Icon name="uyari" className="w-full h-full" />
+          </div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111827', marginBottom: 12 }}>
             Beklenmeyen bir hata oluştu
           </h1>

@@ -14,11 +14,17 @@ export default function AdresEklePage() {
   const handleSubmit = (formData: FormData) => {
     startTransition(async () => {
       try {
-        await addAddress(formData)
+        // Sunucu artık hata fırlatmıyor; hangi alanın hatalı olduğunu
+        // sonuç nesnesinde bildiriyor (üretimde fırlatılan mesaj gizleniyordu).
+        const result = await addAddress(formData)
+        if (!result.ok) {
+          toast.error(result.error)
+          return
+        }
         toast.success('Adres kaydedildi!')
         router.push('/hesabim')
       } catch {
-        toast.error('Bir hata oluştu, lütfen tekrar deneyin.')
+        toast.error('Adres kaydedilemedi. Bağlantınızı kontrol edip tekrar deneyin.')
       }
     })
   }

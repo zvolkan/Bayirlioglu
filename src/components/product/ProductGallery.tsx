@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react'
 import ProductImage from './ProductImage'
 import type { ProductImage as ProductImageType } from '@/lib/types'
+import type { IconName } from '@/components/ui/Icon'
 
 interface Props {
   images: ProductImageType[]
   productName: string
-  fallback?: string
+  fallback?: IconName
   /** Sağ üstte gösterilecek rozet (indirim / öne çıkan) */
   badge?: React.ReactNode
 }
@@ -20,7 +21,7 @@ interface Props {
  * ambalajın arkasındaki analiz tablosunu, cihaz alıcısı da kurulum/ölçü
  * görselini göremiyordu.
  */
-export default function ProductGallery({ images, productName, fallback = '📦', badge }: Props) {
+export default function ProductGallery({ images, productName, fallback = 'paket', badge }: Props) {
   const [index, setIndex] = useState(0)
   const [zoomed, setZoomed] = useState(false)
 

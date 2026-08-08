@@ -3,11 +3,13 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import ProductImage from '@/components/product/ProductImage'
 import ProductGallery from '@/components/product/ProductGallery'
+import Icon from '@/components/ui/Icon'
 import { BRANDS } from '@/lib/constants'
 import { getProductBySlug, getRelatedProducts } from '@/lib/queries/products'
 import { shouldShowRating } from '@/lib/reviews'
 import type { BrandKey } from '@/lib/types'
 import QuantityAddToCart from '@/components/product/QuantityAddToCart'
+import FavoriteButton from '@/components/product/FavoriteButton'
 import Reveal from '@/components/ui/Reveal'
 import RevealGroup from '@/components/ui/RevealGroup'
 import { KARGO_LIMIT, KARGO_UCRETI, TESLIMAT_SURESI } from '@/lib/checkout'
@@ -134,7 +136,6 @@ export default async function ProductDetailPage({ params }: Props) {
             <ProductGallery
               images={galleryImages}
               productName={product.name}
-              fallback={product.category.icon || '📦'}
               badge={
                 <>
                   {discount && (
@@ -165,12 +166,11 @@ export default async function ProductDetailPage({ params }: Props) {
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <span
+                      <Icon
                         key={i}
-                        className={i < Math.round(product.rating) ? 'text-yellow-400' : 'text-gray-300'}
-                      >
-                        ★
-                      </span>
+                        name="yildiz"
+                        className={`w-4 h-4 ${i < Math.round(product.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                      />
                     ))}
                   </div>
                   <span className="text-sm text-gray-500">
@@ -227,13 +227,15 @@ export default async function ProductDetailPage({ params }: Props) {
               {/* Kargo ve teslimat — müşteri sepete eklemeden önce bilmeli */}
               <div className="mb-5 text-sm text-gray-600 bg-gray-50 rounded-xl px-4 py-3 space-y-1">
                 <p>
-                  🚚 Tahmini teslimat:{' '}
+                  <Icon name="kargo" className="inline-block w-4 h-4 mr-1.5 align-text-bottom text-gray-400" />
+                  Tahmini teslimat:{' '}
                   <span className="font-semibold text-gray-900">{TESLIMAT_SURESI}</span>
                 </p>
                 {/* Ayraçlı tek satır dar ekranda sarınca "·" yeni satırın
                     başında öksüz kalıyordu; iki ayrı cümleye bölündü. */}
                 <p>
-                  📦 {KARGO_LIMIT} TL ve üzeri siparişlerde{' '}
+                  <Icon name="paket" className="inline-block w-4 h-4 mr-1.5 align-text-bottom text-gray-400" />
+                  {KARGO_LIMIT} TL ve üzeri siparişlerde{' '}
                   <span className="font-semibold text-green-600">kargo ücretsiz</span>
                 </p>
                 <p className="text-gray-400">
@@ -259,17 +261,18 @@ export default async function ProductDetailPage({ params }: Props) {
                   </svg>
                   WhatsApp
                 </a>
+                <FavoriteButton productId={product.id} size="lg" className="self-center sm:self-auto" />
               </div>
 
               {/* Güvenceler */}
               <div className="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-gray-100">
                 {[
-                  { icon: '🚚', text: '2-5 İş Günü Teslimat' },
-                  { icon: '🔄', text: '14 Gün İade' },
-                  { icon: '🔒', text: 'Güvenli Ödeme' },
+                  { icon: 'kargo' as const, text: '2-5 İş Günü Teslimat' },
+                  { icon: 'yenile' as const, text: '14 Gün İade' },
+                  { icon: 'kilit' as const, text: 'Güvenli Ödeme' },
                 ].map((item) => (
                   <div key={item.text} className="text-center text-xs text-gray-500">
-                    <div className="text-xl mb-1">{item.icon}</div>
+                    <Icon name={item.icon} className="w-5 h-5 mx-auto mb-1 text-gray-400" />
                     {item.text}
                   </div>
                 ))}
@@ -333,7 +336,6 @@ export default async function ProductDetailPage({ params }: Props) {
                     <ProductImage
                       src={p.images?.[0]?.url ?? ''}
                       alt={p.images?.[0]?.alt || p.name}
-                      fallback={p.category.icon || '📦'}
                       fill
                       className="img-zoom-target object-contain p-3"
                       sizes="200px"

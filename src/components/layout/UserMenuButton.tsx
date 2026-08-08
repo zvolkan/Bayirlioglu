@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Icon from '@/components/ui/Icon'
 import { createClient } from '@/lib/supabase/client'
 
 export default function UserMenuButton({ accentColor }: { accentColor: string }) {
@@ -79,17 +80,17 @@ export default function UserMenuButton({ accentColor }: { accentColor: string })
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <span>👤</span> Hesabım
+              <Icon name="kullanici" className="w-4 h-4" /> Hesabım
             </Link>
             <Link
               href="/hesabim/siparislerim"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              <span>📦</span> Siparişlerim
+              <Icon name="paket" className="w-4 h-4" /> Siparişlerim
             </Link>
             <div className="border-t border-gray-100">
-              <form action="/api/auth/signout" method="post">
+              <div>
                 <button
                   type="button"
                   onClick={async () => {
@@ -99,9 +100,9 @@ export default function UserMenuButton({ accentColor }: { accentColor: string })
                   }}
                   className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
                 >
-                  <span>🚪</span> Çıkış Yap
+                  <Icon name="cikis" className="w-4 h-4" /> Çıkış Yap
                 </button>
-              </form>
+              </div>
             </div>
           </div>
         </>

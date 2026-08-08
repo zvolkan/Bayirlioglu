@@ -4,11 +4,12 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import toast, { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 import { SITE_CONFIG, GROUP_WHATSAPP } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { Phone, Mail, MapPin, Clock, MessageCircle, Send, User, ChevronDown } from 'lucide-react'
 import { submitContactMessage } from '@/app/actions/forms'
+import Icon from '@/components/ui/Icon'
 
 const contactSchema = z.object({
   firstName: z.string().min(2, 'Ad en az 2 karakter olmalıdır'),
@@ -268,7 +269,7 @@ export default function IletisimPage() {
 
   return (
     <>
-      <Toaster position="top-right" />
+      {/* Toaster kök düzende zaten var; ikincisi bildirimleri çift gösteriyordu */}
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-white border-b border-gray-200">
@@ -327,7 +328,7 @@ export default function IletisimPage() {
                 className="block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
               >
                 <div className="h-44 bg-gray-100 flex flex-col items-center justify-center gap-2 px-4">
-                  <span className="text-4xl">📍</span>
+                  <Icon name="konum" className="w-9 h-9 text-gray-400" />
                   <p className="text-sm text-gray-500 font-medium">Haritada Görüntüle</p>
                   <p className="text-xs text-gray-400 text-center">{SITE_CONFIG.address}</p>
                 </div>

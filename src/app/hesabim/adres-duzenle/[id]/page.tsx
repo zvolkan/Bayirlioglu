@@ -45,11 +45,15 @@ export default function AdresDuzenlePage() {
   const handleSubmit = (formData: FormData) => {
     startTransition(async () => {
       try {
-        await updateAddress(id, formData)
+        const result = await updateAddress(id, formData)
+        if (!result.ok) {
+          toast.error(result.error)
+          return
+        }
         toast.success('Adres güncellendi!')
         router.push('/hesabim')
       } catch {
-        toast.error('Bir hata oluştu, lütfen tekrar deneyin.')
+        toast.error('Adres güncellenemedi. Bağlantınızı kontrol edip tekrar deneyin.')
       }
     })
   }

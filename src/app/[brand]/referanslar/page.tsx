@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { BRANDS, SITE_CONFIG } from '@/lib/constants'
 import type { BrandKey } from '@/lib/types'
+import Icon, { type IconName } from '@/components/ui/Icon'
 import Reveal from '@/components/ui/Reveal'
 import RevealGroup from '@/components/ui/RevealGroup'
 
@@ -39,22 +40,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-const SECTORS_SU = [
-  { icon: '🏭', label: 'Sanayi & Üretim', desc: 'Kazan besleme suyu, proses suyu ve endüstriyel RO sistemleri.' },
-  { icon: '🍽️', label: 'Gıda & Yiyecek', desc: 'Mutfak ve üretim hatları için arıtma, sebil ve filtre çözümleri.' },
-  { icon: '🏢', label: 'Ofis & İşyeri', desc: 'Arıtmalı su sebilleri ve periyodik filtre değişim hizmeti.' },
-  { icon: '🏨', label: 'Otel & Turizm', desc: 'Merkezi arıtma, yumuşatma ve oda içi çözümler.' },
-  { icon: '🏗️', label: 'Konut & Site', desc: 'Daire içi tezgah altı sistemler ve site geneli yumuşatma.' },
-  { icon: '🚜', label: 'Tarımsal İşletme', desc: 'Sulama suyu yumuşatma ve damlama hattı koruma sistemleri.' },
+const SECTORS_SU: { icon: IconName; label: string; desc: string }[] = [
+  { icon: 'fabrika', label: 'Sanayi & Üretim', desc: 'Kazan besleme suyu, proses suyu ve endüstriyel RO sistemleri.' },
+  { icon: 'gida', label: 'Gıda & Yiyecek', desc: 'Mutfak ve üretim hatları için arıtma, sebil ve filtre çözümleri.' },
+  { icon: 'bina', label: 'Ofis & İşyeri', desc: 'Arıtmalı su sebilleri ve periyodik filtre değişim hizmeti.' },
+  { icon: 'otel', label: 'Otel & Turizm', desc: 'Merkezi arıtma, yumuşatma ve oda içi çözümler.' },
+  { icon: 'bina', label: 'Konut & Site', desc: 'Daire içi tezgah altı sistemler ve site geneli yumuşatma.' },
+  { icon: 'traktor', label: 'Tarımsal İşletme', desc: 'Sulama suyu yumuşatma ve damlama hattı koruma sistemleri.' },
 ]
 
-const SECTORS_TARIM = [
-  { icon: '🌾', label: 'Tarla Bitkileri', desc: 'Buğday, arpa, mısır ve pamukta taban ve üst gübreleme programları.' },
-  { icon: '🍌', label: 'Örtü Altı Yetiştiricilik', desc: 'Sera koşullarına uygun damla sulama gübreleri ve yaprak besleme.' },
-  { icon: '🍊', label: 'Meyve Bahçeleri', desc: 'Narenciye, muz ve zeytinde dönemsel besleme ve mikro element takviyesi.' },
-  { icon: '🌱', label: 'Fidan & Fide Üretimi', desc: 'Kök gelişimi ve şaşırtma sonrası stres yönetimi ürünleri.' },
-  { icon: '🧪', label: 'Toprak Islahı', desc: 'Tuzluluk, kireç ve organik madde sorunlarına yönelik düzenleyiciler.' },
-  { icon: '💧', label: 'Sulama Sistemleri', desc: 'Damla ve yağmurlama hatlarında tıkanma önleyici uygulamalar.' },
+const SECTORS_TARIM: { icon: IconName; label: string; desc: string }[] = [
+  { icon: 'filiz', label: 'Tarla Bitkileri', desc: 'Buğday, arpa, mısır ve pamukta taban ve üst gübreleme programları.' },
+  { icon: 'sera', label: 'Örtü Altı Yetiştiricilik', desc: 'Sera koşullarına uygun damla sulama gübreleri ve yaprak besleme.' },
+  { icon: 'filiz', label: 'Meyve Bahçeleri', desc: 'Narenciye, muz ve zeytinde dönemsel besleme ve mikro element takviyesi.' },
+  { icon: 'filiz', label: 'Fidan & Fide Üretimi', desc: 'Kök gelişimi ve şaşırtma sonrası stres yönetimi ürünleri.' },
+  { icon: 'analiz', label: 'Toprak Islahı', desc: 'Tuzluluk, kireç ve organik madde sorunlarına yönelik düzenleyiciler.' },
+  { icon: 'damla', label: 'Sulama Sistemleri', desc: 'Damla ve yağmurlama hatlarında tıkanma önleyici uygulamalar.' },
 ]
 
 export default async function ReferanslarPage({ params }: Props) {
@@ -115,7 +116,7 @@ export default async function ReferanslarPage({ params }: Props) {
                   key={s.label}
                   className="h-full bg-white rounded-2xl border border-gray-100 p-6 hover-lift card-glow"
                 >
-                  <div className="text-3xl mb-3 icon-pop">{s.icon}</div>
+                  <div className="mb-3 icon-pop"><Icon name={s.icon} className="w-8 h-8 text-brand-600" /></div>
                   <h3 className="font-bold text-gray-900 mb-1.5">{s.label}</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">{s.desc}</p>
                 </div>

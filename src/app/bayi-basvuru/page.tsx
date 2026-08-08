@@ -7,8 +7,9 @@ import { z } from 'zod'
 import toast from 'react-hot-toast'
 import { submitDealerApplication } from '@/app/actions/forms'
 import Link from 'next/link'
-import { TURKISH_CITIES } from '@/lib/constants'
+import { TURKISH_CITIES, SITE_CONFIG } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import Icon, { type IconName } from '@/components/ui/Icon'
 
 // ─── SCHEMA ───────────────────────────────────────────────────────────────────
 
@@ -31,24 +32,24 @@ type FormData = z.infer<typeof schema>
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
-const BENEFITS = [
+const BENEFITS: { icon: IconName; title: string; description: string }[] = [
   {
-    icon: '💰',
-    title: 'Cazip Komisyon',
-    description: 'Ürün satışlarından %12 – %25 aralığında komisyon kazanın.',
+    icon: 'fiyat',
+    title: 'Komisyon',
+    description: 'Komisyon oranı ürün grubuna ve iş hacmine göre her bayiyle ayrı konuşulur.',
   },
   {
-    icon: '🎓',
+    icon: 'egitim',
     title: 'Ücretsiz Eğitim',
     description: 'Ürün bilgisi ve satış teknikleri konusunda kapsamlı eğitim desteği.',
   },
   {
-    icon: '🛠️',
+    icon: 'servis',
     title: 'Teknik Destek',
-    description: '7/24 teknik destek hattı ve saha ziyaretleri ile yanınızdayız.',
+    description: `Destek hattımız ${SITE_CONFIG.workingHours} açık; ayrıca saha ziyaretleri yapıyoruz.`,
   },
   {
-    icon: '📦',
+    icon: 'paket',
     title: 'Stok Desteği',
     description: 'Öncelikli stok hakkı ve esnek ödeme koşulları ile avantajlı alışveriş.',
   },
@@ -140,7 +141,7 @@ export default function BayiBasvuruPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {BENEFITS.map((b) => (
             <div key={b.title} className="rounded-2xl p-5 border border-gray-200 bg-white">
-              <div className="text-3xl mb-3">{b.icon}</div>
+              <div className="mb-3"><Icon name={b.icon} className="w-8 h-8 text-gray-700" /></div>
               <h3 className="font-semibold text-gray-900 mb-1">{b.title}</h3>
               <p className="text-sm text-gray-600">{b.description}</p>
             </div>
@@ -155,7 +156,7 @@ export default function BayiBasvuruPage() {
 
               {submitted ? (
                 <div className="text-center py-12">
-                  <div className="text-6xl mb-4">🎉</div>
+                  <div className="mb-4 flex justify-center"><Icon name="onay-daire" className="w-14 h-14 text-green-600" /></div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">Başvurunuz Alındı!</h3>
                   <p className="text-gray-600 mb-6">
                     Ekibimiz en geç 2 iş günü içinde sizinle iletişime geçecek.
@@ -312,21 +313,21 @@ export default function BayiBasvuruPage() {
               <h3 className="font-semibold text-gray-900 mb-4">Mevcut Bayiler İçin</h3>
               <div className="space-y-3 text-sm text-gray-600">
                 <div className="flex items-start gap-3">
-                  <span className="text-lg">📞</span>
+                  <Icon name="telefon" className="w-5 h-5 text-gray-500" />
                   <div>
                     <p className="font-medium text-gray-800">Bayi Destek Hattı</p>
                     <p>+90 544 414 22 54</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-lg">✉️</span>
+                  <Icon name="eposta" className="w-5 h-5 text-gray-500" />
                   <div>
                     <p className="font-medium text-gray-800">E-posta</p>
                     <p>bayi@bayirlioglu.com</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-lg">🕐</span>
+                  <Icon name="saat" className="w-5 h-5 text-gray-500" />
                   <div>
                     <p className="font-medium text-gray-800">Çalışma Saatleri</p>
                     <p>Pazartesi – Cumartesi: 08:30 – 19:00</p>

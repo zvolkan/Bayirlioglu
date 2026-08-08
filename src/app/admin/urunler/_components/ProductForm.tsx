@@ -3,6 +3,7 @@
 import { useState, useRef, useTransition, useMemo } from 'react'
 import { createSignedUploadUrl } from '@/app/actions/admin'
 import { slugify } from '@/lib/utils'
+import Icon from '@/components/ui/Icon'
 
 // ── Ürün markası listesi (11 marka) ──────────────────────────────────────────
 const URUN_MARKALARI = [
@@ -27,7 +28,12 @@ type ImageRecord = { id: number; url: string; isPrimary: boolean }
 interface ProductFormProps {
   brands: Brand[]
   categories: Category[]
-  action: (formData: FormData) => Promise<void>
+  /**
+   * Sunucu aksiyonu. Başarıda `redirect()` ile biter ve hiç dönmez;
+   * doğrulama hatasında `{ ok: false, error }` döner. Hata fırlatmıyor
+   * çünkü Next.js üretimde sunucu aksiyonu hatalarının mesajını gizliyor.
+   */
+  action: (formData: FormData) => Promise<{ ok: false; error: string } | void>
   defaultValues?: {
     id?: string
     name?: string
@@ -265,7 +271,14 @@ export default function ProductForm({
 
     startTransition(async () => {
       try {
-        await action(formData)
+        const result = await action(formData)
+
+        // Doğrulama hatası: sunucu artık mesajı sonuç nesnesiyle bildiriyor
+        if (result && !result.ok) {
+          setSubmitError(result.error)
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+          return
+        }
       } catch (err) {
         // Başarılı kayıt redirect() ile biter; Next bunu özel bir hata olarak
         // fırlatır ve yeniden fırlatılması gerekir, yoksa yönlendirme çalışmaz.
@@ -279,12 +292,12 @@ export default function ProductForm({
           throw err
         }
 
-        const message =
-          err instanceof Error && err.message
-            ? err.message
-            : 'Kayıt sırasında bir hata oluştu. Lütfen bilgileri kontrol edin.'
-
-        setSubmitError(message)
+        // Buraya artık yalnızca beklenmeyen hatalar düşüyor (ağ kopması gibi).
+        // Doğrulama mesajları yukarıda sonuç nesnesinden geliyor.
+        console.error('[ürün formu] beklenmeyen hata:', err)
+        setSubmitError(
+          'Kayıt sırasında beklenmeyen bir hata oluştu. Bağlantınızı kontrol edip tekrar deneyin.',
+        )
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     })
@@ -599,7 +612,7 @@ export default function ProductForm({
         )}
         {!uploading && replaceImage && uploadedImageUrl && !uploadError && (
           <p className="text-sm text-green-600 bg-green-50 border border-green-200 px-3 py-2 rounded-lg">
-            ✓ Görsel başarıyla yüklendi
+            <Icon name="onay" className="w-4 h-4 inline-block mr-1 align-text-bottom" />Görsel başarıyla yüklendi
           </p>
         )}
 
@@ -748,7 +761,7 @@ export default function ProductForm({
       {/* ── Submit ── */}
       <div className="flex items-center justify-end gap-4">
         <a
-          href="/admin/urunler"
+          href={`/admin/urunler/${brands.find((b) => b.id === selectedBrandId)?.key ?? 'alb-tarim'}`}
           className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
         >
           İptal

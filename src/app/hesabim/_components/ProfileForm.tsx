@@ -15,8 +15,19 @@ export default function ProfileForm({ name, phone, email }: Props) {
 
   const handleSubmit = (formData: FormData) => {
     startTransition(async () => {
-      await updateProfile(formData)
-      toast.success('Profiliniz güncellendi.')
+      try {
+        const result = await updateProfile(formData)
+        if (!result.ok) {
+          toast.error(result.error)
+          return
+        }
+        toast.success('Profiliniz güncellendi.')
+      } catch {
+        // try/catch yoktu: kısa bir isim girilince hata yakalanmadan
+        // hata sınırına düşüyor ve tüm sayfa "bir şeyler ters gitti"
+        // ekranına dönüşüyordu.
+        toast.error('Profil güncellenemedi. Lütfen tekrar deneyin.')
+      }
     })
   }
 

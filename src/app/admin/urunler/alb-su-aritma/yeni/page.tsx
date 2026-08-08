@@ -21,7 +21,9 @@ export default async function AlbSuAritmaYeniUrunPage() {
 
   async function handleCreate(formData: FormData) {
     'use server'
-    await createProduct(formData)
+    // Sonucu DÖNDÜRMEK şart: aksiyon doğrulama hatasını sonuç nesnesiyle
+    // bildiriyor, sarmalayıcı yutarsa form hatayı hiç göremez.
+    return createProduct(formData)
   }
 
   return (

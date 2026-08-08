@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getOrdersForAdmin, getOrderCountsByStatus } from '@/app/actions/admin-orders'
 import { formatOrderNo } from '@/lib/order-number'
+import Icon from '@/components/ui/Icon'
 
 export const dynamic = 'force-dynamic'
 
@@ -118,7 +119,7 @@ export default async function AdminSiparislerPage({
       {/* Liste */}
       {orders.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm p-16 text-center">
-          <p className="text-4xl mb-3">📦</p>
+          <Icon name="paket" className="w-9 h-9 mb-3 mx-auto text-gray-300" />
           <p className="text-gray-500">Bu filtreye uyan sipariş yok.</p>
         </div>
       ) : (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Icon, { type IconName } from '@/components/ui/Icon'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { BRANDS } from '@/lib/constants'
@@ -13,9 +14,9 @@ import MobileUserSection from '@/components/layout/MobileUserSection'
 
 // ─── BRAND SWITCHER ───────────────────────────────────────────────────────────
 
-const BRAND_TABS: { key: BrandKey; label: string; icon: string }[] = [
-  { key: 'alb-tarim', label: 'ALB Tarım', icon: '🌱' },
-  { key: 'alb-su-aritma', label: 'Alb Su Teknolojileri', icon: '💧' },
+const BRAND_TABS: { key: BrandKey; label: string; icon: IconName }[] = [
+  { key: 'alb-tarim', label: 'ALB Tarım', icon: 'filiz' },
+  { key: 'alb-su-aritma', label: 'Alb Su Teknolojileri', icon: 'damla' },
 ]
 
 // Seçili sekme her zaman o an açık olan markadır, dolayısıyla aktif marka
@@ -203,7 +204,7 @@ export default function Header() {
                         : 'text-white/60 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <span className="text-sm">{tab.icon}</span>
+                    <Icon name={tab.icon} className="w-4 h-4" />
                     <span className="hidden sm:inline">{tab.label}</span>
                   </button>
                 ))}
@@ -371,7 +372,7 @@ export default function Header() {
                         : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
                     }`}
                   >
-                    <span>{tab.icon}</span>
+                    <Icon name={tab.icon} className="w-4 h-4" />
                     <span>{tab.label}</span>
                   </button>
                 ))}

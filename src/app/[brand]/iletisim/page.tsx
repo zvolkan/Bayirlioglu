@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
 import { BRANDS } from '@/lib/constants'
+import Icon from '@/components/ui/Icon'
 import { submitContactMessage } from '@/app/actions/forms'
 import type { BrandKey } from '@/lib/types'
 
@@ -89,17 +90,17 @@ export default function IletisimPage() {
           <div className="lg:col-span-1 space-y-5">
             {[
               {
-                icon: '📞',
+                icon: 'telefon' as const,
                 title: 'Telefon',
                 lines: [isAlbSu ? '+90 544 414 22 54' : '+90 507 178 16 33', 'Pzt–Cmt: 08:30–19:00'],
               },
               {
-                icon: '📧',
+                icon: 'eposta' as const,
                 title: 'E-posta',
                 lines: [isAlbSu ? 'albsu@bayirlioglu.com' : 'albtarim@bayirlioglu.com'],
               },
               {
-                icon: '📍',
+                icon: 'konum' as const,
                 title: 'Adres',
                 lines: [
                   'Saçkan Kavşağı Doğusu Savcı-Şok Market Yanı',
@@ -108,13 +109,13 @@ export default function IletisimPage() {
                 ],
               },
               {
-                icon: '⏰',
+                icon: 'saat' as const,
                 title: 'Çalışma Saatleri',
                 lines: ['Pzt–Cmt: 08:30–19:00'],
               },
             ].map((item) => (
               <div key={item.title} className="bg-white rounded-2xl border border-gray-100 p-5 flex gap-4 hover-lift">
-                <div className="text-2xl">{item.icon}</div>
+                <div><Icon name={item.icon} className="w-6 h-6 text-brand-600" /></div>
                 <div>
                   <p className="font-bold text-gray-900 text-sm mb-1">{item.title}</p>
                   {item.lines.map((line) => (

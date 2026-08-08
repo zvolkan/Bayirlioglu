@@ -2,8 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import Reveal from '@/components/ui/Reveal'
+import Icon, { type IconName } from '@/components/ui/Icon'
 import RevealGroup from '@/components/ui/RevealGroup'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
+import { KURULUS_YILI } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Bayırlıoğlu — ALB Tarım & Alb Su Teknolojileri',
@@ -22,36 +24,36 @@ const STATS = [
 ]
 
 // ─── Değerlerimiz ─────────────────────────────────────────────────────────────
-const VALUES = [
+const VALUES: { icon: IconName; title: string; desc: string }[] = [
   {
-    icon: '🤝',
+    icon: 'garanti',
     title: 'Güven',
-    desc: '20 yılı aşkın süredir binlerce çiftçi ve aile bizimle. Verdiğimiz söz, tuttuğumuz sözdür.',
+    desc: 'Sattığımız ürünün arkasında dururuz. Verdiğimiz teslimat ve servis sözünü tutarız.',
   },
   {
-    icon: '💡',
+    icon: 'fikir',
     title: 'İnovasyon',
     desc: 'En güncel teknoloji ve ürünleri Türk tüketicisiyle buluşturuyoruz.',
   },
   {
-    icon: '🌿',
+    icon: 'filiz',
     title: 'Sürdürülebilirlik',
     desc: 'Doğayı koruyarak üretmek, gelecek nesillere sağlıklı bir dünya bırakmak önceliğimizdir.',
   },
   {
-    icon: '⭐',
+    icon: 'yildiz',
     title: 'Kalite',
     desc: 'Sattığımız her ürün titizlikle seçilir, satış sonrası desteğimiz kesintisiz sürer.',
   },
 ]
 
-// ─── Ekip / Galeri Placeholder ───────────────────────────────────────────────
-const GALLERY_ITEMS = [
-  { label: 'Merkez Ofisimiz', aspect: 'aspect-[4/3]' },
-  { label: 'Tarım Ekibimiz', aspect: 'aspect-square' },
-  { label: 'Teknik Servis', aspect: 'aspect-[4/3]' },
-  { label: 'Depo & Lojistik', aspect: 'aspect-square' },
-]
+// ─── Galeri ──────────────────────────────────────────────────────────────────
+//
+// Burada dört boş gri kutu duruyordu ("Merkez Ofisimiz", "Tarım Ekibimiz"…).
+// Fotoğraf konmadığı için ziyaretçiye yarım kalmış bir sayfa gibi görünüyordu.
+// Gerçek fotoğraflarınızı `public/images/galeri/` altına koyup bu diziyi
+// doldurun; dizi boşken bölüm hiç render edilmiyor.
+const GALLERY_ITEMS: { label: string; src: string; aspect: string }[] = []
 
 export default function HomePage() {
   return (
@@ -89,8 +91,8 @@ export default function HomePage() {
               </span>
             </h1>
             <p className="anim-fade-up anim-delay-300 text-lg sm:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed mb-10">
-              Tarımdan teknolojiye, su arıtmadan enerji çözümlerine kadar iki güçlü markamızla
-              Türkiye&apos;nin her köşesine hizmet veriyoruz.
+              Anamur&apos;daki dükkânımızda tarım girdileri ve su arıtma sistemleri satıyoruz;
+              su sistemlerinin kurulumunu ve servisini kendi ekibimiz yapıyor.
             </p>
 
             {/* Marka seçim kartları — büyük CTA */}
@@ -99,7 +101,7 @@ export default function HomePage() {
                 href="/alb-tarim"
                 className="anim-fade-up anim-delay-400 arrow-slide group relative flex flex-col items-center gap-3 bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white rounded-2xl p-7 transition-all duration-300 shadow-xl hover:shadow-green-600/40 hover:-translate-y-1.5 hover:scale-[1.02]"
               >
-                <span className="text-4xl icon-pop">🌱</span>
+                <Icon name="filiz" className="w-10 h-10 icon-pop" />
                 <div>
                   <p className="font-black text-xl">ALB Tarım</p>
                   <p className="text-green-100/80 text-sm mt-1">Gübre · Sulama · Tarım İlaçları</p>
@@ -113,7 +115,7 @@ export default function HomePage() {
                 href="/alb-su-aritma"
                 className="anim-fade-up anim-delay-500 arrow-slide group relative flex flex-col items-center gap-3 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl p-7 transition-all duration-300 shadow-xl hover:shadow-blue-600/40 hover:-translate-y-1.5 hover:scale-[1.02]"
               >
-                <span className="text-4xl icon-pop">💧</span>
+                <Icon name="damla" className="w-10 h-10 icon-pop" />
                 <div>
                   <p className="font-black text-xl">Alb Su Teknolojileri</p>
                   <p className="text-blue-100/80 text-sm mt-1">Su Arıtma · Klima · Elektronik</p>
@@ -163,20 +165,20 @@ export default function HomePage() {
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  Bayırlıoğlu, 2000 yılında kurulan ve bugün iki güçlü markasıyla
-                  Türkiye&apos;nin önde gelen çok sektörlü ticaret şirketlerinden biridir.
+                  Bayırlıoğlu, {KURULUS_YILI} yılında Anamur&apos;da kurulan ve bugün iki markası
+                  altında çalışan bir aile şirketidir.
                 </p>
                 <p>
                   <strong className="text-gray-800">ALB Tarım</strong> markamız altında organik
                   gübre, damla sulama sistemleri ve tarım ilaçlarıyla çiftçilerimize üretimlerini
                   artırma desteği verirken;{' '}
                   <strong className="text-gray-800">Alb Su Teknolojileri</strong> markamızla
-                  su arıtma, klima ve akıllı ev elektroniği alanlarında binlerce haneye hizmet
-                  sunuyoruz.
+                  su arıtma, klima ve akıllı ev elektroniği alanlarında evlere ve iş yerlerine
+                  hizmet sunuyoruz.
                 </p>
                 <p>
-                  Uzman ekibimiz, geniş ürün yelpazemiz ve Türkiye&apos;nin 81 iline ulaşan
-                  dağıtım ağımızla müşterilerimizin yanında olmaya devam ediyoruz.
+                  Ürünlerimizi Anamur&apos;daki dükkânımızdan satıyor, siparişleri kargoyla
+                  Türkiye&apos;nin 81 iline gönderiyoruz.
                 </p>
               </div>
               <div className="mt-8 flex flex-wrap gap-3">
@@ -184,32 +186,40 @@ export default function HomePage() {
                   href="/alb-tarim/hakkimizda"
                   className="btn-press inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm"
                 >
-                  🌱 ALB Tarım Hakkında
+                  ALB Tarım Hakkında
                 </Link>
                 <Link
                   href="/alb-su-aritma/hakkimizda"
                   className="btn-press inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm"
                 >
-                  💧 Alb Su Hakkında
+                  Alb Su Hakkında
                 </Link>
               </div>
             </Reveal>
 
-            {/* Fotoğraf galerisi placeholder */}
-            <div className="grid grid-cols-2 gap-3">
-              <RevealGroup variant="scale" stagger={100} baseDelay={120}>
-                {GALLERY_ITEMS.map((item) => (
-                  <div
-                    key={item.label}
-                    className={`${item.aspect} img-zoom hover-lift rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 relative overflow-hidden flex items-end p-3`}
-                  >
-                    {/* GÖRSEL: /public/images/gallery/${item.label.toLowerCase().replace(/ /g, '-')}.jpg */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                    <p className="relative text-white text-xs font-semibold">{item.label}</p>
-                  </div>
-                ))}
-              </RevealGroup>
-            </div>
+            {/* Fotoğraflar eklenene kadar bu bölüm hiç görünmüyor */}
+            {GALLERY_ITEMS.length > 0 && (
+              <div className="grid grid-cols-2 gap-3">
+                <RevealGroup variant="scale" stagger={100} baseDelay={120}>
+                  {GALLERY_ITEMS.map((item) => (
+                    <div
+                      key={item.label}
+                      className={`${item.aspect} img-zoom hover-lift rounded-2xl relative overflow-hidden flex items-end p-3`}
+                    >
+                      <Image
+                        src={item.src}
+                        alt={item.label}
+                        fill
+                        sizes="(max-width: 768px) 45vw, 22vw"
+                        className="img-zoom-target object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                      <p className="relative text-white text-xs font-semibold">{item.label}</p>
+                    </div>
+                  ))}
+                </RevealGroup>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -222,7 +232,7 @@ export default function HomePage() {
               Markalarımız
             </p>
             <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
-              İki Güçlü Marka, Tek Güvenilir Çatı
+              İki Markamız, İki İş Kolumuz
             </h2>
           </Reveal>
 
@@ -231,13 +241,13 @@ export default function HomePage() {
             <Reveal variant="up" className="h-full">
             <div className="group h-full hover-lift rounded-3xl border border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-8 hover:shadow-xl hover:shadow-green-100">
               <div className="w-14 h-14 rounded-2xl bg-green-600 flex items-center justify-center text-3xl mb-6 icon-pop">
-                🌱
+                <Icon name="filiz" className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-black text-gray-900 mb-3">ALB Tarım</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Organik gübreler, damla sulama sistemleri, tarım ilaçları ve tarım teknolojileri
-                ile Türk çiftçisine katma değer sağlıyoruz. Anamur&apos;dan Türkiye&apos;nin dört bir yanına
-                bizimle büyüdü.
+                Organik gübreler, damla sulama sistemleri, tarım ilaçları ve tarım ekipmanları
+                satıyoruz. Anamur&apos;daki dükkânımızdan alabilir ya da siparişinizi kargoyla
+                adresinize gönderebilirsiniz.
               </p>
               <ul className="space-y-2 text-sm text-gray-600 mb-8">
                 {['Organik & Kimyasal Gübreler', 'Damla & Yağmurlama Sulama', 'Bitki Koruma Ürünleri', 'Tarım Danışmanlık'].map((item) => (
@@ -260,16 +270,15 @@ export default function HomePage() {
             <Reveal variant="up" delay={120} className="h-full">
             <div className="group h-full hover-lift rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-cyan-50 p-8 hover:shadow-xl hover:shadow-blue-100">
               <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-3xl mb-6 icon-pop">
-                💧
+                <Icon name="damla" className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-black text-gray-900 mb-3">Alb Su Teknolojileri</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                İleri teknoloji su arıtma cihazları, enerji tasarruflu klima sistemleri ve akıllı
-                ev elektroniğiyle yaşam kalitenizi artırıyoruz. 1.000&apos;den fazla başarılı
-                kurulum.
+                Su arıtma cihazları, klima sistemleri ve akıllı ev elektroniği satıyoruz.
+                Kurulumu ve sonrasındaki bakımı kendi teknik ekibimiz yapıyor.
               </p>
               <ul className="space-y-2 text-sm text-gray-600 mb-8">
-                {['RO Su Arıtma Sistemleri', 'Endüstriyel Su Arıtma & Yumuşatma', 'Inverter Klima Sistemleri', 'Akıllı Ev Elektroniği', '7/24 Teknik Servis'].map((item) => (
+                {['RO Su Arıtma Sistemleri', 'Endüstriyel Su Arıtma & Yumuşatma', 'Inverter Klima Sistemleri', 'Akıllı Ev Elektroniği', 'Yerinde Teknik Servis'].map((item) => (
                   <li key={item} className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                     {item}
@@ -305,7 +314,7 @@ export default function HomePage() {
                   key={v.title}
                   className="group h-full bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:-translate-y-1.5"
                 >
-                  <div className="text-3xl mb-4 icon-pop">{v.icon}</div>
+                  <Icon name={v.icon} className="w-8 h-8 mb-4 icon-pop text-white" />
                   <h3 className="font-bold text-white text-lg mb-2">{v.title}</h3>
                   <p className="text-white/60 text-sm leading-relaxed">{v.desc}</p>
                 </div>
@@ -329,13 +338,13 @@ export default function HomePage() {
               href="/alb-tarim/iletisim"
               className="btn-press inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-semibold"
             >
-              🌱 ALB Tarım İletişim
+              ALB Tarım İletişim
             </Link>
             <Link
               href="/alb-su-aritma/iletisim"
               className="btn-press inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-semibold"
             >
-              💧 Alb Su İletişim
+              Alb Su İletişim
             </Link>
           </div>
         </Reveal>

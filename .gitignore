@@ -32,3 +32,6 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+/gorseller
+tara.mjs
+rapor.json

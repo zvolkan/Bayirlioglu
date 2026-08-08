@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db'
 import { formatOrderNo } from '@/lib/order-number'
 import CancelOrderButton from '../_components/CancelOrderButton'
 import RepeatOrderButton from '../../_components/RepeatOrderButton'
+import Icon, { type IconName } from '@/components/ui/Icon'
 import type { BrandKey } from '@/lib/types'
 import { carrierTrackingUrl } from '@/lib/carrier'
 import { remainingReturnDays } from '@/lib/returns'
@@ -15,14 +16,14 @@ export const metadata: Metadata = {
   title: 'Sipariş Detayı | Bayırlıoğlu',
 }
 
-const STATUS_MAP: Record<string, { label: string; color: string; icon: string }> = {
-  PENDING:    { label: 'Beklemede',       color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: '⏳' },
-  CONFIRMED:  { label: 'Onaylandı',       color: 'bg-blue-100 text-blue-700 border-blue-200',       icon: '✅' },
-  PROCESSING: { label: 'Hazırlanıyor',    color: 'bg-purple-100 text-purple-700 border-purple-200', icon: '📋' },
-  SHIPPED:    { label: 'Kargoya Verildi', color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: '🚚' },
-  DELIVERED:  { label: 'Teslim Edildi',   color: 'bg-green-100 text-green-700 border-green-200',    icon: '✓' },
-  CANCELLED:  { label: 'İptal Edildi',    color: 'bg-red-100 text-red-700 border-red-200',           icon: '✕' },
-  REFUNDED:   { label: 'İade Edildi',     color: 'bg-gray-100 text-gray-700 border-gray-200',        icon: '↩' },
+const STATUS_MAP: Record<string, { label: string; color: string; icon: IconName }> = {
+  PENDING:    { label: 'Beklemede',       color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: 'saat' },
+  CONFIRMED:  { label: 'Onaylandı',       color: 'bg-blue-100 text-blue-700 border-blue-200',       icon: 'onay-daire' },
+  PROCESSING: { label: 'Hazırlanıyor',    color: 'bg-purple-100 text-purple-700 border-purple-200', icon: 'belge' },
+  SHIPPED:    { label: 'Kargoya Verildi', color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: 'kargo' },
+  DELIVERED:  { label: 'Teslim Edildi',   color: 'bg-green-100 text-green-700 border-green-200',    icon: 'onay' },
+  CANCELLED:  { label: 'İptal Edildi',    color: 'bg-red-100 text-red-700 border-red-200',           icon: 'kapat' },
+  REFUNDED:   { label: 'İade Edildi',     color: 'bg-gray-100 text-gray-700 border-gray-200',        icon: 'yenile' },
 }
 
 const PAYMENT_LABELS: Record<string, string> = {
@@ -85,7 +86,7 @@ export default async function SiparisDetayPage({ params }: Props) {
 
   if (!order) notFound()
 
-  const status = STATUS_MAP[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700 border-gray-200', icon: '?' }
+  const status = STATUS_MAP[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700 border-gray-200', icon: 'uyari' as IconName }
   const isAlbTarim = order.brand.key === 'alb-tarim'
   const cancellable = ['PENDING', 'CONFIRMED'].includes(order.status)
   const shipped = ['SHIPPED', 'DELIVERED'].includes(order.status)
@@ -153,7 +154,7 @@ export default async function SiparisDetayPage({ params }: Props) {
               <div>
                 <p className="text-gray-400 text-xs mb-0.5">Durumu</p>
                 <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border ${status.color}`}>
-                  {status.icon} {status.label}
+                  <Icon name={status.icon} className="w-3.5 h-3.5" />{status.label}
                 </span>
               </div>
             </div>
@@ -175,7 +176,7 @@ export default async function SiparisDetayPage({ params }: Props) {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 mb-4">
             <div className="flex items-start gap-3">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${delivered ? 'bg-green-100 text-green-600' : 'bg-indigo-100 text-indigo-600'} font-bold text-sm`}>
-                {delivered ? '✓' : '🚚'}
+                <Icon name={delivered ? 'onay' : 'kargo'} className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className={`font-semibold text-sm ${delivered ? 'text-green-700' : 'text-indigo-700'}`}>
@@ -255,7 +256,7 @@ export default async function SiparisDetayPage({ params }: Props) {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={img} alt={item.product.name} className="w-full h-full object-contain p-1" />
                     ) : (
-                      <span className="text-2xl">📦</span>
+                      <Icon name="paket" className="w-6 h-6 text-gray-300" />
                     )}
                   </div>
 

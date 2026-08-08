@@ -4,6 +4,8 @@ import { useMemo, useState, useTransition } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import ProductImage from '@/components/product/ProductImage'
+import FavoriteButton from '@/components/product/FavoriteButton'
+import Icon from '@/components/ui/Icon'
 import { BRANDS } from '@/lib/constants'
 import { useCartStore } from '@/store/cartStore'
 import { SORT_OPTIONS, type SortOption } from '@/lib/queries/product-search'
@@ -207,8 +209,17 @@ export default function UrunlerContent({
       toast.error(`${product.name} şu anda tükendi.`)
       return
     }
+    // Sepet deposu stok tavanında sessizce hiçbir şey yapmıyor; öncesi ve
+    // sonrası karşılaştırılmadan "eklendi" demek yanlış bilgi oluyordu.
+    const before = useCartStore.getState().items.find((i) => i.product.id === product.id)?.quantity ?? 0
     addItem(product, 1)
-    toast.success(`${product.name} sepete eklendi`)
+    const after = useCartStore.getState().items.find((i) => i.product.id === product.id)?.quantity ?? 0
+
+    if (after > before) {
+      toast.success(`${product.name} sepete eklendi`)
+    } else {
+      toast.error(`Sepetinizde bu üründen en fazla ${product.stock} ${product.unit} olabilir.`)
+    }
   }
 
   const discount = (product: Product) =>
@@ -680,7 +691,7 @@ function ProductGrid({
   if (products.length === 0) {
     return (
       <div className="text-center py-24">
-        <p className="text-5xl mb-4">🔍</p>
+        <Icon name="arama" className="w-12 h-12 mx-auto mb-4 text-gray-300" />
         <p className="text-gray-500 font-medium text-lg">Bu filtrelerle ürün bulunamadı</p>
         <button
           onClick={clearAll}
@@ -709,14 +720,13 @@ function ProductGrid({
             style={{ animationDelay: `${Math.min(index, 12) * 45}ms` }}
             className="anim-fade-up"
           >
-            <div className="group h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift card-glow flex flex-col">
+            <div className="group relative h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover-lift card-glow flex flex-col">
               {/* Görsel */}
               <Link href={`/${brandKey}/urunler/${product.slug}`}>
                 <div className="img-zoom aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center relative overflow-hidden">
                   <ProductImage
                     src={primaryImg}
                     alt={product.name}
-                    fallback={product.category.icon || '📦'}
                     fill
                     className="img-zoom-target object-contain p-5"
                     sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
@@ -730,7 +740,7 @@ function ProductGrid({
                     <span
                       className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full text-white z-10 shadow-sm ${accentBg}`}
                     >
-                      ⭐ Öne Çıkan
+                      Öne Çıkan
                     </span>
                   )}
                   {isOutOfStock && (
@@ -740,6 +750,12 @@ function ProductGrid({
                   )}
                 </div>
               </Link>
+
+              {/* Favori — kart tamamen Link içinde olduğu için görselin
+                  üstünde ayrı bir katmanda duruyor. */}
+              <div className="absolute top-2.5 right-2.5 z-20">
+                <FavoriteButton productId={product.id} />
+              </div>
 
               {/* İçerik */}
               <div className="p-4 flex flex-col flex-1">

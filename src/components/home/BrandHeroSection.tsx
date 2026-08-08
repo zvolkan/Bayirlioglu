@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, Fragment } from 'react'
 import Link from 'next/link'
+import Icon from '@/components/ui/Icon'
 import { BRANDS } from '@/lib/constants'
 import type { BrandKey } from '@/lib/types'
 
@@ -166,13 +167,15 @@ export default function BrandHeroSection({ brandKey }: Props) {
                     href={`/${brandKey}/urunler?kullanim=ev`}
                     className="inline-flex items-center justify-center gap-2 bg-white text-blue-900 font-bold text-base sm:text-lg px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
                   >
-                    🏠 Eviniz İçin
+                    <Icon name="ev" className="w-5 h-5" />
+                    Eviniz İçin
                   </Link>
                   <Link
                     href={`/${brandKey}/urunler?kullanim=is-yeri`}
-                    className={`inline-flex items-center justify-center border-2 ${outlineBtn} text-white font-semibold text-base sm:text-lg px-8 py-4 rounded-2xl backdrop-blur-sm hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200`}
+                    className={`inline-flex items-center justify-center gap-2 border-2 ${outlineBtn} text-white font-semibold text-base sm:text-lg px-8 py-4 rounded-2xl backdrop-blur-sm hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200`}
                   >
-                    🏢 İş Yeriniz İçin
+                    <Icon name="bina" className="w-5 h-5" />
+                    İş Yeriniz İçin
                   </Link>
                 </>
               ) : (
@@ -188,7 +191,7 @@ export default function BrandHeroSection({ brandKey }: Props) {
                   </Link>
                   <Link
                     href={`/${brandKey}${cfg.ctaSecondary.href}`}
-                    className={`inline-flex items-center justify-center border-2 ${outlineBtn} text-white font-semibold text-base sm:text-lg px-8 py-4 rounded-2xl backdrop-blur-sm hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200`}
+                    className={`inline-flex items-center justify-center gap-2 border-2 ${outlineBtn} text-white font-semibold text-base sm:text-lg px-8 py-4 rounded-2xl backdrop-blur-sm hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200`}
                   >
                     {cfg.ctaSecondary.label}
                   </Link>

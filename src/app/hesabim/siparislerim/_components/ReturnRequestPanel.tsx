@@ -171,7 +171,7 @@ export default function ReturnRequestPanel({
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
         />
         <p className="text-[11px] text-gray-400 mt-1">
-          Cayma hakkında gerekçe zorunlu değildir; süreci hızlandırmak için soruyoruz.
+          Süreci hızlandırmak için en az 10 karakterlik kısa bir açıklama istiyoruz.
         </p>
       </div>
 

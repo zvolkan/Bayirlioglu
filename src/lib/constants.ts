@@ -14,8 +14,8 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     tagline: 'Toprağınıza\nDeğer Katın',
     subtitle: 'Modern tarım teknolojileriyle',
     description:
-      "Organik gübrelerden akıllı sulama sistemlerine kadar verimliliğinizi artıran çözümler sunuyoruz. Türkiye'nin güvendiği tarım partneri — doğru ürün, uzman destek, hızlı teslimat.",
-    badge: '🌾 2026 Yeni Sezon Ürünleri Mevcut',
+      'Organik gübrelerden akıllı sulama sistemlerine kadar verimliliğinizi artıran çözümler sunuyoruz. Ürün seçiminde yardımcı oluyor, siparişinizi kargoyla adresinize gönderiyoruz.',
+    badge: '2026 Yeni Sezon Ürünleri Mevcut',
     cta: { label: 'Ürünlerimizi İnceleyin', href: '/urunler' },
     ctaSecondary: { label: 'Ücretsiz Danışmanlık Al', href: '/iletisim' },
     whatsapp: {
@@ -41,6 +41,9 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
         ],
       },
       { label: 'Hizmetler', href: '/hizmetler' },
+      // Sayfa iki marka için de yazılmıştı ama yalnızca ALB Su menüsündeydi;
+      // ALB Tarım tarafında hiçbir bağlantısı yoktu.
+      { label: 'Hizmet Alanlarımız', href: '/referanslar' },
       { label: 'Blog', href: '/blog' },
       { label: 'Hakkımızda', href: '/hakkimizda' },
       { label: 'İletişim', href: '/iletisim' },
@@ -75,8 +78,8 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     tagline: 'Sağlık için,\nAlkali su için',
     subtitle: 'Alkali & endüstriyel su teknolojileriyle',
     description:
-      'Eviniz için tezgah altı RO ve alkali su cihazları; iş yeriniz için arıtmalı su sebili ve endüstriyel sistemler. Ücretsiz profesyonel montaj, dünya markası membranlar ve 7/24 teknik servis güvencesiyle.',
-    badge: '💧 Ücretsiz Montaj & 2 Yıl Garanti',
+      'Eviniz için tezgah altı RO ve alkali su cihazları; iş yeriniz için arıtmalı su sebili ve endüstriyel sistemler. Ücretsiz profesyonel montaj, dünya markası membranlar ve yerinde teknik servis ile.',
+    badge: 'Ücretsiz Montaj & 2 Yıl Garanti',
     cta: { label: 'Ürünlerimizi İnceleyin', href: '/urunler' },
     ctaSecondary: { label: 'Ücretsiz Teklif Al', href: '/iletisim' },
     whatsapp: {
@@ -159,6 +162,18 @@ export const BRAND = BRANDS[ACTIVE_BRAND_KEY];
  * Kurumsal/hukuki metinlerde bunu, marka sayfalarında `BRAND.name` kullanın.
  */
 export const COMPANY_NAME = 'Bayırlıoğlu';
+
+/**
+ * Kuruluş yılı — TEK KAYNAK.
+ *
+ * Site içinde üç ayrı yıl yazıyordu (2000, 2003, 2006). Hangisinin doğru
+ * olduğunu yalnızca siz bilebilirsiniz: LÜTFEN BU YILI DOĞRULAYIN. Yıl
+ * değişirse burayı değiştirmeniz yeterli, tüm sayfalara yansır.
+ *
+ * Kaç yıllık deneyim olduğu ("20 yılı aşkın" gibi) hiçbir yerde yazmıyor;
+ * yalnızca kuruluş yılı belirtiliyor.
+ */
+export const KURULUS_YILI = 2006;
 
 // ─── GENEL SABİTLER ───────────────────────────────────────────────────────────
 

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
 import { ACTIVE_BRAND_KEY } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import Icon from '@/components/ui/Icon'
 import AccountSidebar from '../_components/AccountSidebar'
 import FavoriteCardActions from './_components/FavoriteCardActions'
 
@@ -76,7 +77,7 @@ export default async function FavorilerimPage() {
 
             {favorites.length === 0 ? (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-                <p className="text-5xl mb-4">🤍</p>
+                <Icon name="kalp-bos" className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Favori listeniz boş</h3>
                 <p className="text-gray-500 mb-6">
                   Beğendiğiniz ürünlerin kalp simgesine dokunarak favorilerinize ekleyebilir,
@@ -121,7 +122,7 @@ export default async function FavorilerimPage() {
                             className="object-contain p-4 transition-transform duration-500 group-hover:scale-110"
                           />
                         ) : (
-                          <span className="text-4xl">{product.category.icon ?? '📦'}</span>
+                          <Icon name="paket" className="w-9 h-9 text-gray-300" />
                         )}
                       </Link>
 

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getDealerApplications } from '@/app/actions/admin-orders'
 import ApplicationRow from './_components/ApplicationRow'
+import Icon from '@/components/ui/Icon'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,7 +23,7 @@ export default async function AdminBayiBasvurulariPage() {
 
       {applications.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm p-16 text-center">
-          <p className="text-4xl mb-3">🤝</p>
+          <Icon name="garanti" className="w-9 h-9 mb-3 mx-auto text-gray-300" />
           <p className="text-gray-500">Henüz bayi başvurusu yok.</p>
         </div>
       ) : (

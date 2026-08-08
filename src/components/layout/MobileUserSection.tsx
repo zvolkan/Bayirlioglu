@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Icon from '@/components/ui/Icon'
 import { createClient } from '@/lib/supabase/client'
 
 type Props = {
@@ -51,14 +52,14 @@ export default function MobileUserSection({ accentColor, cartCount, onClose }: P
             onClick={onClose}
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"
           >
-            <span>👤</span> Hesabım
+            <Icon name="kullanici" className="w-4 h-4" /> Hesabım
           </Link>
           <Link
             href="/hesabim/siparislerim"
             onClick={onClose}
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"
           >
-            <span>📦</span> Siparişlerim
+            <Icon name="paket" className="w-4 h-4" /> Siparişlerim
           </Link>
           <button
             onClick={async () => {
@@ -68,7 +69,7 @@ export default function MobileUserSection({ accentColor, cartCount, onClose }: P
             }}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-400 hover:text-red-300 hover:bg-white/10 text-sm font-medium transition-colors"
           >
-            <span>🚪</span> Çıkış Yap
+            <Icon name="cikis" className="w-4 h-4" /> Çıkış Yap
           </button>
         </>
       ) : loaded ? (
@@ -86,7 +87,7 @@ export default function MobileUserSection({ accentColor, cartCount, onClose }: P
         className="flex items-center justify-center gap-2 text-white/70 py-2 text-sm mt-1"
         onClick={onClose}
       >
-        🛒 Sepetim {cartCount > 0 && `(${cartCount})`}
+        <Icon name="sepet" className="w-4 h-4" /> Sepetim {cartCount > 0 && `(${cartCount})`}
       </Link>
     </div>
   )
