@@ -146,7 +146,7 @@ export default function HakkimizdaPage() {
             </p>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Markalarımız</h2>
           </div>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {markalar.map((m) => (
               <div
                 key={m.name}
@@ -182,7 +182,7 @@ export default function HakkimizdaPage() {
               Ne Yapıyoruz, Nasıl Çalışıyoruz?
             </h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {values.map((item) => (
               <div
                 key={item.title}
@@ -203,8 +203,12 @@ export default function HakkimizdaPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center text-white">
-                <div className="text-3xl sm:text-5xl lg:text-6xl font-bold mb-2">{stat.value}</div>
-                <div className="text-white/60 text-lg font-medium">{stat.label}</div>
+                <div className="text-2xl sm:text-5xl lg:text-6xl font-bold mb-2 break-words">
+                  {stat.value}
+                </div>
+                <div className="text-white/60 text-base sm:text-lg font-medium break-words">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -219,7 +223,7 @@ export default function HakkimizdaPage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Ekibimiz</h2>
             <p className="text-gray-500 text-lg">Deneyimli kadromuzla hizmetinizdeyiz</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {team.map((member) => (
               <div
                 key={member.name}

@@ -153,7 +153,7 @@ export default async function BrandHomePage({ params }: Props) {
                 </h2>
               </div>
             </Reveal>
-            <div className="grid sm:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <RevealGroup itemClassName="h-full">
               {[
                 {
@@ -284,7 +284,7 @@ export default async function BrandHomePage({ params }: Props) {
               <h2 className="text-2xl sm:text-3xl font-black text-gray-900 rule-under rule-center">Neden {cfg.name}?</h2>
             </div>
           </Reveal>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <RevealGroup itemClassName="h-full">
             {(isAlbSu
               ? [
@@ -331,7 +331,7 @@ export default async function BrandHomePage({ params }: Props) {
                 </p>
               </div>
             </Reveal>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
               <RevealGroup itemClassName="h-full">
               {[
                 {
@@ -453,7 +453,7 @@ export default async function BrandHomePage({ params }: Props) {
                 </Link>
               </div>
             </Reveal>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <RevealGroup itemClassName="h-full">
               {brandPosts.map((post) => (
                 <Link

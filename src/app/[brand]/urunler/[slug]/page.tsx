@@ -131,7 +131,7 @@ export default async function ProductDetailPage({ params }: Props) {
       <div className="container-main py-10">
         {/* ── Ürün Ana Bölüm ── */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="grid md:grid-cols-2 gap-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
             {/* Görseller */}
             <ProductGallery
               images={galleryImages}

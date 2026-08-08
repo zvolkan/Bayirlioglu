@@ -76,7 +76,7 @@ export default async function BlogPage({ params }: Props) {
             <div className="mb-10">
               <Link
                 href={`/${brandKey}/blog/${posts[0].slug}`}
-                className="group grid md:grid-cols-2 bg-white rounded-3xl border border-gray-100 overflow-hidden hover-lift"
+                className="group grid grid-cols-1 md:grid-cols-2 bg-white rounded-3xl border border-gray-100 overflow-hidden hover-lift"
               >
                 <div className="img-zoom min-h-52 md:min-h-64 relative overflow-hidden bg-gray-100">
                   {posts[0].coverImage ? (
@@ -115,7 +115,7 @@ export default async function BlogPage({ params }: Props) {
 
             {/* Diğer yazılar */}
             {posts.length > 1 && (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {posts.slice(1).map((post) => (
                   <Link
                     key={post.slug}

@@ -122,10 +122,13 @@ export default async function HesabimPage() {
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        {/* `grid` tek başına örtük sütunu max-content genişliğinde
+            tutuyor; 320px ekranda kartlar 334px’e çıkıp sayfayı yatayda
+            taşırıyordu. Mobil sütun sayısı ve min-w-0 açıkça verildi. */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* SOL — Profil + Adresler */}
-          <div className="space-y-5">
+          <div className="min-w-0 space-y-5">
             <div className="bg-white rounded-2xl border border-gray-200 p-6">
               <h2 className="font-semibold text-gray-900 mb-4">Profil Bilgileri</h2>
               <ProfileForm name={user.name} phone={user.phone} email={authUser.email!} />
@@ -179,7 +182,7 @@ export default async function HesabimPage() {
           </div>
 
           {/* SAĞ — Siparişler */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 min-w-0 space-y-6">
 
             {/* ALB Tarım Siparişleri */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">

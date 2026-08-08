@@ -303,7 +303,7 @@ export default async function SiparisDetayPage({ params }: Props) {
         </div>
 
         {/* Bottom info cards */}
-        <div className="grid sm:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           {/* Shipping address */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Teslimat Adresi</h3>

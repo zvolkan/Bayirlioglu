@@ -85,7 +85,7 @@ export default function IletisimPage() {
       </section>
 
       <div className="container-main py-12">
-        <div className="grid lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* ── İletişim Bilgileri ── */}
           <div className="lg:col-span-1 space-y-5">
             {[
@@ -147,7 +147,7 @@ export default function IletisimPage() {
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8">
               <h2 className="text-xl font-black text-gray-900 mb-6">Mesaj Gönderin</h2>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                <div className="grid sm:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
                     <label htmlFor="iletisim-name" className="block text-sm font-semibold text-gray-700 mb-1.5">Ad Soyad *</label>
                     <input
@@ -175,7 +175,7 @@ export default function IletisimPage() {
                   </div>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
                     <label htmlFor="iletisim-phone" className="block text-sm font-semibold text-gray-700 mb-1.5">Telefon</label>
                     <input

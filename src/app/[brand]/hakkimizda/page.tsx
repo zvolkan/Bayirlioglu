@@ -71,7 +71,7 @@ export default async function HakkimizdaPage({ params }: Props) {
 
       {/* Misyon & Vizyon */}
       <section className="py-16 container-main">
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <RevealGroup itemClassName="h-full">
           <div className="h-full bg-white rounded-2xl border border-gray-100 p-4 sm:p-8 hover-lift">
             <div className="mb-4"><Icon name="hedef" className="w-8 h-8 text-brand-600" /></div>
@@ -132,10 +132,16 @@ export default async function HakkimizdaPage({ params }: Props) {
         <div className="container-main">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
             <RevealGroup variant="scale" itemClassName="h-full">
+            {/* 320px'de iki sütunlu ızgarada hücreye ~82px kalıyordu;
+                "Ücretsiz" gibi tek kelimelik değerler 36px punto ile sığmayıp
+                sayfayı yatayda taşırıyordu. Punto ve iç boşluk küçük ekranda
+                düşürüldü, kelime kırılması açıldı. */}
             {cfg.stats.map((s) => (
-              <div key={s.label} className="h-full text-center bg-white rounded-2xl border border-gray-100 p-6">
-                <p className="text-4xl font-black text-brand-600 mb-2">{s.value}</p>
-                <p className="text-gray-500 text-sm font-medium">{s.label}</p>
+              <div key={s.label} className="h-full text-center bg-white rounded-2xl border border-gray-100 p-4 sm:p-6">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-black text-brand-600 mb-2 break-words">
+                  {s.value}
+                </p>
+                <p className="text-gray-500 text-sm font-medium break-words">{s.label}</p>
               </div>
             ))}
             </RevealGroup>

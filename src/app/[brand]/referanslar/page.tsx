@@ -109,7 +109,7 @@ export default async function ReferanslarPage({ params }: Props) {
             </div>
           </Reveal>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <RevealGroup itemClassName="h-full">
               {sectors.map((s) => (
                 <div
@@ -140,7 +140,7 @@ export default async function ReferanslarPage({ params }: Props) {
             </div>
           </Reveal>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <RevealGroup itemClassName="h-full">
               {(isAlbSu
                 ? [

@@ -23,7 +23,7 @@ interface RevealGroupProps {
 /**
  * Çocuklarını sırayla, birer birer getirir — grid ve listeler için.
  *
- *   <div className="grid md:grid-cols-3 gap-6">
+ *   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
  *     <RevealGroup itemClassName="h-full">
  *       {urunler.map((u) => <ProductCard key={u.id} {...u} />)}
  *     </RevealGroup>

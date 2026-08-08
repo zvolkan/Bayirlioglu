@@ -141,7 +141,7 @@ export default function BlogForm({ brands, defaultValues = {} }: Props) {
           />
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="blog-slug" className={label}>
               Adres (slug)
@@ -182,7 +182,7 @@ export default function BlogForm({ brands, defaultValues = {} }: Props) {
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="blog-category" className={label}>
               Kategori

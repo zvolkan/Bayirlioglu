@@ -96,7 +96,7 @@ export default function HomePage() {
             </p>
 
             {/* Marka seçim kartları — büyük CTA */}
-            <div className="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
               <Link
                 href="/alb-tarim"
                 className="anim-fade-up anim-delay-400 arrow-slide group relative flex flex-col items-center gap-3 bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white rounded-2xl p-7 transition-all duration-300 shadow-xl hover:shadow-green-600/40 hover:-translate-y-1.5 hover:scale-[1.02]"
@@ -154,7 +154,7 @@ export default function HomePage() {
       {/* ── BİZ KİMİZ ── */}
       <section className="py-20 bg-gray-50">
         <div className="container-main">
-          <div className="grid lg:grid-cols-2 gap-14 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
             {/* Metin */}
             <Reveal variant="left">
               <p className="text-stone-600 font-bold uppercase text-sm tracking-widest mb-3">
@@ -236,7 +236,7 @@ export default function HomePage() {
             </h2>
           </Reveal>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* ALB Tarım */}
             <Reveal variant="up" className="h-full">
             <div className="group h-full hover-lift rounded-3xl border border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-8 hover:shadow-xl hover:shadow-green-100">
@@ -307,7 +307,7 @@ export default function HomePage() {
             <h2 className="text-3xl sm:text-4xl font-black text-white">Değerlerimiz</h2>
           </Reveal>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <RevealGroup stagger={90} itemClassName="h-full">
               {VALUES.map((v) => (
                 <div

@@ -152,7 +152,7 @@ export default async function BlogPostPage({ params }: Props) {
         {related.length > 0 && (
           <div className="mt-12">
             <h2 className="text-xl font-black text-gray-900 mb-6">Diğer Yazılar</h2>
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {related.map((p) => (
                 <Link
                   key={p.slug}

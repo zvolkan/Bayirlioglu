@@ -71,7 +71,7 @@ export default function SepetPage() {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container-main">
           <div className="h-8 w-40 bg-gray-200 rounded-lg skeleton mb-6" />
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-4">
               {Array.from({ length: 2 }).map((_, i) => (
                 <div key={i} className="h-32 bg-white rounded-2xl border border-gray-200 skeleton" />

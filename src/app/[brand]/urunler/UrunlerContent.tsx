@@ -370,7 +370,7 @@ export default function UrunlerContent({
                     else setTypeFilter(val)
                   }}
                   aria-label="Ürün tipi"
-                  className="appearance-none pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-gray-400 cursor-pointer"
+                  className="appearance-none max-w-[60vw] sm:max-w-none truncate pl-3 pr-7 py-1.5 rounded-full text-xs font-semibold border border-gray-200 bg-white text-gray-700 focus:outline-none focus:border-gray-400 cursor-pointer"
                 >
                   <option value="">Kategori Seç</option>
                   {activePills.map((pill) => (

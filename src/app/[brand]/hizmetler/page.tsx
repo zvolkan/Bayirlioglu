@@ -134,7 +134,7 @@ export default async function HizmetlerPage({ params }: Props) {
 
       {/* Hizmetler Grid */}
       <section className="py-16 container-main">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <RevealGroup itemClassName="h-full">
           {services.map((svc) => (
             <div

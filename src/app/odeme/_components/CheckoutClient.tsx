@@ -179,7 +179,7 @@ export default function CheckoutClient({ addresses }: Props) {
           <p className="text-gray-500 text-sm mt-0.5">Teslimat adresinizi seçin ve sözleşmeleri onaylayın.</p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* SOL */}
           <div className="lg:col-span-2 space-y-5">

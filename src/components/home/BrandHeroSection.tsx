@@ -210,7 +210,7 @@ export default function BrandHeroSection({ brandKey }: Props) {
               {cfg.stats.map((stat, i) => (
                 <Fragment key={stat.label}>
                   <div>
-                    <div className="text-3xl sm:text-4xl font-black text-white leading-none">
+                    <div className="text-2xl sm:text-4xl font-black text-white leading-none break-words">
                       {stat.value}
                     </div>
                     <div className="text-sm text-white/50 mt-1 font-medium">{stat.label}</div>
