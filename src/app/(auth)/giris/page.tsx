@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { signIn, signInWithGoogle } from '@/app/actions/auth'
 
 export const metadata: Metadata = {
-  title: 'Giriş Yap | Bayırlıoğlu',
+  title: 'Giriş Yap',
 }
 
 export default async function GirisPage({

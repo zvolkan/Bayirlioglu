@@ -24,8 +24,8 @@ export const MOCK_SERVICES_TARIM: ServiceWithIcon[] = [
   },
   {
     id: 2,
-    title: 'Sulama Sistemi Kurulumu',
-    description: 'Arazinize özel damla sulama veya yağmurlama sistemi tasarımı ve kurulumu.',
+    title: 'Zirai Danışmanlık',
+    description: 'Toprak ve yaprak analizine dayalı gübreleme ile bitki koruma programı.',
     icon: 'servis',
     features: ['Arazi etüdü', 'Sistem tasarımı', 'Montaj & test', '1 yıl bakım garantisi'],
     brand: 'alb-tarim',

@@ -5,7 +5,7 @@ import Reveal from '@/components/ui/Reveal'
 import Icon, { type IconName } from '@/components/ui/Icon'
 import RevealGroup from '@/components/ui/RevealGroup'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
-import { KURULUS_YILI } from '@/lib/constants'
+import { KURULUS_ANLATIM } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Bayırlıoğlu — ALB Tarım & Alb Su Teknolojileri',
@@ -104,7 +104,7 @@ export default function HomePage() {
                 <Icon name="filiz" className="w-10 h-10 icon-pop" />
                 <div>
                   <p className="font-black text-xl">ALB Tarım</p>
-                  <p className="text-green-100/80 text-sm mt-1">Gübre · Sulama · Tarım İlaçları</p>
+                  <p className="text-green-100/80 text-sm mt-1">Gübre · Zirai İlaç · Danışmanlık</p>
                 </div>
                 <span className="mt-2 text-sm font-semibold flex items-center gap-1.5 text-green-100">
                   Keşfet <span className="arrow">→</span>
@@ -165,16 +165,21 @@ export default function HomePage() {
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  Bayırlıoğlu, {KURULUS_YILI} yılında Anamur&apos;da kurulan ve bugün iki markası
-                  altında çalışan bir aile şirketidir.
+                  Bayırlıoğlu, {KURULUS_ANLATIM} Anamur&apos;da zirai ilaç ve gübre
+                  satışı yapan bir aile şirketidir. Bugün iki markası altında çalışıyoruz.
                 </p>
                 <p>
-                  <strong className="text-gray-800">ALB Tarım</strong> markamız altında organik
-                  gübre, damla sulama sistemleri ve tarım ilaçlarıyla çiftçilerimize üretimlerini
-                  artırma desteği verirken;{' '}
+                  <strong className="text-gray-800">ALB Tarım</strong> — dededen kalan
+                  şirketimizin adıyla yola çıktık, bugün kendi formüllerimizle gübre
+                  üreten bir şirket hâline geldik. Tarımın her alanında zirai ilaç, gübre
+                  ve zirai danışmanlık hizmeti veriyoruz. Türk tarımının gelişmesine
+                  katkıda bulunmayı; teknolojiyi ve yenilikçi gelişmeleri yakından takip
+                  ederek öncü şirketler arasında yer almayı hedefliyoruz.
+                </p>
+                <p>
                   <strong className="text-gray-800">Alb Su Teknolojileri</strong> markamızla
-                  su arıtma, klima ve akıllı ev elektroniği alanlarında evlere ve iş yerlerine
-                  hizmet sunuyoruz.
+                  su arıtma, klima ve akıllı ev elektroniği alanlarında evlere ve iş
+                  yerlerine hizmet sunuyoruz.
                 </p>
                 <p>
                   Ürünlerimizi Anamur&apos;daki dükkânımızdan satıyor, siparişleri kargoyla
@@ -245,12 +250,13 @@ export default function HomePage() {
               </div>
               <h3 className="text-2xl font-black text-gray-900 mb-3">ALB Tarım</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Organik gübreler, damla sulama sistemleri, tarım ilaçları ve tarım ekipmanları
-                satıyoruz. Anamur&apos;daki dükkânımızdan alabilir ya da siparişinizi kargoyla
-                adresinize gönderebilirsiniz.
+                Kendi formüllerimizle ürettiğimiz gübreler, zirai ilaçlar ve tarım
+                ekipmanları satıyoruz; zirai danışmanlık veriyoruz. Anamur&apos;daki
+                dükkânımızdan alabilir ya da siparişinizi kargoyla adresinize
+                gönderebilirsiniz.
               </p>
               <ul className="space-y-2 text-sm text-gray-600 mb-8">
-                {['Organik & Kimyasal Gübreler', 'Damla & Yağmurlama Sulama', 'Bitki Koruma Ürünleri', 'Tarım Danışmanlık'].map((item) => (
+                {['Organik & Kimyasal Gübreler', 'Kendi Formülümüz Gübreler', 'Bitki Koruma Ürünleri', 'Zirai Danışmanlık'].map((item) => (
                   <li key={item} className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                     {item}

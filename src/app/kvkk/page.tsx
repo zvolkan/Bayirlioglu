@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'KVKK Aydınlatma Metni | Bayırlıoğlu',
+  title: 'KVKK Aydınlatma Metni',
   description: 'Kişisel Verilerin Korunması Kanunu kapsamında aydınlatma metni.',
 }
 

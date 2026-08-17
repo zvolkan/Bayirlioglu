@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Icon, { type IconName } from '@/components/ui/Icon'
-import { KURULUS_YILI, SITE_CONFIG } from '@/lib/constants'
+import { KURULUS_ANLATIM, SITE_CONFIG } from '@/lib/constants'
 
 export const metadata: Metadata = {
-  title: 'Hakkımızda | Bayırlıoğlu',
-  description: `${KURULUS_YILI} yılından bu yana tarım ve su teknolojileri alanında faaliyet gösteren Bayırlıoğlu hakkında bilgi edinin.`,
+  title: 'Hakkımızda',
+  description: `${KURULUS_ANLATIM} tarım alanında faaliyet gösteren Bayırlıoğlu hakkında bilgi edinin.`,
 }
 
 // Doğrulanamayan rakamlar kaldırıldı. Gerçek değerleriniz olduğunda buraya
@@ -21,7 +21,7 @@ const values: { title: string; description: string; icon: IconName }[] = [
   {
     title: 'İşimiz',
     description:
-      'Çiftçiye gübre, tarım ilacı ve sulama malzemesi; ev ile iş yerlerine su arıtma sistemi satıyoruz. Su arıtmada kurulumu ve bakımı kendi ekibimiz yapıyor.',
+      'Çiftçiye gübre, zirai ilaç ve tarım ekipmanı; ev ile iş yerlerine su arıtma sistemi satıyoruz. Su arıtmada kurulumu ve bakımı kendi ekibimiz yapıyor.',
     icon: 'hedef',
   },
   {
@@ -56,8 +56,8 @@ const markalar: {
     bgLight: 'bg-green-50',
     borderColor: 'border-green-200',
     href: '/alb-tarim',
-    desc: 'Organik gübreler, sulama sistemleri, tarım ilaçları ve ekipmanları alanında faaliyet göstermektedir. Çiftçilerimize uygun fiyat, hızlı teslimat ve uzman tarım danışmanlığı sunmaktadır.',
-    kuruluş: String(KURULUS_YILI),
+    desc: 'Kendi formülleriyle ürettiği gübreler, zirai ilaçlar ve tarım ekipmanları alanında faaliyet göstermektedir. Çiftçilerimize uygun fiyat, hızlı teslimat ve uzman zirai danışmanlık sunmaktadır.',
+    kuruluş: "1950'ler",
     icon: 'filiz',
   },
   {
@@ -104,7 +104,7 @@ export default function HakkimizdaPage() {
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Hakkımızda</h1>
           <p className="text-xl text-white/75 font-medium max-w-xl mx-auto">
-            Anamur&apos;da {KURULUS_YILI} yılında kurulduk; tarım girdileri ve su arıtma
+            {KURULUS_ANLATIM} Anamur&apos;dayız; tarım girdileri ve su arıtma
             sistemleri satıyoruz.
           </p>
         </div>
@@ -117,14 +117,14 @@ export default function HakkimizdaPage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Hikayemiz</h2>
             <div className="prose prose-lg text-gray-700 space-y-4">
               <p>
-                Bayırlıoğlu ailesi, {KURULUS_YILI} yılında Mersin'in Anamur ilçesinde küçük bir
-                tarım deposuyla işe başladı. O günden beri aynı ilçede, çoğunlukla aynı
-                çiftçilerle çalışıyoruz.
+                Bayırlıoğlu ailesi, 1950'lerin başında Mersin'in Anamur ilçesinde zirai
+                ilaç ve gübre satışıyla işe başladı. O günden beri aynı ilçede, çoğunlukla
+                aynı çiftçilerle çalışıyoruz.
               </p>
               <p>
-                Yıllar içinde gübre ve tohum ürünlerinin yanı sıra damla sulama sistemleriyle
-                büyüyen ürün yelpazesini genişleten firma, 2015 yılında su arıtma ve
-                iklimlendirme sektörüne adım atarak{' '}
+                Dededen kalan şirket adıyla süren iş, zamanla kendi formülleriyle gübre
+                üreten bir yapıya dönüştü. Firma 2015 yılında su arıtma ve iklimlendirme
+                sektörüne de adım atarak{' '}
                 <strong>Alb Su Teknolojileri</strong> markasını kurdu.
               </p>
               <p>

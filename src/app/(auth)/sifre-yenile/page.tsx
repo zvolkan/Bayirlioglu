@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { updatePassword } from '@/app/actions/auth'
 
 export const metadata: Metadata = {
-  title: 'Yeni Şifre Belirle | Bayırlıoğlu',
+  title: 'Yeni Şifre Belirle',
   robots: { index: false, follow: false },
 }
 

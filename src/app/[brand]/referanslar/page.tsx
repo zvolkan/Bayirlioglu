@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!VALID_BRANDS.includes(brand as BrandKey)) return {}
   const cfg = BRANDS[brand as BrandKey]
   return {
-    title: `Hizmet Alanlarımız | ${cfg.name}`,
+    title: 'Hizmet Alanlarımız',
     description: `${cfg.name} olarak sanayi, sağlık, eğitim, gıda ve konut alanlarında kurulum ve bakım hizmeti veriyoruz.`,
   }
 }
@@ -55,7 +55,7 @@ const SECTORS_TARIM: { icon: IconName; label: string; desc: string }[] = [
   { icon: 'filiz', label: 'Meyve Bahçeleri', desc: 'Narenciye, muz ve zeytinde dönemsel besleme ve mikro element takviyesi.' },
   { icon: 'filiz', label: 'Fidan & Fide Üretimi', desc: 'Kök gelişimi ve şaşırtma sonrası stres yönetimi ürünleri.' },
   { icon: 'analiz', label: 'Toprak Islahı', desc: 'Tuzluluk, kireç ve organik madde sorunlarına yönelik düzenleyiciler.' },
-  { icon: 'damla', label: 'Sulama Sistemleri', desc: 'Damla ve yağmurlama hatlarında tıkanma önleyici uygulamalar.' },
+  { icon: 'molekul', label: 'Zirai Danışmanlık', desc: 'Toprak ve yaprak analizine dayalı gübreleme ve bitki koruma programları.' },
 ]
 
 export default async function ReferanslarPage({ params }: Props) {

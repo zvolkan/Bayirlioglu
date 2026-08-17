@@ -23,7 +23,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const hasFilter = Boolean(sp.kullanim || sp.type || sp.arama || sp.marka || sp.min || sp.max)
 
   return {
-    title: page > 1 ? `Ürünler — Sayfa ${page} — ${cfg.name}` : `Ürünler — ${cfg.name}`,
+    title: page > 1 ? `Ürünler — Sayfa ${page}` : 'Ürünler',
     description: `${cfg.name} ürün kataloğu`,
     alternates: { canonical: `/${brand}/urunler` },
     // Filtreli ve sayfalı görünümler yinelenen içerik olarak indekslenmesin

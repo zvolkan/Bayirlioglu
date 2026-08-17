@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Bayilik Başvurusu | Bayırlıoğlu',
+  title: 'Bayilik Başvurusu',
   description: 'ALB Tarım ve Alb Su Teknolojileri bayilik başvurusu. Cazip komisyon, ücretsiz eğitim ve teknik destek.',
 }
 

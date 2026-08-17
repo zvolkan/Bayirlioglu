@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { signUp, signInWithGoogle } from '@/app/actions/auth'
 
 export const metadata: Metadata = {
-  title: 'Kayıt Ol | Bayırlıoğlu',
+  title: 'Kayıt Ol',
 }
 
 export default async function KayitPage({

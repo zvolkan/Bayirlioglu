@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!VALID_BRANDS.includes(brand as BrandKey)) return {}
   const cfg = BRANDS[brand as BrandKey]
   return {
-    title: `Hizmetler | ${cfg.name}`,
+    title: 'Hizmetler',
     description: `${cfg.name} hizmetleri: teknik destek, danışmanlık ve daha fazlası.`,
   }
 }
@@ -37,12 +37,8 @@ const TARIM_SERVICES: { icon: IconName; title: string; desc: string; features: s
     desc: 'Uzmanlarımız tarlanıza gelir, yerinde inceleme yaparak en doğru çözümü sunar.',
     features: ['Ücretsiz saha analizi', 'Yerinde toprak ve bitki gözlemi', 'Özel aksiyon planı'],
   },
-  {
-    icon: 'damla',
-    title: 'Sulama Sistem Kurulumu',
-    desc: 'Damla sulama ve yağmurlama sistemlerini profesyonel ekibimiz tasarlar ve kurar.',
-    features: ['Tasarım ve hesaplama', 'Malzeme tedariki', 'Profesyonel montaj', 'Devreye alma ve eğitim'],
-  },
+  // "Sulama Sistem Kurulumu" hizmeti kaldırıldı: ALB Tarım sulama sistemi
+  // kurulumu yapmıyor. Gübre, zirai ilaç ve danışmanlık odaklı çalışıyoruz.
   // "Çiftçi Eğitimi" hizmeti kaldırıldı: seminer, sertifika programı ve online
   // eğitim gibi bir faaliyet sitenin hiçbir yerinde yok. Böyle bir çalışmanız
   // varsa yeniden ekleyelim.
@@ -55,7 +51,7 @@ const TARIM_SERVICES: { icon: IconName; title: string; desc: string; features: s
   {
     icon: 'servis',
     title: 'Teknik Servis',
-    desc: 'Sulama sistemleri ve tarım ekipmanlarınız için bakım ve onarım hizmeti.',
+    desc: 'Tarım ekipmanlarınız için bakım ve onarım hizmeti.',
     features: ['Periyodik bakım', 'Arıza tespiti', 'Yedek parça temini', `Destek hattı: ${SITE_CONFIG.workingHours}`],
   },
 ]
@@ -127,7 +123,7 @@ export default async function HizmetlerPage({ params }: Props) {
           <p className="text-white/60 max-w-xl mx-auto">
             {isAlbSu
               ? 'Kurulumdan bakıma, teknik destekten akıllı çözümlere kadar her aşamada yanınızdayız.'
-              : 'Danışmanlıktan saha ziyaretine, sulama kurulumundan teknik servise kadar çiftçimizi destekliyoruz.'}
+              : 'Zirai danışmanlıktan saha ziyaretine, hızlı teslimattan teknik servise kadar çiftçimizi destekliyoruz.'}
           </p>
         </div>
       </section>

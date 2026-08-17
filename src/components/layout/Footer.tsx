@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { KURULUS_YILI, SITE_CONFIG } from '@/lib/constants'
+import { KURULUS_ANLATIM, SITE_CONFIG } from '@/lib/constants'
 
 const GRUP_LINKS = [
   { label: 'Hakkımızda', href: '/hakkimizda' },
@@ -39,7 +39,7 @@ const MARKALAR = [
   {
     key: 'alb-tarim',
     name: 'ALB Tarım',
-    desc: 'Gübre, sulama, tarım ilaçları ve ekipman',
+    desc: 'Gübre, zirai ilaç, tarım ekipmanları ve danışmanlık',
     color: 'bg-tarim-600',
     href: '/alb-tarim',
   },
@@ -77,9 +77,9 @@ export default function Footer() {
                 </span>
               </Link>
               <p className="text-gray-400 text-sm leading-relaxed">
-                {KURULUS_YILI} yılından bu yana tarım ve su teknolojileri alanında faaliyet gösteren
-                Bayırlıoğlu, ALB Tarım ve Alb Su Teknolojileri markaları altında
-                Türkiye genelinde hizmet vermektedir.
+                {KURULUS_ANLATIM} tarım alanında faaliyet gösteren Bayırlıoğlu
+                şirketi şu anda ALB Tarım ve Alb Su Teknolojileri markaları
+                altında Türkiye genelinde hizmet vermektedir.
               </p>
               <div className="flex flex-col gap-2">
                 {INSTAGRAM.map((h) => (

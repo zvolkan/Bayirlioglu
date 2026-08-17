@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'İade Politikası | Bayırlıoğlu',
+  title: 'İade Politikası',
   description: 'Bayırlıoğlu iade ve değişim koşulları hakkında bilgi alın.',
 }
 

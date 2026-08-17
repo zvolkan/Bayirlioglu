@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!VALID_BRANDS.includes(brand as BrandKey)) return {}
   const cfg = BRANDS[brand as BrandKey]
   return {
-    title: `Hakkımızda | ${cfg.name}`,
+    title: 'Hakkımızda',
     description: `${cfg.name} hakkında: tarihçemiz, ekibimiz ve değerlerimiz.`,
   }
 }
@@ -158,7 +158,7 @@ export default async function HakkimizdaPage({ params }: Props) {
             <p className="text-gray-500 max-w-xl mx-auto mb-10">
               {isAlbSu
                 ? 'Su teknolojileri, klima sistemleri ve elektronik alanlarında deneyimli ekibimizle hizmetinizdeyiz.'
-                : 'Agronomi ve sulama konusunda deneyimli ekibimizle sahada yanınızdayız.'}
+                : 'Agronomi ve bitki besleme konusunda deneyimli ekibimizle sahada yanınızdayız.'}
             </p>
           </Reveal>
           {/* Gerçek ekip fotoğrafı hazır olduğunda burası <Image> ile

@@ -5,7 +5,7 @@ import { SITE_CONFIG } from '@/lib/constants'
 import Icon, { type IconName } from '@/components/ui/Icon'
 
 export const metadata: Metadata = {
-  title: 'Hizmetler | Bayırlıoğlu',
+  title: 'Hizmetler',
   description: 'ALB Tarım ve Alb Su Teknolojileri markalarımızın sunduğu profesyonel hizmetler.',
 }
 

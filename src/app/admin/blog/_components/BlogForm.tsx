@@ -32,7 +32,7 @@ interface Props {
 
 const KATEGORILER = [
   'Gübreleme',
-  'Sulama',
+  'Zirai İlaç',
   'Bitki Besleme',
   'Toprak Analizi',
   'Su Arıtma',

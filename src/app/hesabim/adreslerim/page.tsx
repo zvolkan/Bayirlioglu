@@ -10,7 +10,7 @@ import AccountSidebar from '../_components/AccountSidebar'
 import AddressCardActions from './_components/AddressCardActions'
 
 export const metadata: Metadata = {
-  title: 'Adreslerim | Bayırlıoğlu',
+  title: 'Adreslerim',
   robots: { index: false, follow: false },
 }
 

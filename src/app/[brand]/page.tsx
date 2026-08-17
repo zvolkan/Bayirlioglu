@@ -295,7 +295,7 @@ export default async function BrandHomePage({ params }: Props) {
                   { icon: 'garanti' as const, title: 'Garanti', desc: 'Ürün garantisi markaya ve modele göre 2 ile 5 yıl arasında değişir.' },
                 ]
               : [
-                  { icon: 'filiz' as const, title: 'Geniş Ürün Seçeneği', desc: 'Tarla, sera ve bahçe için gübre, ilaç ve sulama malzemesi bir arada.' },
+                  { icon: 'filiz' as const, title: 'Geniş Ürün Seçeneği', desc: 'Tarla, sera ve bahçe için gübre, zirai ilaç ve ekipman bir arada.' },
                   { icon: 'traktor' as const, title: 'Saha Danışmanlık', desc: 'Uzman agronomlarımız tarlada yanınızda.' },
                   { icon: 'kargo' as const, title: 'Hızlı Teslimat', desc: `81 ile ${TESLIMAT_SURESI} içinde teslimat.` },
                   { icon: 'fiyat' as const, title: 'Uygun Fiyat', desc: 'Çiftçi dostu fiyatlarla kaliteli ürünler.' },

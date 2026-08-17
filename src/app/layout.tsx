@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import '@/styles/animations.css'
 import '@/styles/brand.css'
-import { BRAND, SITE_CONFIG, ACTIVE_BRAND_KEY, COMPANY_NAME } from '@/lib/constants'
+import { BRAND, SITE_CONFIG, ACTIVE_BRAND_KEY, COMPANY_NAME, KURULUS_YILI } from '@/lib/constants'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   title: { template: `%s | ${COMPANY_NAME}`, default: COMPANY_NAME },
   description: BRAND.description,
   keywords: ACTIVE_BRAND_KEY === 'alb-tarim'
-    ? ['alb tarım', 'gübre', 'sulama sistemi', 'tarım ilaçları', 'organik gübre']
+    ? ['alb tarım', 'gübre', 'zirai ilaç', 'tarım ilaçları', 'organik gübre', 'zirai danışmanlık']
     : ['albsu', 'su arıtma', 'klima', 'su arıtma cihazı', 'ev elektroniği'],
   openGraph: {
     type: 'website', locale: 'tr_TR',
@@ -71,6 +71,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               '@context': 'https://schema.org',
               '@type': 'Organization',
               name: COMPANY_NAME,
+              // Kesin tescil yılı yok; arama motoru yapısal veride bir yıl istiyor.
+              foundingDate: String(KURULUS_YILI),
               url: SITE_CONFIG.url,
               email: SITE_CONFIG.email,
               telephone: SITE_CONFIG.phone,

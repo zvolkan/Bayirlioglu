@@ -4,7 +4,7 @@ import { requestPasswordReset } from '@/app/actions/auth'
 import Icon from '@/components/ui/Icon'
 
 export const metadata: Metadata = {
-  title: 'Şifremi Unuttum | Bayırlıoğlu',
+  title: 'Şifremi Unuttum',
   description: 'Hesabınızın şifresini sıfırlamak için e-posta adresinizi girin.',
   robots: { index: false, follow: false },
 }

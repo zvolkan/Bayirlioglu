@@ -12,7 +12,7 @@ import Icon, { type IconName } from '@/components/ui/Icon'
 import type { BrandKey } from '@/lib/types'
 
 export const metadata: Metadata = {
-  title: 'Siparişlerim | Bayırlıoğlu',
+  title: 'Siparişlerim',
 }
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {

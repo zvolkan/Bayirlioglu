@@ -14,7 +14,7 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     tagline: 'Toprağınıza\nDeğer Katın',
     subtitle: 'Modern tarım teknolojileriyle',
     description:
-      'Organik gübrelerden akıllı sulama sistemlerine kadar verimliliğinizi artıran çözümler sunuyoruz. Ürün seçiminde yardımcı oluyor, siparişinizi kargoyla adresinize gönderiyoruz.',
+      'Kendi formüllerimizle ürettiğimiz gübrelerden zirai ilaçlara kadar verimliliğinizi artıran çözümler sunuyoruz. Ürün seçiminde yardımcı oluyor, siparişinizi kargoyla adresinize gönderiyoruz.',
     badge: '2026 Yeni Sezon Ürünleri Mevcut',
     cta: { label: 'Ürünlerimizi İnceleyin', href: '/urunler' },
     ctaSecondary: { label: 'Ücretsiz Danışmanlık Al', href: '/iletisim' },
@@ -162,16 +162,18 @@ export const BRAND = BRANDS[ACTIVE_BRAND_KEY];
 export const COMPANY_NAME = 'Bayırlıoğlu';
 
 /**
- * Kuruluş yılı — TEK KAYNAK.
+ * Kuruluş — TEK KAYNAK.
  *
- * Site içinde üç ayrı yıl yazıyordu (2000, 2003, 2006). Hangisinin doğru
- * olduğunu yalnızca siz bilebilirsiniz: LÜTFEN BU YILI DOĞRULAYIN. Yıl
- * değişirse burayı değiştirmeniz yeterli, tüm sayfalara yansır.
+ * Şirketin geçmişi 1950'lerin başına, dededen kalan zirai ilaç ve gübre
+ * satışına dayanıyor. Kesin bir kuruluş yılı olmadığı için metinlerde
+ * `KURULUS_ANLATIM` kullanılıyor ("… yılında kurulduk" gibi kesin bir yıl
+ * iddiası yok). `KURULUS_YILI` yalnızca arama motoruna verilen yapısal veride
+ * (foundingDate) kullanılıyor; orada bir yıl zorunlu.
  *
- * Kaç yıllık deneyim olduğu ("20 yılı aşkın" gibi) hiçbir yerde yazmıyor;
- * yalnızca kuruluş yılı belirtiliyor.
+ * Resmî tescil yılını biliyorsanız buraya yazın, tüm sayfalara yansır.
  */
-export const KURULUS_YILI = 2006;
+export const KURULUS_YILI = 1950;
+export const KURULUS_ANLATIM = "1950'lerin başından bu yana";
 
 // ─── GENEL SABİTLER ───────────────────────────────────────────────────────────
 
