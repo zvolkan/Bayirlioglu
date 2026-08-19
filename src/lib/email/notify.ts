@@ -10,6 +10,7 @@ import {
   orderRefundedEmail,
   orderDeliveredEmail,
   orderCancelledEmail,
+  invoiceReadyEmail,
   adminNewOrderEmail,
   returnRequestedEmail,
   returnDecisionEmail,
@@ -41,6 +42,7 @@ async function loadOrderForEmail(orderId: string) {
       shipCity: true,
       carrier: true,
       trackingNumber: true,
+      brand: { select: { key: true } },
       user: { select: { email: true, name: true } },
       items: {
         select: {
@@ -58,6 +60,7 @@ type LoadedOrder = NonNullable<Awaited<ReturnType<typeof loadOrderForEmail>>>
 function toEmailData(order: LoadedOrder): OrderEmailData {
   return {
     orderId: order.id,
+    brandKey: order.brand.key,
     orderNo: formatOrderNo(order),
     customerName: order.shipFullName ?? order.user.name ?? 'Müşterimiz',
     items: order.items.map(
@@ -247,6 +250,54 @@ export async function notifyOrderDelivered(orderId: string): Promise<void> {
   }
 }
 
+// ─── E-fatura yüklendi ───────────────────────────────────────────────────────
+
+export async function notifyInvoiceReady(orderId: string): Promise<void> {
+  let failure: string | null = null
+
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        orderNumber: true,
+        invoiceNo: true,
+        shipFullName: true,
+        // Fatura e-postası varsa oraya gönderiliyor: kurumsal müşteride sipariş
+        // hesabı ile muhasebe adresi çoğu zaman farklı oluyor.
+        invoiceEmail: true,
+        user: { select: { email: true, name: true } },
+      },
+    })
+
+    const alici = order?.invoiceEmail || order?.user.email
+    if (!order || !alici) return
+
+    const mail = invoiceReadyEmail({
+      orderId: order.id,
+      orderNo: formatOrderNo(order),
+      customerName: order.shipFullName ?? order.user.name ?? 'Müşterimiz',
+      invoiceNo: order.invoiceNo,
+    })
+
+    const result = await sendEmailSafe({
+      to: alici,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+    })
+
+    if (!result.ok) {
+      failure = `Fatura bildirimi GÖNDERİLEMEDİ. Sağlayıcı yanıtı: ${result.detail ?? result.reason}`
+    }
+  } catch (error) {
+    failure = `Fatura bildirimi hazırlanırken hata: ${String(error).slice(0, 200)}`
+    console.error('[e-posta] fatura bildirimi gönderilemedi:', orderId, error)
+  } finally {
+    if (failure) await appendAdminNote(orderId, `${failure} [build: ${deploymentTag()}]`)
+  }
+}
+
 // ─── Ödemesiz iptal ──────────────────────────────────────────────────────────
 
 /** Ödemesi alınmamış siparişin iptali. Para iadesi olan iptal için notifyOrderRefunded. */
@@ -322,6 +373,7 @@ async function loadReturnRequest(requestId: string) {
           id: true,
           orderNumber: true,
           shipFullName: true,
+          brand: { select: { key: true } },
           items: { select: { id: true, quantity: true, product: { select: { name: true } } } },
         },
       },
@@ -377,6 +429,7 @@ export async function notifyReturnRequested(requestId: string): Promise<void> {
         customerEmail: request.user.email,
         reason: request.reason,
         itemNames,
+        brandKey: request.order.brand.key,
       })
       await sendEmailSafe({
         to: adminTo,

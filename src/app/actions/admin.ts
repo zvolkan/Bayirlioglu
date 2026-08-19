@@ -367,14 +367,12 @@ export async function createProduct(formData: FormData): Promise<ProductActionRe
   }
 
   const redirectBrand = (formData.get('redirectBrand') as string) || 'alb-tarim'
-  // '/admin/urunler' yalnızca /admin'e yönlendiren bir kabuk; asıl
-  // listeler marka adreslerinde. Eskiden var olmayan bir yol
-  // yenileniyordu.
-  revalidatePath('/admin/urunler/alb-tarim')
-  revalidatePath('/admin/urunler/alb-su-aritma')
+  // Panel marka bazlı: listeler /admin/<marka>/urunler adresinde.
+  revalidatePath('/admin/alb-tarim/urunler')
+  revalidatePath('/admin/alb-su-aritma/urunler')
   revalidatePath(`/alb-tarim/urunler`)
   revalidatePath(`/alb-su-aritma/urunler`)
-  redirect(`/admin/urunler/${redirectBrand}`)
+  redirect(`/admin/${redirectBrand}/urunler`)
 }
 
 // ─── UPDATE ───────────────────────────────────────────────────────────────────
@@ -468,14 +466,12 @@ export async function updateProduct(
   }
 
   const redirectBrand = (formData.get('redirectBrand') as string) || 'alb-tarim'
-  // '/admin/urunler' yalnızca /admin'e yönlendiren bir kabuk; asıl
-  // listeler marka adreslerinde. Eskiden var olmayan bir yol
-  // yenileniyordu.
-  revalidatePath('/admin/urunler/alb-tarim')
-  revalidatePath('/admin/urunler/alb-su-aritma')
+  // Panel marka bazlı: listeler /admin/<marka>/urunler adresinde.
+  revalidatePath('/admin/alb-tarim/urunler')
+  revalidatePath('/admin/alb-su-aritma/urunler')
   revalidatePath(`/alb-tarim/urunler`)
   revalidatePath(`/alb-su-aritma/urunler`)
-  redirect(`/admin/urunler/${redirectBrand}`)
+  redirect(`/admin/${redirectBrand}/urunler`)
 }
 
 // ─── DELETE ───────────────────────────────────────────────────────────────────
@@ -506,11 +502,9 @@ export async function deleteProduct(id: string): Promise<DeleteProductResult> {
       where: { id },
       data: { isActive: false, isFeatured: false },
     })
-    // '/admin/urunler' yalnızca /admin'e yönlendiren bir kabuk; asıl
-  // listeler marka adreslerinde. Eskiden var olmayan bir yol
-  // yenileniyordu.
-  revalidatePath('/admin/urunler/alb-tarim')
-  revalidatePath('/admin/urunler/alb-su-aritma')
+    // Panel marka bazlı: listeler /admin/<marka>/urunler adresinde.
+  revalidatePath('/admin/alb-tarim/urunler')
+  revalidatePath('/admin/alb-su-aritma/urunler')
     revalidatePath('/alb-tarim/urunler')
     revalidatePath('/alb-su-aritma/urunler')
     return { ok: true, archived: true, orderCount }
@@ -530,11 +524,9 @@ export async function deleteProduct(id: string): Promise<DeleteProductResult> {
       }
     }
 
-    // '/admin/urunler' yalnızca /admin'e yönlendiren bir kabuk; asıl
-  // listeler marka adreslerinde. Eskiden var olmayan bir yol
-  // yenileniyordu.
-  revalidatePath('/admin/urunler/alb-tarim')
-  revalidatePath('/admin/urunler/alb-su-aritma')
+    // Panel marka bazlı: listeler /admin/<marka>/urunler adresinde.
+  revalidatePath('/admin/alb-tarim/urunler')
+  revalidatePath('/admin/alb-su-aritma/urunler')
     revalidatePath('/alb-tarim/urunler')
     revalidatePath('/alb-su-aritma/urunler')
     return { ok: true, archived: false }
@@ -553,20 +545,16 @@ export async function toggleProductActive(id: string, current: boolean) {
   await requireAdmin()
 
   await prisma.product.update({ where: { id }, data: { isActive: !current } })
-  // '/admin/urunler' yalnızca /admin'e yönlendiren bir kabuk; asıl
-  // listeler marka adreslerinde. Eskiden var olmayan bir yol
-  // yenileniyordu.
-  revalidatePath('/admin/urunler/alb-tarim')
-  revalidatePath('/admin/urunler/alb-su-aritma')
+  // Panel marka bazlı: listeler /admin/<marka>/urunler adresinde.
+  revalidatePath('/admin/alb-tarim/urunler')
+  revalidatePath('/admin/alb-su-aritma/urunler')
 }
 
 export async function toggleProductFeatured(id: string, current: boolean) {
   await requireAdmin()
 
   await prisma.product.update({ where: { id }, data: { isFeatured: !current } })
-  // '/admin/urunler' yalnızca /admin'e yönlendiren bir kabuk; asıl
-  // listeler marka adreslerinde. Eskiden var olmayan bir yol
-  // yenileniyordu.
-  revalidatePath('/admin/urunler/alb-tarim')
-  revalidatePath('/admin/urunler/alb-su-aritma')
+  // Panel marka bazlı: listeler /admin/<marka>/urunler adresinde.
+  revalidatePath('/admin/alb-tarim/urunler')
+  revalidatePath('/admin/alb-su-aritma/urunler')
 }

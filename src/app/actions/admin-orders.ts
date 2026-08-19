@@ -71,6 +71,8 @@ export async function getOrdersForAdmin(options?: {
   search?: string
   page?: number
   pageSize?: number
+  /** Marka anahtarı. Verilmezse tüm markalar gelir. */
+  brandKey?: string
 }) {
   await requireAdmin()
 
@@ -80,6 +82,10 @@ export async function getOrdersForAdmin(options?: {
   const search = options?.search?.trim()
 
   const where: Record<string, unknown> = {}
+
+  // Panel marka bazlı çalışıyor; filtre burada uygulanmazsa yönetici ALB Su
+  // ekranında ALB Tarım siparişlerini de görür.
+  if (options?.brandKey) where.brand = { key: options.brandKey }
 
   if (status && VALID_STATUSES.includes(status as OrderStatus)) {
     where.status = status
@@ -115,11 +121,12 @@ export async function getOrdersForAdmin(options?: {
   return { orders, total, page, pageSize, pageCount: Math.ceil(total / pageSize) }
 }
 
-export async function getOrderCountsByStatus() {
+export async function getOrderCountsByStatus(brandKey?: string) {
   await requireAdmin()
 
   const grouped = await prisma.order.groupBy({
     by: ['status'],
+    where: brandKey ? { brand: { key: brandKey } } : undefined,
     _count: { status: true },
   })
 
@@ -176,8 +183,10 @@ export async function updateOrderStatus(
       reason: 'Sipariş yönetici tarafından iptal edildi.',
     })
 
-    revalidatePath('/admin/siparisler')
-    revalidatePath(`/admin/siparisler/${orderId}`)
+    revalidatePath('/admin/alb-tarim/siparisler')
+revalidatePath('/admin/alb-su-aritma/siparisler')
+    revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
+  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
 
     if (!result.ok) {
       return {
@@ -235,8 +244,10 @@ export async function updateOrderStatus(
     }
   }
 
-  revalidatePath('/admin/siparisler')
-  revalidatePath(`/admin/siparisler/${orderId}`)
+  revalidatePath('/admin/alb-tarim/siparisler')
+revalidatePath('/admin/alb-su-aritma/siparisler')
+  revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
+  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
 
   return { ok: true, message: `Sipariş durumu güncellendi.${extra}` }
 }
@@ -270,8 +281,10 @@ export async function updateOrderShipping(
   // Müşteriye takip numarasını gönder
   await notifyOrderShipped(orderId)
 
-  revalidatePath('/admin/siparisler')
-  revalidatePath(`/admin/siparisler/${orderId}`)
+  revalidatePath('/admin/alb-tarim/siparisler')
+revalidatePath('/admin/alb-su-aritma/siparisler')
+  revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
+  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
 }
 
 // ─── Admin notu ──────────────────────────────────────────────────────────────
@@ -284,7 +297,8 @@ export async function updateOrderNote(orderId: string, note: string) {
     data: { adminNote: note.trim().slice(0, 2000) || null },
   })
 
-  revalidatePath(`/admin/siparisler/${orderId}`)
+  revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
+  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
 }
 
 // ─── İade ────────────────────────────────────────────────────────────────────
@@ -313,8 +327,10 @@ export async function refundOrder(
     reason: options?.reason,
   })
 
-  revalidatePath('/admin/siparisler')
-  revalidatePath(`/admin/siparisler/${orderId}`)
+  revalidatePath('/admin/alb-tarim/siparisler')
+revalidatePath('/admin/alb-su-aritma/siparisler')
+  revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
+  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
 
   if (!result.ok) return { ok: false, error: result.error }
   return { ok: true, message: result.message }
@@ -322,29 +338,76 @@ export async function refundOrder(
 
 // ─── Form kayıtları ──────────────────────────────────────────────────────────
 
-export async function getContactMessages(unreadOnly = false) {
+/**
+ * @param kapsam 'alb-tarim' | 'alb-su-aritma' → o markanın mesajları.
+ *               'belirtilmemis' → grup iletişim formundan gelen, markası boş
+ *               olanlar. Verilmezse hepsi.
+ */
+export async function getContactMessages(options?: {
+  unreadOnly?: boolean
+  kapsam?: string
+}) {
   await requireAdmin()
 
+  const where: Record<string, unknown> = {}
+  if (options?.unreadOnly) where.isRead = false
+  if (options?.kapsam === 'belirtilmemis') where.brandKey = null
+  else if (options?.kapsam) where.brandKey = options.kapsam
+
   return prisma.contactMessage.findMany({
-    where: unreadOnly ? { isRead: false } : undefined,
+    where: Object.keys(where).length ? where : undefined,
     orderBy: { createdAt: 'desc' },
     take: 200,
   })
+}
+
+export async function getUnreadMessageCount(kapsam?: string): Promise<number> {
+  await requireAdmin()
+
+  const where: Record<string, unknown> = { isRead: false }
+  if (kapsam === 'belirtilmemis') where.brandKey = null
+  else if (kapsam) where.brandKey = kapsam
+
+  return prisma.contactMessage.count({ where }).catch(() => 0)
 }
 
 export async function markMessageRead(id: string, isRead: boolean) {
   await requireAdmin()
   await prisma.contactMessage.update({ where: { id }, data: { isRead } })
-  revalidatePath('/admin/mesajlar')
+  revalidatePath('/admin/alb-tarim/mesajlar')
+revalidatePath('/admin/alb-su-aritma/mesajlar')
+  revalidatePath('/admin/belirtilmemis/mesajlar')
 }
 
-export async function getDealerApplications() {
+/**
+ * Başvuru formunda "Her İkisi" seçeneği var; o başvurular iki markanın
+ * listesinde de görünür, yoksa birinde çıkıp diğerinde kaybolurlardı.
+ */
+function bayiKapsamFiltresi(kapsam?: string): Record<string, unknown> | undefined {
+  if (!kapsam) return undefined
+  if (kapsam === 'belirtilmemis') {
+    return { OR: [{ brandInterest: null }, { brandInterest: '' }] }
+  }
+  return { brandInterest: { in: [kapsam, 'her-ikisi'] } }
+}
+
+export async function getDealerApplications(kapsam?: string) {
   await requireAdmin()
 
   return prisma.dealerApplication.findMany({
+    where: bayiKapsamFiltresi(kapsam),
     orderBy: { createdAt: 'desc' },
     take: 200,
   })
+}
+
+export async function getNewDealerCount(kapsam?: string): Promise<number> {
+  await requireAdmin()
+
+  const kapsamFiltre = bayiKapsamFiltresi(kapsam)
+  return prisma.dealerApplication
+    .count({ where: { status: 'new', ...(kapsamFiltre ?? {}) } })
+    .catch(() => 0)
 }
 
 export async function updateDealerStatus(id: string, status: string) {
@@ -354,7 +417,9 @@ export async function updateDealerStatus(id: string, status: string) {
   if (!allowed.includes(status)) throw new Error('Geçersiz durum')
 
   await prisma.dealerApplication.update({ where: { id }, data: { status } })
-  revalidatePath('/admin/bayi-basvurulari')
+  revalidatePath('/admin/alb-tarim/bayi-basvurulari')
+revalidatePath('/admin/alb-su-aritma/bayi-basvurulari')
+  revalidatePath('/admin/belirtilmemis/bayi-basvurulari')
 }
 
 /** Var olan yönetici notunu ezmeden sonuna ekler */

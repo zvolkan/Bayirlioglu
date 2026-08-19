@@ -46,3 +46,55 @@ export async function deleteProductImage(fileName: string): Promise<void> {
   const { error } = await client.storage.from(BUCKET).remove([fileName])
   if (error) console.error('Silme hatası:', error.message)
 }
+
+// ─── E-fatura PDF'leri ───────────────────────────────────────────────────────
+//
+// Ürün görselleri herkese açık kovada; faturalar OLAMAZ. Fatura müşterinin adı,
+// adresi ve TCKN/VKN'sini taşıyor. Bu yüzden ayrı ve ÖZEL bir kova kullanılıyor:
+// dosyaya doğrudan URL ile erişilemez, her indirme için kısa ömürlü imzalı
+// bağlantı üretilir.
+//
+// Kovanın Supabase panelinden bir kez oluşturulması gerekiyor:
+//   Storage → New bucket → adı: faturalar → Public bucket: KAPALI
+// (Kurulum SQL'i `prisma/migrations/manual/002-e-fatura.sql` içinde de var.)
+
+const FATURA_KOVASI = 'faturalar'
+
+export async function faturaYukle(
+  dosya: File | Buffer | ArrayBuffer,
+  yol: string,
+): Promise<void> {
+  const client = getClient()
+  const { error } = await client.storage.from(FATURA_KOVASI).upload(yol, dosya, {
+    upsert: true,
+    contentType: 'application/pdf',
+  })
+  if (error) throw new Error(`Fatura yüklenemedi: ${error.message}`)
+}
+
+/**
+ * İndirme için kısa ömürlü imzalı bağlantı üretir.
+ * @param saniye Bağlantının geçerlilik süresi. Kısa tutuluyor: bağlantı
+ *               kopyalanıp paylaşılsa bile birkaç dakika sonra ölür.
+ */
+export async function faturaImzaliUrl(
+  yol: string,
+  dosyaAdi: string,
+  saniye = 120,
+): Promise<string> {
+  const client = getClient()
+  const { data, error } = await client.storage
+    .from(FATURA_KOVASI)
+    .createSignedUrl(yol, saniye, { download: dosyaAdi })
+
+  if (error || !data?.signedUrl) {
+    throw new Error(`Fatura bağlantısı üretilemedi: ${error?.message ?? 'bilinmeyen hata'}`)
+  }
+  return data.signedUrl
+}
+
+export async function faturaSil(yol: string): Promise<void> {
+  const client = getClient()
+  const { error } = await client.storage.from(FATURA_KOVASI).remove([yol])
+  if (error) console.error('Fatura silinemedi:', error.message)
+}

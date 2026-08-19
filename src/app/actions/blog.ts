@@ -65,10 +65,11 @@ function friendlyError(error: unknown): string {
 
 // ─── Liste / tekil ───────────────────────────────────────────────────────────
 
-export async function getBlogPostsForAdmin() {
+export async function getBlogPostsForAdmin(brandKey?: string) {
   await requireAdmin()
 
   return prisma.blogPost.findMany({
+    where: brandKey ? { brand: { key: brandKey } } : undefined,
     orderBy: [{ isPublished: 'asc' }, { updatedAt: 'desc' }],
     select: {
       id: true,
@@ -97,7 +98,8 @@ export async function createBlogPost(formData: FormData): Promise<BlogActionResu
     const data = parseForm(formData)
     const post = await prisma.blogPost.create({ data, select: { id: true } })
 
-    revalidatePath('/admin/blog')
+    revalidatePath('/admin/alb-tarim/blog')
+revalidatePath('/admin/alb-su-aritma/blog')
     revalidatePath('/alb-tarim/blog')
     revalidatePath('/alb-su-aritma/blog')
 
@@ -128,7 +130,8 @@ export async function updateBlogPost(id: string, formData: FormData): Promise<Bl
       },
     })
 
-    revalidatePath('/admin/blog')
+    revalidatePath('/admin/alb-tarim/blog')
+revalidatePath('/admin/alb-su-aritma/blog')
     revalidatePath('/alb-tarim/blog')
     revalidatePath('/alb-su-aritma/blog')
 
@@ -145,7 +148,8 @@ export async function deleteBlogPost(id: string): Promise<BlogActionResult> {
   try {
     await prisma.blogPost.delete({ where: { id } })
 
-    revalidatePath('/admin/blog')
+    revalidatePath('/admin/alb-tarim/blog')
+revalidatePath('/admin/alb-su-aritma/blog')
     revalidatePath('/alb-tarim/blog')
     revalidatePath('/alb-su-aritma/blog')
 
@@ -176,7 +180,8 @@ export async function toggleBlogPublished(id: string): Promise<BlogActionResult>
       },
     })
 
-    revalidatePath('/admin/blog')
+    revalidatePath('/admin/alb-tarim/blog')
+revalidatePath('/admin/alb-su-aritma/blog')
     revalidatePath('/alb-tarim/blog')
     revalidatePath('/alb-su-aritma/blog')
 

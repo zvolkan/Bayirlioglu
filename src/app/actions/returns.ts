@@ -121,7 +121,8 @@ export async function createReturnRequest(
     await notifyReturnRequested(request.id)
 
     revalidatePath(`/hesabim/siparislerim/${orderId}`)
-    revalidatePath('/admin/iadeler')
+    revalidatePath('/admin/alb-tarim/iadeler')
+revalidatePath('/admin/alb-su-aritma/iadeler')
 
     return {
       ok: true,
@@ -136,11 +137,16 @@ export async function createReturnRequest(
 
 // ─── Admin: listele ──────────────────────────────────────────────────────────
 
-export async function getReturnRequests(onlyOpen = false) {
+export async function getReturnRequests(onlyOpen = false, brandKey?: string) {
   await requireAdmin()
 
+  // İade talebinin kendi markası yok; bağlı olduğu siparişin markasına bakılır.
+  const where: Record<string, unknown> = {}
+  if (onlyOpen) where.status = { in: ['PENDING', 'APPROVED'] }
+  if (brandKey) where.order = { brand: { key: brandKey } }
+
   return prisma.returnRequest.findMany({
-    where: onlyOpen ? { status: { in: ['PENDING', 'APPROVED'] } } : undefined,
+    where: Object.keys(where).length ? where : undefined,
     orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
     include: {
       user: { select: { email: true, name: true } },
@@ -167,9 +173,14 @@ export async function getReturnRequests(onlyOpen = false) {
   })
 }
 
-export async function getOpenReturnCount(): Promise<number> {
+export async function getOpenReturnCount(brandKey?: string): Promise<number> {
   await requireAdmin()
-  return prisma.returnRequest.count({ where: { status: 'PENDING' } })
+  return prisma.returnRequest.count({
+    where: {
+      status: 'PENDING',
+      ...(brandKey ? { order: { brand: { key: brandKey } } } : {}),
+    },
+  })
 }
 
 // ─── Admin: karar ────────────────────────────────────────────────────────────
@@ -203,7 +214,8 @@ export async function decideReturnRequest(
 
     await notifyReturnDecision(requestId)
 
-    revalidatePath('/admin/iadeler')
+    revalidatePath('/admin/alb-tarim/iadeler')
+revalidatePath('/admin/alb-su-aritma/iadeler')
     return {
       ok: true,
       message:

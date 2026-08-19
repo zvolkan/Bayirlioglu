@@ -223,6 +223,32 @@ export default async function SiparisDetayPage({ params }: Props) {
           </div>
         )}
 
+        {/* E-fatura — yüklendiğinde görünür.
+            PDF e-postaya ek olarak gönderilmiyor: fatura ad, adres ve
+            TCKN/VKN taşıyor ve e-posta şifresiz bir kanal. İndirme burada,
+            kimlik doğrulandıktan sonra yapılıyor. */}
+        {order.invoiceFilePath && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 mb-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                <Icon name="belge" className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm text-gray-900">Faturanız hazır</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {order.invoiceNo ? `Fatura no: ${order.invoiceNo}` : 'E-arşiv fatura (PDF)'}
+                </p>
+              </div>
+              <a
+                href={`/api/fatura/${order.id}`}
+                className="btn-press text-sm font-semibold px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-gray-700 transition-colors"
+              >
+                Faturayı İndir
+              </a>
+            </div>
+          </div>
+        )}
+
         {/* Cayma hakkı / iade */}
         {delivered && order.paymentStatus === 'paid' && (
           <div className="mb-4">

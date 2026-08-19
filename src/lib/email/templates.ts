@@ -82,6 +82,8 @@ export interface OrderEmailItem {
 export interface OrderEmailData {
   /** Veritabanı kimliği — yalnızca admin panel bağlantısı için */
   orderId: string
+  /** Marka anahtarı — panel marka bazlı olduğu için admin bağlantısında gerekli */
+  brandKey?: string
   /** Müşteriye gösterilen sipariş numarası (yalnızca rakam) */
   orderNo: string
   customerName: string
@@ -296,6 +298,61 @@ export function orderDeliveredEmail(params: { orderNo: string; customerName: str
   return { subject: 'Siparişiniz teslim edildi', html, text }
 }
 
+// ─── 2b-2. E-fatura hazır ────────────────────────────────────────────────────
+
+/**
+ * Fatura PDF'i siparişe yüklendiğinde gider.
+ *
+ * PDF e-postaya EK olarak konmuyor: fatura ad, adres ve TCKN/VKN taşıyor ve
+ * e-posta şifresiz bir kanal. Bunun yerine müşteri kendi hesabından, kimliği
+ * doğrulanarak indiriyor.
+ */
+export function invoiceReadyEmail(params: {
+  orderNo: string
+  customerName: string
+  invoiceNo?: string | null
+  orderId: string
+}) {
+  const siteUrl = getSiteUrl()
+
+  const html = layout(
+    'Faturanız Hazır',
+    `
+    <p style="margin:0 0 6px;font-size:20px;font-weight:700;">Faturanız hazır</p>
+    <p style="margin:0 0 20px;font-size:14px;color:#52525b;line-height:1.7;">
+      Merhaba ${escapeHtml(params.customerName)}, ${escapeHtml(
+        params.orderNo,
+      )} numaralı siparişinizin faturası düzenlendi.${
+        params.invoiceNo
+          ? ` Fatura numarası: <strong>${escapeHtml(params.invoiceNo)}</strong>.`
+          : ''
+      }
+    </p>
+
+    <div style="background:#fafafa;border-radius:12px;padding:16px;">
+      <p style="margin:0;font-size:14px;color:#52525b;line-height:1.7;">
+        Faturanızı hesabınızdaki sipariş detayından PDF olarak indirebilirsiniz.
+        Güvenliğiniz için faturayı e-postaya eklemiyoruz; indirme, hesabınıza
+        giriş yaptıktan sonra yapılır.
+      </p>
+    </div>
+
+    ${button(`${siteUrl}/hesabim/siparislerim/${params.orderId}`, 'Faturayı İndir')}
+  `,
+  )
+
+  const text = [
+    `${params.orderNo} numaralı siparişinizin faturası hazır.`,
+    params.invoiceNo ? `Fatura no: ${params.invoiceNo}` : '',
+    `İndirmek için: ${siteUrl}/hesabim/siparislerim/${params.orderId}`,
+    `İletişim: ${SITE_CONFIG.email} — ${SITE_CONFIG.phone}`,
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  return { subject: `Faturanız hazır — ${params.orderNo}`, html, text }
+}
+
 // ─── 2c. Ödeme alınmadan iptal ───────────────────────────────────────────────
 
 /**
@@ -400,7 +457,10 @@ export function adminNewOrderEmail(data: OrderEmailData) {
     </table>
 
     ${addressBlock(data)}
-    ${button(`${siteUrl}/admin/siparisler/${data.orderId}`, 'Siparişi Aç')}
+    ${button(
+      `${siteUrl}/admin/${data.brandKey ?? 'alb-tarim'}/siparisler/${data.orderId}`,
+      'Siparişi Aç',
+    )}
   `,
   )
 
@@ -543,8 +603,11 @@ export function adminReturnRequestEmail(params: {
   customerEmail: string
   reason: string
   itemNames: string[]
+  /** Panel marka bazlı; iade listesi markanın altında */
+  brandKey?: string
 }) {
   const siteUrl = getSiteUrl()
+  const iadeYolu = `${siteUrl}/admin/${params.brandKey ?? 'alb-tarim'}/iadeler`
 
   const html = layout(
     'Yeni İade Talebi',
@@ -570,7 +633,7 @@ export function adminReturnRequestEmail(params: {
       )}</p>
     </div>
 
-    ${button(`${siteUrl}/admin/iadeler`, 'İade Taleplerini Aç')}
+    ${button(iadeYolu, 'İade Taleplerini Aç')}
   `,
   )
 
@@ -579,7 +642,7 @@ export function adminReturnRequestEmail(params: {
     `Müşteri: ${params.customerName} (${params.customerEmail})`,
     `Ürünler: ${params.itemNames.join(', ')}`,
     `Gerekçe: ${params.reason}`,
-    `${siteUrl}/admin/iadeler`,
+    iadeYolu,
   ].join('\n')
 
   return { subject: `Yeni iade talebi — ${params.orderNo}`, html, text }

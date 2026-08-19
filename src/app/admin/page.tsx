@@ -1,30 +1,46 @@
 import Link from 'next/link'
 import { adminLogout } from '@/app/actions/admin'
-import { getOrderCountsByStatus } from '@/app/actions/admin-orders'
+import { getOrderCountsByStatus, getUnreadMessageCount } from '@/app/actions/admin-orders'
 import { getOpenReturnCount } from '@/app/actions/returns'
-import { prisma } from '@/lib/db'
 import Icon from '@/components/ui/Icon'
+import { BRANDS } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AdminPage() {
-  const [counts, unreadMessages, newApplications, lowStock, openReturns] = await Promise.all([
-    getOrderCountsByStatus(),
-    prisma.contactMessage.count({ where: { isRead: false } }).catch(() => 0),
-    prisma.dealerApplication.count({ where: { status: 'new' } }).catch(() => 0),
-    prisma.product
-      .count({ where: { isActive: true, stockQuantity: { lte: 5 } } })
-      .catch(() => 0),
-    getOpenReturnCount().catch(() => 0),
-  ])
+/**
+ * Panelin giriş ekranı: marka seçimi.
+ *
+ * Eskiden buradan doğrudan sipariş/ürün/blog listelerine giriliyor ve iki
+ * markanın kayıtları aynı listede karışıyordu. Artık önce hangi markayla
+ * çalışılacağı seçiliyor; sonraki her ekran o markaya göre filtreleniyor.
+ *
+ * Seçim bilerek hatırlanmıyor — panele her girişte tekrar soruluyor ki yanlış
+ * markada işlem yapılmasın.
+ */
+export default async function AdminGirisEkrani() {
+  const [tarimSayilari, suSayilari, tarimMesaj, suMesaj, belirsizMesaj, tarimIade, suIade] =
+    await Promise.all([
+      getOrderCountsByStatus('alb-tarim'),
+      getOrderCountsByStatus('alb-su-aritma'),
+      getUnreadMessageCount('alb-tarim'),
+      getUnreadMessageCount('alb-su-aritma'),
+      getUnreadMessageCount('belirtilmemis'),
+      getOpenReturnCount('alb-tarim').catch(() => 0),
+      getOpenReturnCount('alb-su-aritma').catch(() => 0),
+    ])
 
-  const activeOrders =
-    (counts.CONFIRMED ?? 0) + (counts.PROCESSING ?? 0) + (counts.SHIPPED ?? 0)
+  const aktif = (c: Record<string, number>) =>
+    (c.CONFIRMED ?? 0) + (c.PROCESSING ?? 0) + (c.SHIPPED ?? 0)
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Paneli</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Yönetim Paneli</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Hangi markayla çalışacaksınız?
+          </p>
+        </div>
         <form action={adminLogout}>
           <button
             type="submit"
@@ -35,143 +51,112 @@ export default async function AdminPage() {
         </form>
       </div>
 
-      {/* Özet */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm p-5">
-          <p className="text-xs text-gray-400 uppercase tracking-wide">Aktif Sipariş</p>
-          <p className="text-2xl font-black text-gray-900 mt-1">{activeOrders}</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5">
-          <p className="text-xs text-gray-400 uppercase tracking-wide">Okunmamış Mesaj</p>
-          <p className="text-2xl font-black text-gray-900 mt-1">{unreadMessages}</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm p-5">
-          <p className="text-xs text-gray-400 uppercase tracking-wide">Yeni Bayi Başvurusu</p>
-          <p className="text-2xl font-black text-gray-900 mt-1">{newApplications}</p>
-        </div>
-        {/* Sayı gösterip hiçbir yere gitmiyordu; hangi ürün olduğunu görmenin
-            yolu yoktu. Ürün listesine bağlandı. */}
-        <Link
-          href="/admin/urunler/alb-tarim"
-          className="bg-white rounded-2xl shadow-sm p-5 block hover:shadow-md transition-shadow"
-        >
-          <p className="text-xs text-gray-400 uppercase tracking-wide">Stoğu Azalan</p>
-          <p className="text-2xl font-black text-orange-600 mt-1">{lowStock}</p>
-          <p className="text-[11px] text-gray-400 mt-1">Ürün listesini aç →</p>
-        </Link>
-        <div className="bg-white rounded-2xl shadow-sm p-5">
-          <p className="text-xs text-gray-400 uppercase tracking-wide">Bekleyen İade</p>
-          <p className={`text-2xl font-black mt-1 ${openReturns > 0 ? 'text-red-600' : 'text-gray-900'}`}>
-            {openReturns}
-          </p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <MarkaKarti
+          href="/admin/alb-tarim"
+          ad={BRANDS['alb-tarim'].name}
+          aciklama="Gübre, zirai ilaç ve tarım ekipmanları"
+          ikon="filiz"
+          renkler={{
+            kenar: 'border-green-200 hover:border-green-400',
+            arka: 'from-green-50 to-emerald-50',
+            rozet: 'bg-green-600',
+            metin: 'text-green-800',
+          }}
+          aktifSiparis={aktif(tarimSayilari)}
+          okunmamis={tarimMesaj}
+          iade={tarimIade}
+        />
+        <MarkaKarti
+          href="/admin/alb-su-aritma"
+          ad={BRANDS['alb-su-aritma'].name}
+          aciklama="Su arıtma, klima ve elektronik"
+          ikon="damla"
+          renkler={{
+            kenar: 'border-blue-200 hover:border-blue-400',
+            arka: 'from-blue-50 to-cyan-50',
+            rozet: 'bg-blue-600',
+            metin: 'text-blue-800',
+          }}
+          aktifSiparis={aktif(suSayilari)}
+          okunmamis={suMesaj}
+          iade={suIade}
+        />
       </div>
 
-      {/* Siparişler & formlar */}
-      <section>
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          Yönetim
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link
-            href="/admin/siparisler"
-            className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-gray-100 group"
-          >
-            <div className="mb-3 icon-pop"><Icon name="paket" className="w-8 h-8 text-gray-700" /></div>
-            <h3 className="text-base font-bold text-gray-900">Siparişler</h3>
-            <p className="text-sm text-gray-400 mt-1">
-              Durum güncelle, kargo bilgisi gir, iade et
-            </p>
-          </Link>
-
-          <Link
-            href="/admin/blog"
-            className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-gray-100 group"
-          >
-            <div className="mb-3 icon-pop"><Icon name="yazar" className="w-8 h-8 text-gray-700" /></div>
-            <h3 className="text-base font-bold text-gray-900">Blog Yazıları</h3>
-            <p className="text-sm text-gray-400 mt-1">Yazı ekle, düzenle, yayına al</p>
-          </Link>
-
-          <Link
-            href="/admin/iadeler"
-            className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-gray-100 group"
-          >
-            <div className="mb-3 icon-pop"><Icon name="yenile" className="w-8 h-8 text-gray-700" /></div>
-            <h3 className="text-base font-bold text-gray-900">
-              İade Talepleri
-              {openReturns > 0 && (
-                <span className="ml-2 text-[11px] font-bold bg-red-500 text-white px-2 py-0.5 rounded-full align-middle">
-                  {openReturns}
-                </span>
-              )}
-            </h3>
-            <p className="text-sm text-gray-400 mt-1">Cayma hakkı talepleri</p>
-          </Link>
-
-          <Link
-            href="/admin/mesajlar"
-            className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-gray-100 group"
-          >
-            <div className="mb-3 icon-pop"><Icon name="eposta" className="w-8 h-8 text-gray-700" /></div>
-            <h3 className="text-base font-bold text-gray-900">
-              İletişim Mesajları
-              {unreadMessages > 0 && (
-                <span className="ml-2 text-[11px] font-bold bg-red-500 text-white px-2 py-0.5 rounded-full align-middle">
-                  {unreadMessages}
-                </span>
-              )}
-            </h3>
-            <p className="text-sm text-gray-400 mt-1">Siteden gelen mesajlar</p>
-          </Link>
-
-          <Link
-            href="/admin/bayi-basvurulari"
-            className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-gray-100 group"
-          >
-            <div className="mb-3 icon-pop"><Icon name="garanti" className="w-8 h-8 text-gray-700" /></div>
-            <h3 className="text-base font-bold text-gray-900">
-              Bayi Başvuruları
-              {newApplications > 0 && (
-                <span className="ml-2 text-[11px] font-bold bg-red-500 text-white px-2 py-0.5 rounded-full align-middle">
-                  {newApplications}
-                </span>
-              )}
-            </h3>
-            <p className="text-sm text-gray-400 mt-1">Gelen bayilik talepleri</p>
-          </Link>
+      {/* Markası olmayan kayıtlar hiçbir markanın listesine düşmüyor; burada
+          toplanıyorlar ki gözden kaçmasınlar. */}
+      <Link
+        href="/admin/belirtilmemis"
+        className="flex items-center justify-between gap-4 bg-white rounded-2xl border border-gray-200 hover:border-gray-400 p-5 transition-colors"
+      >
+        <div>
+          <p className="font-bold text-gray-900">Belirtilmemiş</p>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Grup iletişim formundan gelen ve marka seçilmeden yapılmış başvurular
+          </p>
         </div>
-      </section>
-
-      {/* Ürünler */}
-      <section>
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          Ürün Yönetimi
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Link
-            href="/admin/urunler/alb-tarim"
-            className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-green-100 group"
-          >
-            <div className="mb-3 icon-pop"><Icon name="filiz" className="w-8 h-8 text-green-600" /></div>
-            <h3 className="text-base font-bold text-gray-900 group-hover:text-green-700 transition-colors">
-              ALB Tarım
-            </h3>
-            <p className="text-sm text-gray-400 mt-1">Tarım ürünleri yönetimi</p>
-          </Link>
-
-          <Link
-            href="/admin/urunler/alb-su-aritma"
-            className="block bg-white rounded-2xl shadow-sm p-6 hover-lift border border-blue-100 group"
-          >
-            <div className="mb-3 icon-pop"><Icon name="damla" className="w-8 h-8 text-blue-600" /></div>
-            <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
-              ALB Su Teknolojileri
-            </h3>
-            <p className="text-sm text-gray-400 mt-1">Su arıtma ürünleri yönetimi</p>
-          </Link>
+        <div className="flex items-center gap-3 shrink-0">
+          {belirsizMesaj > 0 && (
+            <span className="text-[11px] font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">
+              {belirsizMesaj} okunmamış
+            </span>
+          )}
+          <span className="text-gray-400">→</span>
         </div>
-      </section>
+      </Link>
+    </div>
+  )
+}
+
+function MarkaKarti({
+  href,
+  ad,
+  aciklama,
+  ikon,
+  renkler,
+  aktifSiparis,
+  okunmamis,
+  iade,
+}: {
+  href: string
+  ad: string
+  aciklama: string
+  ikon: 'filiz' | 'damla'
+  renkler: { kenar: string; arka: string; rozet: string; metin: string }
+  aktifSiparis: number
+  okunmamis: number
+  iade: number
+}) {
+  return (
+    <Link
+      href={href}
+      className={`block rounded-3xl border-2 bg-gradient-to-br ${renkler.arka} ${renkler.kenar} p-7 transition-colors hover-lift`}
+    >
+      <div
+        className={`w-14 h-14 rounded-2xl ${renkler.rozet} flex items-center justify-center mb-5`}
+      >
+        <Icon name={ikon} className="w-8 h-8 text-white" />
+      </div>
+      <h2 className={`text-xl font-black ${renkler.metin}`}>{ad}</h2>
+      <p className="text-sm text-gray-600 mt-1">{aciklama}</p>
+
+      <dl className="mt-6 grid grid-cols-3 gap-3 border-t border-white/70 pt-4">
+        <Sayac etiket="Aktif sipariş" deger={aktifSiparis} />
+        <Sayac etiket="Okunmamış" deger={okunmamis} />
+        <Sayac etiket="Bekleyen iade" deger={iade} />
+      </dl>
+
+      <p className="mt-5 text-sm font-semibold text-gray-700">Bu markayla çalış →</p>
+    </Link>
+  )
+}
+
+function Sayac({ etiket, deger }: { etiket: string; deger: number }) {
+  return (
+    <div>
+      <dt className="text-[11px] text-gray-500 leading-tight">{etiket}</dt>
+      <dd className="text-lg font-black text-gray-900 tabular-nums">{deger}</dd>
     </div>
   )
 }

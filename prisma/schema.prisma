@@ -278,6 +278,17 @@ model Order {
   invoiceTaxOffice String? @map("invoice_tax_office") @db.VarChar(100)
   invoiceEmail    String?  @map("invoice_email") @db.VarChar(255)
 
+  // Kesilen e-faturanın PDF'i.
+  //
+  // Dosyanın kendisi Supabase Storage'da, `faturalar` adlı ÖZEL kovada duruyor.
+  // Burada tutulan `invoiceFilePath` kova içindeki yol; herkese açık bir URL
+  // DEĞİL. Fatura kişisel veri (ad, adres, TCKN/VKN) içerdiği için indirme
+  // her seferinde kimlik doğrulanıp kısa ömürlü imzalı bağlantıyla yapılıyor.
+  invoiceFilePath   String?   @map("invoice_file_path") @db.VarChar(400)
+  invoiceFileName   String?   @map("invoice_file_name") @db.VarChar(255)
+  invoiceNo         String?   @map("invoice_no") @db.VarChar(60)
+  invoiceUploadedAt DateTime? @map("invoice_uploaded_at")
+
   notes         String?     @db.Text
   adminNote     String?     @map("admin_note") @db.Text
   paymentMethod String?     @map("payment_method") @db.VarChar(50)
