@@ -48,12 +48,8 @@ const TARIM_SERVICES: { icon: IconName; title: string; desc: string; features: s
     desc: `81 ile uzanan dağıtım ağımızla siparişleriniz ${TESLIMAT_SURESI} içinde kapınızda.`,
     features: ['81 il teslimat', TESLIMAT_SURESI, 'Soğuk zincir ürünler', 'Takip numarası ile anlık izleme'],
   },
-  {
-    icon: 'servis',
-    title: 'Teknik Servis',
-    desc: 'Tarım ekipmanlarınız için bakım ve onarım hizmeti.',
-    features: ['Periyodik bakım', 'Arıza tespiti', 'Yedek parça temini', `Destek hattı: ${SITE_CONFIG.workingHours}`],
-  },
+  // "Teknik Servis" hizmeti kaldırıldı: ALB Tarım tarım ekipmanı bakım/onarım
+  // hizmeti vermiyor. (Alb Su tarafındaki teknik servis duruyor, o gerçek.)
 ]
 
 const ALBSU_SERVICES: { icon: IconName; title: string; desc: string; features: string[] }[] = [
@@ -123,7 +119,7 @@ export default async function HizmetlerPage({ params }: Props) {
           <p className="text-white/60 max-w-xl mx-auto">
             {isAlbSu
               ? 'Kurulumdan bakıma, teknik destekten akıllı çözümlere kadar her aşamada yanınızdayız.'
-              : 'Zirai danışmanlıktan saha ziyaretine, hızlı teslimattan teknik servise kadar çiftçimizi destekliyoruz.'}
+              : 'Zirai danışmanlıktan saha ziyaretine, doğru ürün seçiminden hızlı teslimata kadar çiftçimizi destekliyoruz.'}
           </p>
         </div>
       </section>

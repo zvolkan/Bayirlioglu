@@ -22,23 +22,21 @@ export const MOCK_SERVICES_TARIM: ServiceWithIcon[] = [
     brand: 'alb-tarim',
     price: 'Ücretsiz danışmanlık',
   },
+  // "Zirai Danışmanlık" ve "Tarımsal Danışmanlık" diye iki ayrı kart vardı;
+  // ikisi de aynı şeyi anlatıyordu. Tek karta indirildi.
+  //
+  // Ayrıca eski "Zirai Danışmanlık" kartının maddeleri ("Arazi etüdü, Sistem
+  // tasarımı, Montaj & test, 1 yıl bakım garantisi") sulama sistemi kurulumundan
+  // kalmıştı — o hizmet kaldırıldığı için maddeler de başlıkla uyumlu hâle
+  // getirildi.
   {
     id: 2,
     title: 'Zirai Danışmanlık',
-    description: 'Toprak ve yaprak analizine dayalı gübreleme ile bitki koruma programı.',
-    icon: 'servis',
-    features: ['Arazi etüdü', 'Sistem tasarımı', 'Montaj & test', '1 yıl bakım garantisi'],
+    description: 'Toprak ve yaprak analizine dayalı gübreleme ile bitki koruma programı hazırlıyoruz.',
+    icon: 'filiz',
+    features: ['Arazi ziyareti', 'Besleme programı', 'Hastalık-zararlı takibi', 'Sezon boyu saha takibi'],
     brand: 'alb-tarim',
     price: 'Fiyat için arayın',
-  },
-  {
-    id: 3,
-    title: 'Tarımsal Danışmanlık',
-    description: 'Ziraat mühendislerimiz arazi ziyareti yaparak verimliliğinizi artıracak çözümler önerir.',
-    icon: 'filiz',
-    features: ['Arazi ziyareti', 'Ürün planlaması', 'Hastalık-zararlı takibi', 'WhatsApp destek'],
-    brand: 'alb-tarim',
-    price: 'Aylık plan',
   },
 ];
 

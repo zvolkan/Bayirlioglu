@@ -108,7 +108,7 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
         ],
       },
       { label: 'Servis', href: '/hizmetler' },
-      { label: 'Referanslar', href: '/referanslar' },
+      { label: 'Hizmet Alanlarımız', href: '/referanslar' },
       { label: 'İletişim', href: '/iletisim' },
     ],
     video: '/videos/su-aritma-hero.mp4',

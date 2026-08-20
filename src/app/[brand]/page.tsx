@@ -429,7 +429,7 @@ export default async function BrandHomePage({ params }: Props) {
                     href="/alb-su-aritma/referanslar"
                     className="border-2 border-white text-white px-7 py-3 rounded-xl font-semibold hover:bg-white/10 transition-colors btn-press"
                   >
-                    Referanslarımızı Gör
+                    Hizmet Alanlarımızı Gör
                   </Link>
                 </div>
               </div>
