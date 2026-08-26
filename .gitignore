@@ -36,5 +36,4 @@ next-env.d.ts
 tara.mjs
 rapor.json
 /onizleme
-*.json
 *.py
