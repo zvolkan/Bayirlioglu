@@ -13,6 +13,7 @@ import FavoriteButton from '@/components/product/FavoriteButton'
 import Reveal from '@/components/ui/Reveal'
 import RevealGroup from '@/components/ui/RevealGroup'
 import { KARGO_LIMIT, KARGO_UCRETI, TESLIMAT_SURESI } from '@/lib/checkout'
+import { jsonLdScript } from '@/lib/sanitize'
 
 interface Props {
   params: Promise<{ brand: string; slug: string }>
@@ -101,7 +102,7 @@ export default async function ProductDetailPage({ params }: Props) {
     <>
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd) }}
     />
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}

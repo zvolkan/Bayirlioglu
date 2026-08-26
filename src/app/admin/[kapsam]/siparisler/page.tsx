@@ -105,7 +105,11 @@ export default async function KapsamSiparislerPage({
 
       <form className="flex gap-2" action={`/admin/${kapsam}/siparisler`}>
         {sp.durum && <input type="hidden" name="durum" value={sp.durum} />}
+        <label htmlFor="siparis-ara" className="sr-only">
+          Siparişlerde ara
+        </label>
         <input
+          id="siparis-ara"
           name="ara"
           defaultValue={sp.ara ?? ''}
           placeholder="Sipariş no, müşteri adı, e-posta veya takip no"

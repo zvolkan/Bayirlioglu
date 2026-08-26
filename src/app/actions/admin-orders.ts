@@ -11,6 +11,7 @@ import {
   notifyOrderDelivered,
   notifyOrderCancelled,
 } from '@/lib/email/notify'
+import { clientIp } from '@/lib/rate-limit'
 
 /**
  * Admin sipariş yönetimi.
@@ -313,22 +314,79 @@ export type RefundResult = { ok: true; message: string } | { ok: false; error: s
  */
 export async function refundOrder(
   orderId: string,
-  options?: { force?: boolean; reason?: string },
+  options?: { reason?: string; returnRequestId?: string },
 ): Promise<RefundResult> {
   await requireAdmin()
 
   const headerList = await headers()
-  const ip = (headerList.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
+  const ip = clientIp(headerList)
+
+  // Açık bir iade talebi varsa iade O TALEBİN kalemleri üzerinden yapılır.
+  // Eskiden talep kısmi olsa bile siparişin tamamı iade ediliyordu.
+  let returnRequestId = options?.returnRequestId
+  if (!returnRequestId) {
+    const acik = await prisma.returnRequest.findMany({
+      where: { orderId, status: { in: ['PENDING', 'APPROVED'] } },
+      select: { id: true },
+      orderBy: { createdAt: 'asc' },
+    })
+    // Birden fazla açık talep varsa hangisinin iade edileceği belirsiz;
+    // yöneticinin talebi iadeler ekranından seçmesi gerekir.
+    if (acik.length === 1) returnRequestId = acik[0].id
+    else if (acik.length > 1) {
+      return {
+        ok: false,
+        error:
+          'Bu siparişte birden fazla açık iade talebi var. İadeler ekranından hangi talebi ' +
+          'iade edeceğinizi seçin.',
+      }
+    }
+  }
 
   const result = await processRefund({
     orderId,
     ip,
-    force: options?.force,
     reason: options?.reason,
+    returnRequestId,
   })
 
   revalidatePath('/admin/alb-tarim/siparisler')
 revalidatePath('/admin/alb-su-aritma/siparisler')
+  revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
+  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
+
+  if (!result.ok) return { ok: false, error: result.error }
+  return { ok: true, message: result.message }
+}
+
+/**
+ * "Parayı iyzico panelinden elle iade ettim" durumu.
+ *
+ * Eskiden bu, `refundOrder`'ın `options.force` bayrağıydı — yani istemciden
+ * gelebilen, arayüzde karşılığı olmayan ve geri alınamaz bir durum değişikliği
+ * tetikleyen bir parametreydi. Ayrı ve açıkça adlandırılmış bir aksiyona
+ * taşındı; `refundOrder`'ın imzasında artık `force` yok.
+ *
+ * Gateway çağrısı YAPILMAZ: para zaten elle iade edilmiş varsayılır.
+ */
+export async function markOrderManuallyRefunded(
+  orderId: string,
+  reason?: string,
+): Promise<RefundResult> {
+  await requireAdmin()
+
+  const headerList = await headers()
+  const ip = clientIp(headerList)
+
+  const result = await processRefund({
+    orderId,
+    ip,
+    force: true,
+    reason: reason ? `Elle iade: ${reason}` : 'iyzico panelinden elle iade edildi',
+  })
+
+  revalidatePath('/admin/alb-tarim/siparisler')
+  revalidatePath('/admin/alb-su-aritma/siparisler')
   revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
   revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
 

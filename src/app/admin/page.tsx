@@ -4,6 +4,7 @@ import { getOrderCountsByStatus, getUnreadMessageCount } from '@/app/actions/adm
 import { getOpenReturnCount } from '@/app/actions/returns'
 import Icon from '@/components/ui/Icon'
 import { BRANDS } from '@/lib/constants'
+import { yoneticiGerekli } from '@/lib/admin-guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +19,9 @@ export const dynamic = 'force-dynamic'
  * markada işlem yapılmasın.
  */
 export default async function AdminGirisEkrani() {
+  // Koşulsuz yetki kontrolü — gerekçe için `admin/[kapsam]/layout.tsx`
+  await yoneticiGerekli()
+
   const [tarimSayilari, suSayilari, tarimMesaj, suMesaj, belirsizMesaj, tarimIade, suIade] =
     await Promise.all([
       getOrderCountsByStatus('alb-tarim'),

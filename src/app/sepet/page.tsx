@@ -64,6 +64,12 @@ export default function SepetPage() {
   const brandsInCart = Array.from(new Set(items.map((i) => i.product.brand)))
   const mixedBrands = brandsInCart.length > 1
 
+  // Sepet, marka yollarının dışında olduğu için kök düzen burada varsayılan
+  // markayı (ALB Tarım = yeşil) uyguluyor. Sepetin içindeki ürün Alb Su ise
+  // renkleri o markaya çeviriyoruz; karışık sepette varsayılana bırakıyoruz.
+  const sepetMarkasi =
+    !mixedBrands && brandsInCart[0] === 'alb-su-aritma' ? 'alb-su-aritma' : undefined
+
   // localStorage okunana kadar iskelet göster — aksi hâlde sunucuda "Sepetiniz
   // boş" render edilip istemcide dolu sepete atlıyor (hydration uyumsuzluğu).
   if (!hasHydrated) {
@@ -117,7 +123,7 @@ export default function SepetPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" data-brand={sepetMarkasi}>
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -179,7 +185,7 @@ export default function SepetPage() {
                         {item.product.unit && (
                           <p className="text-xs text-gray-400 mt-0.5">{item.product.unit}</p>
                         )}
-                        <p className="text-sm font-medium text-blue-600 mt-1">
+                        <p className="text-sm font-medium text-brand-600 mt-1">
                           {formatPrice(price)}
                           {item.product.salePrice && (
                             <span className="ml-2 text-xs text-gray-400 line-through font-normal">
@@ -240,7 +246,7 @@ export default function SepetPage() {
             <div className="pt-2">
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                className="inline-flex items-center gap-2 text-sm text-brand-600 hover:text-brand-500 font-medium transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Alışverişe Devam Et
@@ -279,7 +285,9 @@ export default function SepetPage() {
                     <span className="font-bold text-gray-900">Toplam</span>
                     <span className="block text-xs text-gray-400 font-normal">KDV dahil</span>
                   </div>
-                  <span className="font-bold text-lg text-blue-600">{formatPrice(total)}</span>
+                  {/* Sabit mavi yerine marka rengi: ALB Tarım (yeşil) ürünü sepetteyken
+                      de mavi çıkıyordu. */}
+                  <span className="font-bold text-lg text-brand-600">{formatPrice(total)}</span>
                 </div>
               </div>
 
@@ -295,7 +303,7 @@ export default function SepetPage() {
               ) : (
                 <Link
                   href="/odeme"
-                  className="mt-5 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
+                  className="mt-5 w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-xl transition-colors text-sm"
                 >
                   Siparişi Tamamla
                   <ArrowRight className="w-4 h-4" />

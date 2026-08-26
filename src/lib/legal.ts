@@ -36,7 +36,31 @@ export const SATICI = {
   eposta: SITE_CONFIG.email,
   /** Cayma hakkı kapsamındaki iadelerin gönderileceği adres */
   iadeAdresi: SITE_CONFIG.address,
+  /**
+   * ETBİS kaydı tamamlandığında `true` yapın.
+   *
+   * Footer eskiden KOŞULSUZ olarak "Bu site ETBİS'e kayıtlıdır." diyordu.
+   * Kayıt yapılmadıysa bu yanlış beyandır ve idari yaptırıma açıktır. Artık
+   * cümle yalnızca bu değer `true` iken görünüyor.
+   */
+  etbisKayitli: false,
 } as const
+
+/** Künye eksiksiz mi? Eksikse yayına çıkmadan tamamlanmalı. */
+export const KUNYE_TAM =
+  SATICI.mersis.trim() !== '' &&
+  SATICI.vergiDairesi.trim() !== '' &&
+  SATICI.vergiNo.trim() !== ''
+
+// Üretim derlemesinde eksik künyeyi sessizce geçmeyelim: log'a düşsün ki
+// deploy sonrası fark edilsin.
+if (process.env.NODE_ENV === 'production' && !KUNYE_TAM) {
+  console.error(
+    '[yasal] Satıcı künyesi eksik (MERSİS / vergi dairesi / vergi no). ' +
+      'Mesafeli Sözleşmeler Yönetmeliği m.5 bu bilgileri zorunlu tutuyor; ' +
+      'src/lib/legal.ts içindeki SATICI nesnesini doldurun.',
+  )
+}
 
 const SITE_DOMAIN = SITE_CONFIG.url.replace(/^https?:\/\//, '').replace(/\/+$/, '')
 

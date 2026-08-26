@@ -57,7 +57,7 @@ const markalar: {
     borderColor: 'border-green-200',
     href: '/alb-tarim',
     desc: 'Kendi formülleriyle ürettiği gübreler, zirai ilaçlar ve tarım ekipmanları alanında faaliyet göstermektedir. Çiftçilerimize uygun fiyat, hızlı teslimat ve uzman zirai danışmanlık sunmaktadır.',
-    kuruluş: "1950'ler",
+    kuruluş: '1977',
     icon: 'filiz',
   },
   {
@@ -67,8 +67,8 @@ const markalar: {
     bgLight: 'bg-blue-50',
     borderColor: 'border-blue-200',
     href: '/alb-su-aritma',
-    desc: `Su arıtma sistemleri, klima ve iklimlendirme çözümleri alanında faaliyet göstermektedir. Montaj ve filtre değişimini kendi ekibi yapar; teknik servis ${SITE_CONFIG.workingHours} saatlerinde hizmet verir.`,
-    kuruluş: '2015',
+    desc: `A.O. Smith yetkili bayii olarak evsel ve endüstriyel su arıtma sistemleri satıyor. Montaj ve filtre değişimini kendi ekibi yapar; teknik servis ${SITE_CONFIG.workingHours} saatlerinde hizmet verir.`,
+    kuruluş: '2014',
     icon: 'damla',
   },
 ]
@@ -117,15 +117,18 @@ export default function HakkimizdaPage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Hikayemiz</h2>
             <div className="prose prose-lg text-gray-700 space-y-4">
               <p>
-                Bayırlıoğlu ailesi, 1950'lerin başında Mersin'in Anamur ilçesinde zirai
-                ilaç ve gübre satışıyla işe başladı. O günden beri aynı ilçede, çoğunlukla
-                aynı çiftçilerle çalışıyoruz.
+                Hikâyemiz 1977'de, &ldquo;Bayırlıoğlu&rdquo; lakabıyla tanınan
+                Durmuş Ali Bulut&apos;un Mersin&apos;in Anamur ilçesinde kurduğu güven
+                ilişkisiyle başladı. Bir lakapla başlayan bu isim, zamanla şirketimizin
+                adı ve değerlerimizin bir parçası oldu. O günden beri aynı ilçedeyiz,
+                çoğunlukla aynı ailelerle çalışıyoruz.
               </p>
               <p>
-                Dededen kalan şirket adıyla süren iş, zamanla kendi formülleriyle gübre
-                üreten bir yapıya dönüştü. Firma 2015 yılında su arıtma ve iklimlendirme
-                sektörüne de adım atarak{' '}
-                <strong>Alb Su Teknolojileri</strong> markasını kurdu.
+                Babadan oğula aktarılan bu anlayışla iş, zamanla kendi formülleriyle
+                gübre üreten bir yapıya dönüştü. 2014 yılında ise Ramazan Bulut,
+                Bayırlıoğlu çatısı altında{' '}
+                <strong>Alb Su Teknolojileri</strong> markasını kurarak su arıtma
+                alanına adım attı.
               </p>
               <p>
                 Bugün Anamur merkezli olarak Türkiye'nin 81 iline kargo ile ürün gönderiyoruz.

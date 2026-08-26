@@ -17,6 +17,26 @@ da gerekmiyor.
 Yeni bir bölüm eklendiğinde ("EK 5", "EK 6", "EK 7" …) dosyanın tamamını
 Supabase'de yeniden çalıştırmak yeterli.
 
+`manual/002-e-fatura.sql` — **bu dosyadan bahsedilmiyordu ve
+`veritabani-kontrol.sql` de onu kontrol etmiyordu.** Yani operatör kontrolü
+çalıştırıp "her şey uygulanmış" görüyor, ama `002` çalıştırılmamışsa fatura
+yükleme PDF'i Supabase'e attıktan SONRA veritabanı hatası veriyor: depoda
+öksüz dosya kalıyor, yönetici genel hata ekranı görüyor. Kontrol dosyasına
+7. ve 8. maddeler eklendi; **`002`'yi bir kez çalıştırdığınızdan emin olun.**
+
+### Storage kovaları
+
+İki kova gerekiyor:
+
+- **`faturalar`** — ÖZEL (public değil). `002-e-fatura.sql` oluşturuyor.
+  Fatura ad, adres ve TCKN/VKN taşıdığı için indirme her seferinde kimlik
+  doğrulanıp kısa ömürlü imzalı bağlantıyla yapılıyor.
+- **`product-images`** — HERKESE AÇIK. Bu kova hiçbir belgede geçmiyordu
+  (`src/lib/supabase-admin.ts` içinde sabit olarak duruyor). Sıfırdan
+  kurulumda ürün görseli yüklemek "Bucket not found" ile başarısız oluyor ve
+  sebebi hiçbir yerde yazmıyor. Oluşturma komutu `veritabani-kontrol.sql`
+  dosyasının sonunda.
+
 ## ÖNEMLİ: bu üç migration veritabanını yeniden kuramaz
 
 Boş bir veritabanına yalnızca bu üçünü uygularsanız eksik kalır.

@@ -55,4 +55,54 @@ SELECT
   '6) prisma db push ile gelenler',
   CASE WHEN COUNT(*) = 2 THEN 'VAR' ELSE 'EKSİK (' || COUNT(*) || '/2 sütun)' END
 FROM information_schema.columns
-WHERE table_name = 'products' AND column_name IN ('product_brand','vat_rate');
+WHERE table_name = 'products' AND column_name IN ('product_brand','vat_rate')
+
+UNION ALL
+
+-- ── 7) E-FATURA (002-e-fatura.sql) ─────────────────────────────────────────
+-- Bu kontrol EKSİKTİ. `002` çalıştırılmamışsa fatura yükleme PDF'i Supabase'e
+-- attıktan SONRA veritabanı hatası veriyor: depoda öksüz dosya kalıyor,
+-- yönetici genel hata ekranı görüyor ve sebebini hiçbir yerden anlayamıyor.
+SELECT
+  '7) e-fatura sütunları (002)',
+  CASE WHEN COUNT(*) = 4 THEN 'UYGULANMIŞ'
+       ELSE 'EKSİK — 002-e-fatura.sql çalıştırın (' || COUNT(*) || '/4 sütun)' END
+FROM information_schema.columns
+WHERE table_name = 'orders'
+  AND column_name IN ('invoice_file_path','invoice_file_name',
+                      'invoice_no','invoice_uploaded_at')
+
+UNION ALL
+
+-- ── 8) STORAGE KOVALARI ────────────────────────────────────────────────────
+-- `faturalar` 002 tarafından oluşturuluyor. `product-images` ise HİÇBİR
+-- belgede geçmiyordu: sıfırdan kurulumda ürün görseli yüklemek
+-- "Bucket not found" ile başarısız oluyor ve sebebi hiçbir yerde yazmıyordu.
+SELECT
+  '8) storage kovaları',
+  CASE WHEN COUNT(*) = 2 THEN 'VAR (faturalar + product-images)'
+       ELSE 'EKSİK (' || COUNT(*) || '/2) — aşağıdaki nota bakın' END
+FROM storage.buckets
+WHERE id IN ('faturalar','product-images');
+
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- 8. SATIR "EKSİK" DİYORSA
+--
+-- `faturalar`      → 002-e-fatura.sql dosyasını çalıştırın (kovayı o oluşturur)
+-- `product-images` → HERKESE AÇIK olmalı. Supabase panelinden
+--                    Storage > New bucket > adı: product-images, Public: açık
+--                    ya da SQL ile:
+--
+--   INSERT INTO storage.buckets (id, name, public)
+--   VALUES ('product-images', 'product-images', true)
+--   ON CONFLICT (id) DO NOTHING;
+--
+--   -- Herkes okuyabilsin (ürün görselleri sitede görünüyor)
+--   CREATE POLICY "product-images herkese açık okuma"
+--     ON storage.objects FOR SELECT
+--     USING (bucket_id = 'product-images');
+--
+-- Yükleme service_role anahtarıyla yapıldığı için ayrıca INSERT politikası
+-- gerekmiyor; service_role RLS'i baypas eder.
+-- ═══════════════════════════════════════════════════════════════════════════

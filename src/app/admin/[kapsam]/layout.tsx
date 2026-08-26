@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { adminLogout } from '@/app/actions/admin'
 import { gecerliKapsam, kapsamAdi, kapsamRengi, type Kapsam } from '@/lib/admin-kapsam'
+import { yoneticiGerekli } from '@/lib/admin-guard'
 
 /**
  * Marka kapsamının ortak çerçevesi.
@@ -28,6 +29,11 @@ export default async function KapsamLayout({
   children: React.ReactNode
   params: Promise<{ kapsam: string }>
 }) {
+  // Koşulsuz yetki kontrolü. Üstteki `admin/layout.tsx` giriş sayfasını muaf
+  // tutmak için `x-pathname` başlığına bakmak zorunda; burada böyle bir istisna
+  // yok, dolayısıyla middleware hiç çalışmasa bile panel korumasız kalmıyor.
+  await yoneticiGerekli()
+
   const { kapsam: ham } = await params
   const kapsam = gecerliKapsam(ham)
   if (!kapsam) notFound()

@@ -229,17 +229,6 @@ revalidatePath('/admin/alb-su-aritma/iadeler')
   }
 }
 
-/**
- * Para iadesi tamamlandığında ilgili talebi kapatır.
- * `processRefund` içinden çağrılır — yönetici ayrıca kapatmak zorunda kalmasın.
- */
-export async function completeReturnRequestsForOrder(orderId: string): Promise<void> {
-  try {
-    await prisma.returnRequest.updateMany({
-      where: { orderId, status: { in: ['PENDING', 'APPROVED'] } },
-      data: { status: 'COMPLETED', resolvedAt: new Date() },
-    })
-  } catch (error) {
-    console.error('[iade] talep kapatılamadı:', orderId, error)
-  }
-}
+// `completeReturnRequestsForOrder` buradan `src/lib/return-requests.ts`'e
+// taşındı: `'use server'` dosyasında export edilen her fonksiyon tarayıcıdan
+// çağrılabilen bir uç noktadır ve o fonksiyonda hiçbir yetki kontrolü yoktu.

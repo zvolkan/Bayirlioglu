@@ -26,19 +26,44 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 type TimelineItem = { year: string; event: string }
 
-// TARİHÇE — şimdilik boş.
+// TARİHÇE
 //
-// Buradaki yıllar ve olaylar uydurmaydı: ulusal dağıtım ağı, organik tarım
-// sertifikası, "1.000 başarılı montaj", "Türkiye'nin önde gelen markası" ve
-// 2025'te açılan bir dijital danışmanlık platformu. Hiçbiri gerçek değildi ve
-// kuruluş yılı da sitenin geri kalanıyla çelişiyordu.
+// Buradaki yıllar ve olaylar bir zamanlar uydurmaydı (ulusal dağıtım ağı,
+// "1.000 başarılı montaj" gibi); hepsi silinmişti. Aşağıdakiler şirketin
+// verdiği gerçek bilgiler.
 //
-// Gerçekten yaşanmış birkaç dönüm noktasını (dükkânın açılışı, bir markanın
-// bayiliğinin alınması, yeni dükkân veya depo, yeni ürün grubu) yılıyla
-// birlikte gönderin; bu listeye eklensin. Dizi boşken bölüm hiç görünmüyor.
-const TARIM_TIMELINE: TimelineItem[] = []
+// Yeni dönüm noktası eklemek isterseniz (dükkân açılışı, yeni bayilik, depo,
+// yeni ürün grubu) yılıyla birlikte bu listeye yazın. Dizi boşken bölüm hiç
+// görünmüyor.
+const TARIM_TIMELINE: TimelineItem[] = [
+  {
+    year: '1977',
+    event:
+      'Durmuş Ali Bulut, Anamur\'da kendi lakabıyla tanınan bir ticaret kurdu. ' +
+      'Zamanla o lakap şirketin adı oldu: Bayırlıoğlu.',
+  },
+]
 
-const ALBSU_TIMELINE: TimelineItem[] = []
+const ALBSU_TIMELINE: TimelineItem[] = [
+  {
+    year: '1977',
+    event:
+      'Bayırlıoğlu adı, Durmuş Ali Bulut\'un Anamur\'da kurduğu güven ' +
+      'ilişkisiyle doğdu. Bugünkü işin dayandığı gelenek buradan geliyor.',
+  },
+  {
+    year: '2014',
+    event:
+      'Ramazan Bulut, Bayırlıoğlu çatısı altında ALB Su markasını kurdu. ' +
+      'Anamur ve çevre bölgede hanelere ve işletmelere temiz su ulaştırmaya başladı.',
+  },
+  {
+    year: '2022',
+    event:
+      'A.O. Smith yetkili bayiliğini aldık. Evsel ve endüstriyel su arıtma ' +
+      'çözümlerimizi Türkiye\'nin dört bir yanına ulaştırmaya başladık.',
+  },
+]
 
 export default async function HakkimizdaPage({ params }: Props) {
   const { brand } = await params
@@ -69,6 +94,64 @@ export default async function HakkimizdaPage({ params }: Props) {
         </div>
       </section>
 
+      {/* Hikâyemiz — şirketin verdiği metin. Yalnızca Alb Su tarafında
+          gösteriliyor: metin ALB Su markasını ve A.O. Smith bayiliğini
+          anlatıyor, ALB Tarım sayfasında yanlış olurdu. */}
+      {isAlbSu && (
+      <section className="py-16 bg-white">
+        <div className="container-main">
+          <div className="max-w-3xl mx-auto">
+            <Reveal>
+              <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-600">
+                Hikâyemiz
+              </p>
+              <h2 className="text-3xl sm:text-4xl font-black text-gray-900 leading-tight mb-8">
+                Yarım asra yaklaşan bir ticaret geleneği
+              </h2>
+              <div className="space-y-5 text-gray-700 leading-relaxed text-lg">
+                <p>
+                  Hikâyemiz, 1977 yılında Bayırlıoğlu adıyla tanınan Durmuş Ali
+                  Bulut&apos;un kurduğu güven ilişkisiyle başladı. Bir lakapla başlayan
+                  bu isim, zamanla şirketimizin adı ve değerlerimizin bir parçası oldu.
+                </p>
+                <p>
+                  Babadan oğula aktarılan bu anlayışı sürdüren Ramazan Bulut, 2014
+                  yılından bu yana Bayırlıoğlu çatısı altındaki{' '}
+                  <strong className="font-bold text-gray-900">
+                    ALB Su markasıyla Anamur ve çevre bölgelerde binlerce haneye ve
+                    işletmeye temiz su ulaştırıyor.
+                  </strong>
+                </p>
+                <p>
+                  Bugün,{' '}
+                  <strong className="font-bold text-gray-900">
+                    A.O. Smith yetkili bayiliğimiz
+                  </strong>{' '}
+                  ile evsel ve endüstriyel su arıtma çözümlerimizi Türkiye&apos;nin dört
+                  bir yanına ulaştırıyoruz.
+                </p>
+                <p>
+                  Sattığımız her ürünün arkasında,{' '}
+                  <strong className="font-bold text-gray-900">
+                    kırk yılı aşkın bir ticaret geleneğinin, güvenin ve sorumluluğun
+                  </strong>{' '}
+                  izi var.
+                </p>
+              </div>
+            </Reveal>
+            <Reveal variant="scale">
+              <div className="mt-10 border-l-4 border-brand-500 bg-gray-50 rounded-r-2xl px-6 py-5">
+                <p className="text-gray-600 mb-1">Dünden bugüne değişmeyen anlayışımız:</p>
+                <p className="text-xl sm:text-2xl font-black text-gray-900">
+                  Güven, kalite ve sürdürülebilir hizmet.
+                </p>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+      )}
+
       {/* Misyon & Vizyon */}
       <section className="py-16 container-main">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -78,7 +161,7 @@ export default async function HakkimizdaPage({ params }: Props) {
             <h2 className="text-xl font-black text-gray-900 mb-3">Misyonumuz</h2>
             <p className="text-gray-600 leading-relaxed">
               {isAlbSu
-                ? 'Her haneye temiz, güvenli ve lezzetli su ulaştırmak; enerji verimliliği yüksek klima ve elektronik ürünlerle yaşam kalitesini artırmak.'
+                ? 'Her haneye ve işletmeye temiz, güvenli su ulaştırmak. Sattığımız cihazın arkasında durmak; kurulumundan filtre değişimine kadar aynı elin işi olmasını sağlamak.'
                 : 'Türk çiftçisine en kaliteli tarım girdilerini ve teknolojiyi ulaştırarak üretim verimliliğini artırmak ve sürdürülebilir tarımı yaygınlaştırmak.'}
             </p>
           </div>
@@ -87,7 +170,7 @@ export default async function HakkimizdaPage({ params }: Props) {
             <h2 className="text-xl font-black text-gray-900 mb-3">Vizyonumuz</h2>
             <p className="text-gray-600 leading-relaxed">
               {isAlbSu
-                ? 'Türkiye\'nin lider su teknolojileri ve akıllı yaşam çözümleri şirketi olmak; yenilikçi ürün ve hizmetlerle bölge ülkelerine ihracat yapmak.'
+                ? 'Anamur\'da kurulan güven ilişkisini Türkiye geneline taşımak; su arıtmada akla ilk gelen, arkasında durulan marka olmak.'
                 : 'Bölgenin lider tarım teknolojileri şirketi olmak; dijital tarım çözümleriyle Türk çiftçisini geleceğe taşımak.'}
             </p>
           </div>
@@ -157,7 +240,7 @@ export default async function HakkimizdaPage({ params }: Props) {
             <h2 className="text-3xl font-black text-gray-900 mb-4">Uzman Kadromuz</h2>
             <p className="text-gray-500 max-w-xl mx-auto mb-10">
               {isAlbSu
-                ? 'Su teknolojileri, klima sistemleri ve elektronik alanlarında deneyimli ekibimizle hizmetinizdeyiz.'
+                ? 'Keşiften montaja, filtre değişiminden arıza servisine kadar işi kendi ekibimiz yapıyor. Sattığımız cihazı kuran ve bakımını yapan aynı ekip.'
                 : 'Agronomi ve bitki besleme konusunda deneyimli ekibimizle sahada yanınızdayız.'}
             </p>
           </Reveal>

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma, type TransactionClient } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { processRefund } from '@/lib/refund'
+import { restoreStock } from '@/lib/stock'
 
 // ─── Oturum kontrolü ─────────────────────────────────────────────────────────
 
@@ -148,6 +149,11 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderResult> {
     where: { id: orderId },
     data: { status: 'CANCELLED', paymentStatus: 'cancelled' },
   })
+
+  // Sipariş oluşturulurken rezerve edilen stoğu serbest bırak. Stok artık
+  // ödeme başlarken düşülüyor (bkz. src/lib/stock.ts), bu yüzden ödemesi
+  // alınmamış siparişin iptalinde de geri yüklenmeli.
+  await restoreStock(orderId, 'müşteri iptali (ödemesiz)')
 
   revalidatePath('/hesabim/siparislerim')
   revalidatePath('/hesabim')
@@ -292,6 +298,16 @@ export async function updateAddress(addressId: string, formData: FormData): Prom
   const input = parsed
   const isDefault = formData.get('isDefault') === 'on'
 
+  // Sahipliği ÖNCE doğrula. `updateMany` sahiplik filtresini zaten uyguluyordu
+  // (başkasının adresi değişmiyordu) ama 0 satır güncellense de `{ ok: true }`
+  // dönüyordu; üstelik `isDefault` işaretliyse kullanıcının KENDİ varsayılan
+  // adresi önce sıfırlandığı için sessizce kayboluyordu.
+  const owned = await prisma.address.findFirst({
+    where: { id: addressId, userId: user.id },
+    select: { id: true },
+  })
+  if (!owned) return { ok: false, error: 'Adres bulunamadı.' }
+
   await prisma.$transaction(async (tx: TransactionClient) => {
     if (isDefault) {
       await tx.address.updateMany({
@@ -368,37 +384,9 @@ export async function setDefaultAddress(addressId: string) {
 }
 
 // ─── Yarım kalan ödemeleri temizle ───────────────────────────────────────────
-
-/** Ödemesi tamamlanmayan siparişin geçerli sayılacağı süre */
-const BEKLEYEN_SIPARIS_SAAT = 24
-
-/**
- * Ödeme ekranını kapatan kullanıcının siparişi sonsuza kadar "Beklemede"
- * kalıyordu: listede birikiyor, müşteri ne yapacağını bilemiyordu. Kullanıcı
- * kendi sipariş listesini açtığında eskimiş olanlar iptal ediliyor.
- *
- * Yalnızca ödemesi HİÇ alınmamış siparişlere dokunulur — para tahsil edilmiş
- * bir siparişin buradan iptal edilmesi mümkün değil.
- */
-export async function cancelStalePendingOrders(userId: string): Promise<void> {
-  const cutoff = new Date(Date.now() - BEKLEYEN_SIPARIS_SAAT * 3600_000)
-
-  try {
-    await prisma.order.updateMany({
-      where: {
-        userId,
-        status: 'PENDING',
-        paymentStatus: { not: 'paid' },
-        createdAt: { lt: cutoff },
-      },
-      data: {
-        status: 'CANCELLED',
-        paymentStatus: 'failed',
-        adminNote: 'Ödeme tamamlanmadığı için otomatik iptal edildi.',
-      },
-    })
-  } catch (error) {
-    // Temizlik işi; başarısız olursa sayfa yine de açılmalı
-    console.error('[sipariş] bekleyen sipariş temizliği başarısız:', error)
-  }
-}
+//
+// `cancelStalePendingOrders` buradan `src/lib/stale-orders.ts`'e taşındı.
+// Bu dosya `'use server'` ile başlıyor; burada export edilen her fonksiyon
+// tarayıcıdan POST edilebilen bir uç noktadır. Fonksiyon `userId`'yi
+// dışarıdan alıyor ve doğrulamıyordu, yani başkasının siparişleri iptal
+// edilebiliyordu. Aynı gerekçeyle yukarıda üç fonksiyon daha kaldırılmıştı.

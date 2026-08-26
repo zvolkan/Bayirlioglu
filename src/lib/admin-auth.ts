@@ -11,11 +11,39 @@
 
 const encoder = new TextEncoder()
 
-/** Ortam değişkeni yoksa null döner → doğrulama her zaman başarısız olur (fail-closed) */
+/**
+ * İmza anahtarı. Yoksa null döner → doğrulama her zaman başarısız olur
+ * (fail-closed); "sır yoksa herkes admin" durumu asla oluşmaz.
+ *
+ * ÜRETİMDE `ADMIN_PASSWORD` YEDEĞİ YOK. Eskiden `ADMIN_SESSION_SECRET`
+ * tanımlı değilse admin parolası HMAC anahtarı olarak kullanılıyordu. İki
+ * sorunu vardı: (a) anahtarın entropisi insan seçimi bir parolanın entropisine
+ * iniyordu, (b) parola herhangi bir yoldan sızarsa saldırgan hiç giriş
+ * yapmadan geçerli oturum token'ı üretebiliyordu. Geliştirme ortamında yedek
+ * korundu ki yerelde uğraştırmasın.
+ *
+ * Üretim sırrı: `openssl rand -base64 48`
+ */
+let sirUyarisiVerildi = false
+
 function getSecret(): string | null {
-  const secret =
-    process.env.ADMIN_SESSION_SECRET?.trim() || process.env.ADMIN_PASSWORD?.trim()
-  return secret && secret.length > 0 ? secret : null
+  const özel = process.env.ADMIN_SESSION_SECRET?.trim()
+  if (özel && özel.length > 0) return özel
+
+  if (process.env.NODE_ENV === 'production') {
+    if (!sirUyarisiVerildi) {
+      sirUyarisiVerildi = true
+      console.error(
+        '[admin] ADMIN_SESSION_SECRET tanımlı değil. Admin girişi kapalı. ' +
+          'Vercel ortam değişkenlerine `openssl rand -base64 48` çıktısını ekleyin.',
+      )
+    }
+    return null
+  }
+
+  // Yalnızca geliştirme ortamı
+  const yedek = process.env.ADMIN_PASSWORD?.trim()
+  return yedek && yedek.length > 0 ? yedek : null
 }
 
 function base64UrlEncode(bytes: Uint8Array): string {
@@ -45,11 +73,32 @@ async function sign(data: string, secret: string): Promise<string> {
   return base64UrlEncode(new Uint8Array(signature))
 }
 
-/** Sabit süreli karşılaştırma — zamanlama saldırılarına karşı */
+/**
+ * Sabit süreli karşılaştırma — zamanlama saldırılarına karşı.
+ *
+ * Uzunluk farkında erken dönüyor; imza karşılaştırmasında sorun değil (imzalar
+ * hep aynı uzunlukta) ama parola karşılaştırmasında parolanın UZUNLUĞUNU
+ * zamanlamayla sızdırabiliyordu. Parolalar için aşağıdaki `timingSafeEqualHash`
+ * kullanılmalı: iki tarafı da SHA-256'dan geçirip sabit uzunlukta karşılaştırır,
+ * böylece uzunluk kanalı tamamen kapanır.
+ */
 export function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false
   let diff = 0
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
+}
+
+/** Uzunluk sızdırmayan karşılaştırma — parolalar için. */
+export async function timingSafeEqualHash(a: string, b: string): Promise<boolean> {
+  const [ha, hb] = await Promise.all([
+    crypto.subtle.digest('SHA-256', encoder.encode(a)),
+    crypto.subtle.digest('SHA-256', encoder.encode(b)),
+  ])
+  const va = new Uint8Array(ha)
+  const vb = new Uint8Array(hb)
+  let diff = 0
+  for (let i = 0; i < va.length; i++) diff |= va[i] ^ vb[i]
   return diff === 0
 }
 

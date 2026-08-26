@@ -14,6 +14,7 @@ import BrandSync from '@/components/layout/BrandSync'
 import { brandFromPath, type ActiveBrand } from '@/lib/brand-path'
 import CookieConsent from '@/components/layout/CookieConsent'
 import { Toaster } from 'react-hot-toast'
+import { jsonLdScript } from '@/lib/sanitize'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
 
@@ -51,6 +52,7 @@ async function resolveBrand(): Promise<ActiveBrand> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const brand = await resolveBrand()
+  const yonetimPaneli = ((await headers()).get('x-pathname') ?? '').startsWith('/admin')
 
   return (
     <html lang="tr" data-brand={brand} className={inter.variable}>
@@ -63,11 +65,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           Ana içeriğe atla
         </a>
 
-        {/* Arama motorları için kurum bilgisi */}
+        {/* Arama motorları için kurum bilgisi.
+            NOT: Buraya CSP nonce'u KONMUYOR. `type="application/ld+json"`
+            çalıştırılabilir bir script değil, bu yüzden CSP script-src onu
+            engellemiyor (tarayıcıda doğrulandı: nonce'suz da ihlal yok).
+            Nonce eklendiğinde ise tarayıcı yükleme sonrası nonce niteliğini
+            temizlediği için React hidrasyon uyumsuzluğu uyarısı veriyordu. */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: jsonLdScript({
               '@context': 'https://schema.org',
               '@type': 'Organization',
               name: COMPANY_NAME,
@@ -87,15 +94,27 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             }),
           }}
         />
-        <BrandSync />
-        <ScrollProgress />
-        <Header />
-        <main id="ana-icerik" tabIndex={-1}>
-          <PageTransition>{children}</PageTransition>
-        </main>
-        <Footer />
-        <WhatsAppButton />
-        <CookieConsent />
+        {/* Yönetici paneli mağaza kabuğunu kullanmıyor.
+            Bu ayrım olmadan panelde marka değiştirici, sepet, arama, yasal
+            künyeli altbilgi, WhatsApp butonu ve çerez bandı da görünüyordu;
+            mobil panelde ekranın yarısını kaplıyordu. */}
+        {yonetimPaneli ? (
+          <main id="ana-icerik" tabIndex={-1}>
+            {children}
+          </main>
+        ) : (
+          <>
+            <BrandSync />
+            <ScrollProgress />
+            <Header />
+            <main id="ana-icerik" tabIndex={-1}>
+              <PageTransition>{children}</PageTransition>
+            </main>
+            <Footer />
+            <WhatsAppButton />
+            <CookieConsent />
+          </>
+        )}
         <Toaster position="top-right" toastOptions={{ duration: 3000, style: { borderRadius: '12px', fontFamily: 'var(--font-inter)' } }} />
       </body>
     </html>

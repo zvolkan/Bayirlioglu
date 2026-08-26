@@ -66,20 +66,23 @@ export default async function BrandHomePage({ params }: Props) {
             <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
               <RevealGroup itemClassName="h-full" variant="scale">
               {[
+                // Üçü de doğrulanabilir bilgi. Önceki hâlinde "NSF onaylı",
+                // "sertifikalı teknisyenler" ve "aynı gün kurulum" yazıyordu;
+                // üçü de belgelenmemiş iddialardı.
                 {
-                  icon: 'damla' as const,
-                  title: 'Dünya Markası Membranlar',
-                  desc: 'A.O. Smith, FAW & NSF onaylı ters osmoz membranlı sistemler',
+                  icon: 'saat' as const,
+                  title: "1977'den Beri",
+                  desc: 'Anamur\'da kurulan bir ticaret geleneğinin devamıyız',
                 },
                 {
                   icon: 'odul' as const,
-                  title: 'Yetkili Bayi Güvencesi',
-                  desc: 'A.O. Smith ve diğer markaların yetkili satış ve servis noktası',
+                  title: 'A.O. Smith Yetkili Bayii',
+                  desc: 'Evsel ve endüstriyel su arıtma sistemlerinde yetkili satış noktası',
                 },
                 {
-                  icon: 'servis' as const,
-                  title: 'Ücretsiz Profesyonel Montaj',
-                  desc: 'Sertifikalı teknisyenler, aynı gün kurulum imkânı',
+                  icon: 'kargo' as const,
+                  title: 'Türkiye Geneli Teslimat',
+                  desc: 'Anamur ve çevresinde yerinde montaj, diğer illere kargoyla',
                 },
               ].map((item) => (
                 <div key={item.title} className="flex items-center gap-4 px-6 py-4 h-full">
@@ -289,8 +292,8 @@ export default async function BrandHomePage({ params }: Props) {
             <RevealGroup itemClassName="h-full">
             {(isAlbSu
               ? [
-                  { icon: 'analiz' as const, title: 'İleri Teknoloji', desc: 'Dünya markası ürünleri en uygun fiyatlarla sunuyoruz.' },
-                  { icon: 'servis' as const, title: 'Profesyonel Montaj', desc: 'Sertifikalı teknisyenlerimiz kurulumu üstlenir.' },
+                  { icon: 'odul' as const, title: 'Yetkili Bayilik', desc: 'A.O. Smith ürünlerinde yetkili satış ve servis noktasıyız.' },
+                  { icon: 'servis' as const, title: 'Kendi Ekibimiz', desc: 'Kurulumu da bakımı da kendi ekibimiz yapıyor.' },
                   { icon: 'telefon' as const, title: 'Teknik Destek', desc: `${SITE_CONFIG.workingHours} saatlerinde bize ulaşabilirsiniz.` },
                   { icon: 'garanti' as const, title: 'Garanti', desc: 'Ürün garantisi markaya ve modele göre 2 ile 5 yıl arasında değişir.' },
                 ]
@@ -501,7 +504,7 @@ export default async function BrandHomePage({ params }: Props) {
         <div className="container-main text-center">
           <Reveal>
             <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">
-              {isAlbSu ? 'Alkali & Sağlıklı Suya Kavuşmaya Hazır mısınız?' : 'Veriminizi Artırmaya Hazır mısınız?'}
+              {isAlbSu ? 'Suyunuz için doğru sistemi birlikte seçelim' : 'Veriminizi Artırmaya Hazır mısınız?'}
             </h2>
             <p className="text-white/70 mb-8 max-w-lg mx-auto">
               {isAlbSu

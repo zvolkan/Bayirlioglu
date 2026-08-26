@@ -1,4 +1,5 @@
 import type { BrandConfig, BrandKey } from './types';
+import { getSiteUrl } from './site-url';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MARKA YAPILANDIRMALARI
@@ -75,11 +76,11 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     key: 'alb-su-aritma',
     name: 'Alb Su Teknolojileri',
     shortCode: 'AS',
-    tagline: 'Sağlık için,\nAlkali su için',
-    subtitle: 'Alkali & endüstriyel su teknolojileriyle',
+    tagline: 'Temiz suyun\nadresi',
+    subtitle: "1977'den gelen ticaret geleneğiyle",
     description:
-      'Eviniz için tezgah altı RO ve alkali su cihazları; iş yeriniz için arıtmalı su sebili ve endüstriyel sistemler. Ücretsiz profesyonel montaj, dünya markası membranlar ve yerinde teknik servis ile.',
-    badge: 'Ücretsiz Montaj & 2 Yıl Garanti',
+      'Eviniz için tezgah altı arıtma ve alkali su cihazları; iş yeriniz için arıtmalı su sebili ve endüstriyel sistemler. A.O. Smith yetkili bayii olarak Anamur ve çevre bölgede binlerce haneye, Türkiye genelinde ise kargoyla hizmet veriyoruz.',
+    badge: 'A.O. Smith Yetkili Bayii',
     cta: { label: 'Ürünlerimizi İnceleyin', href: '/urunler' },
     ctaSecondary: { label: 'Ücretsiz Teklif Al', href: '/iletisim' },
     whatsapp: {
@@ -87,11 +88,13 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
       message: 'Merhaba! Alb Su Teknolojileri su arıtma sistemleri hakkında bilgi almak istiyorum.',
       tooltip: "Alb Su Teknolojileri'ne WhatsApp'tan yazın!",
     },
-    // Doğrulanabilir olmayan rakamlar kaldırıldı.
+    // Üçü de doğrulanabilir: kuruluş yılı, yetkili bayilik ve teslimat ağı.
+    // Önceki hâlinde "Ücretsiz Su Analizi" yazıyordu; o bir hizmet vaadi ve
+    // doğrulanması gerekenler listesindeydi.
     stats: [
-      { value: 'Anamur', label: 'Merkez' },
-      { value: 'Ücretsiz', label: 'Su Analizi' },
-      { value: 'Yerinde', label: 'Montaj & Servis' },
+      { value: '1977', label: 'Yılından Beri' },
+      { value: 'A.O. Smith', label: 'Yetkili Bayii' },
+      { value: 'Türkiye', label: 'Geneli Teslimat' },
     ],
     nav: [
       {
@@ -109,6 +112,11 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
       },
       { label: 'Servis', href: '/hizmetler' },
       { label: 'Hizmet Alanlarımız', href: '/referanslar' },
+      // Blog ve Hakkımızda sayfaları iki marka için de yazılmış ve sitemap'te
+      // Google'a bildiriliyordu, ama Alb Su menüsünde bağlantıları yoktu —
+      // yani o sayfalara siteden ulaşmanın hiçbir yolu yoktu.
+      { label: 'Blog', href: '/blog' },
+      { label: 'Hakkımızda', href: '/hakkimizda' },
       { label: 'İletişim', href: '/iletisim' },
     ],
     video: '/videos/su-aritma-hero.mp4',
@@ -164,22 +172,32 @@ export const COMPANY_NAME = 'Bayırlıoğlu';
 /**
  * Kuruluş — TEK KAYNAK.
  *
- * Şirketin geçmişi 1950'lerin başına, dededen kalan zirai ilaç ve gübre
- * satışına dayanıyor. Kesin bir kuruluş yılı olmadığı için metinlerde
- * `KURULUS_ANLATIM` kullanılıyor ("… yılında kurulduk" gibi kesin bir yıl
- * iddiası yok). `KURULUS_YILI` yalnızca arama motoruna verilen yapısal veride
- * (foundingDate) kullanılıyor; orada bir yıl zorunlu.
+ * Şirket 1977'de, "Bayırlıoğlu" lakabıyla tanınan Durmuş Ali Bulut tarafından
+ * kuruldu. Lakap zamanla şirketin adı oldu.
  *
- * Resmî tescil yılını biliyorsanız buraya yazın, tüm sayfalara yansır.
+ * `KURULUS_YILI` arama motoruna verilen yapısal veride (foundingDate),
+ * `KURULUS_ANLATIM` ise metinlerin içinde kullanılıyor. İkisi de tek yerden
+ * geldiği için yıl değişirse burayı değiştirmek yeterli.
  */
-export const KURULUS_YILI = 1950;
-export const KURULUS_ANLATIM = "1950'lerin başından bu yana";
+export const KURULUS_YILI = 1977;
+export const KURULUS_ANLATIM = "1977'den bu yana";
+
+/** Kurucunun adı — hakkımızda metinlerinde geçiyor */
+export const KURUCU = 'Durmuş Ali Bulut';
+
+/** Alb Su markasının kuruluş yılı (ALB Tarım şirketin kendisiyle yaşıt) */
+export const ALBSU_KURULUS_YILI = 2014;
 
 // ─── GENEL SABİTLER ───────────────────────────────────────────────────────────
 
 export const SITE_CONFIG = {
   name: BRAND.name,
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
+  // `site-url.ts` tek kaynak: NEXT_PUBLIC_SITE_URL yoksa VERCEL_URL'e düşer ve
+  // üretimde uyarı basar. Burada doğrudan `?? 'http://localhost:3000'` yazılıydı
+  // ve o yedek sessizdi — değişken unutulduğunda site çökmüyor, sitemap'i,
+  // robots.txt'i, OG önizlemelerini ve mesafeli satış sözleşmesini localhost
+  // adresiyle yayınlıyordu.
+  url: getSiteUrl(),
   phone: '+90 544 414 22 54',
   email: 'info@bayirlioglu.com',
   address:

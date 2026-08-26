@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { verifyAdminToken } from '@/lib/admin-auth'
 import { safeInternalPath } from '@/lib/safe-redirect'
+import { buildCsp, cspHeaderName, generateNonce } from '@/lib/csp'
 
 const ADMIN_COOKIE = 'admin_session'
 const ADMIN_LOGIN = '/admin/giris'
@@ -17,6 +18,24 @@ export async function middleware(req: NextRequest) {
   const forwardHeaders = new Headers(req.headers)
   forwardHeaders.set('x-pathname', pathname)
 
+  // ── CSP nonce ─────────────────────────────────────────────────────────────
+  // Her istekte yeni bir değer. Sayfa bileşenleri bunu `headers()` üzerinden
+  // okuyup satır-içi <script> etiketlerine koyuyor; nonce taşımayan hiçbir
+  // script çalışmıyor.
+  const nonce = generateNonce()
+  const isDev = process.env.NODE_ENV !== 'production'
+  const csp = buildCsp(nonce, isDev)
+  forwardHeaders.set('x-nonce', nonce)
+  // Next.js, istek başlıklarındaki CSP'de nonce görürse kendi script
+  // etiketlerine bu nonce'u kendisi ekliyor.
+  forwardHeaders.set('content-security-policy', csp)
+
+  /** Her yanıta CSP başlığını ekler */
+  const withCsp = <T extends NextResponse>(res: T): T => {
+    res.headers.set(cspHeaderName(), csp)
+    return res
+  }
+
   // ── 0. Supabase auth kodu kök adrese düştüyse kurtar ─────────────────────
   // Supabase, istenen `redirectTo` adresi izin listesinde yoksa sessizce kendi
   // "Site URL" ayarına yönlendiriyor. O da genelde kök adres olduğu için
@@ -27,13 +46,13 @@ export async function middleware(req: NextRequest) {
     const url = new URL('/api/auth/callback', req.url)
     url.searchParams.set('code', req.nextUrl.searchParams.get('code')!)
     url.searchParams.set('next', '/hesabim')
-    return NextResponse.redirect(url)
+    return withCsp(NextResponse.redirect(url))
   }
 
   // ── 1. Admin rotaları (cookie tabanlı, Supabase kullanmıyor) ──────────────
   if (pathname.startsWith(ADMIN_PREFIX)) {
     if (pathname === ADMIN_LOGIN) {
-      return NextResponse.next({ request: { headers: forwardHeaders } })
+      return withCsp(NextResponse.next({ request: { headers: forwardHeaders } }))
     }
 
     const session = req.cookies.get(ADMIN_COOKIE)?.value
@@ -43,9 +62,9 @@ export async function middleware(req: NextRequest) {
       const res = NextResponse.redirect(url)
       // Geçersiz/eski token'ı temizle (eski 'authenticated' değeri dahil)
       if (session) res.cookies.delete(ADMIN_COOKIE)
-      return res
+      return withCsp(res)
     }
-    return NextResponse.next({ request: { headers: forwardHeaders } })
+    return withCsp(NextResponse.next({ request: { headers: forwardHeaders } }))
   }
 
   // ── 2. Supabase oturum yenileme ──────────────────────────────────────────
@@ -61,7 +80,7 @@ export async function middleware(req: NextRequest) {
     pathname === '/sifre-yenile'
 
   if (!needsSession) {
-    return NextResponse.next({ request: { headers: forwardHeaders } })
+    return withCsp(NextResponse.next({ request: { headers: forwardHeaders } }))
   }
 
   let response = NextResponse.next({ request: { headers: forwardHeaders } })
@@ -97,7 +116,7 @@ export async function middleware(req: NextRequest) {
   const redirectWithCookies = (url: URL) => {
     const res = NextResponse.redirect(url)
     response.cookies.getAll().forEach((cookie) => res.cookies.set(cookie))
-    return res
+    return withCsp(res)
   }
 
   if (pathname.startsWith(ACCOUNT_PREFIX) && !user) {
@@ -111,7 +130,7 @@ export async function middleware(req: NextRequest) {
     return redirectWithCookies(new URL(ACCOUNT_PREFIX, req.url))
   }
 
-  return response
+  return withCsp(response)
 }
 
 export const config = {

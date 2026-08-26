@@ -23,7 +23,13 @@
  * (bkz. `isUniqueConstraintError`).
  */
 
-const RANDOM_DIGITS = 4
+// 4 haneden 6'ya çıkarıldı. 4 hane, bir gün için yalnızca 10.000 olasılık
+// demekti: (a) sipariş takibi ekranında bir günün tamamı taranarak başkasının
+// siparişi bulunabiliyordu, (b) çok sipariş alınan bir günde numaralar tükenip
+// checkout "Siparişiniz oluşturulamadı" hatası vermeye başlıyordu.
+// 6 hane → günde 1.000.000 olasılık. Numara 12 hane olur, telefonda hâlâ
+// okunabilir.
+const RANDOM_DIGITS = 6
 
 /** Kriptografik rastgelelik — Math.random() tahmin edilebilir olabilir */
 function randomSuffix(): string {

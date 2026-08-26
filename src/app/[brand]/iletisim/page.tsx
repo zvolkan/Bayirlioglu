@@ -47,11 +47,18 @@ export default function IletisimPage() {
   } = useForm<FormData>({ resolver: zodResolver(schema) })
 
   const onSubmit = async (data: FormData) => {
+    // Form tek bir "Ad" alanı soruyor; sunucu şeması ise ad ve soyadı ayrı ayrı
+    // ve ikisini de en az 2 karakter istiyor (actions/forms.ts:39).
+    // Soyad yedeği eskiden '-' idi: "Ahmet" yazan biri "Soyad en az 2 karakter
+    // olmalıdır" hatası alıyor, ekranda soyad alanı olmadığı için neyi
+    // düzelteceğini anlayamıyor ve mesajı hiç gönderemiyordu.
     const parts = data.name.trim().split(/\s+/)
+    const firstName = parts[0] || data.name.trim()
+    const lastName = parts.slice(1).join(' ') || firstName
 
     const result = await submitContactMessage({
-      firstName: parts[0] ?? data.name,
-      lastName: parts.slice(1).join(' ') || '-',
+      firstName,
+      lastName,
       email: data.email,
       phone: data.phone,
       subject: data.subject,

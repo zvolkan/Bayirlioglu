@@ -198,7 +198,8 @@ export async function searchProducts(
     pageSize = PAGE_SIZE,
   } = options
 
-  const safePage = Math.max(1, Math.floor(page))
+  // Üst sınır eklendi: `?sayfa=999999999` devasa bir OFFSET üretiyordu.
+  const safePage = Math.min(1000, Math.max(1, Math.floor(page)))
   const safePageSize = Math.min(96, Math.max(1, Math.floor(pageSize)))
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -232,7 +233,9 @@ export async function searchProducts(
     }
   }
 
-  const term = search?.trim()
+  // Terim uzunluğu sınırlandı: sınırsız uzunlukta bir arama, beş TEXT
+  // sütununda indekssiz `ILIKE '%...%'` taramasına yol açıyordu.
+  const term = search?.trim().slice(0, 100)
   if (term) {
     where.OR = [
       { name: { contains: term, mode: 'insensitive' } },

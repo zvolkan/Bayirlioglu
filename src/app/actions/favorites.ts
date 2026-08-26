@@ -81,3 +81,34 @@ export async function removeFavorite(productId: string): Promise<{ ok: boolean }
 //
 // `getFavoriteIds` ve `getFavoriteProducts` çağrılmıyordu; favoriler sayfası
 // Prisma'yı doğrudan kullanıyor.
+
+/**
+ * Giriş yapmış kullanıcının favori ürün kimlikleri.
+ *
+ * Buton eskiden her zaman `initial = false` ile başlıyordu ve iki kullanım
+ * yerinin ikisi de bu prop'u geçmiyordu; ürün sorgularında favori bilgisi hiç
+ * okunmuyordu. Sonuç: zaten favorilenmiş ürünün kalbi BOŞ görünüyor, kullanıcı
+ * "ekleyeyim" diye basınca `toggleFavorite` mevcut kaydı SİLİYORDU. Kullanıcıya
+ * buton bozukmuş gibi geliyor ve favorisi sessizce kayboluyordu.
+ *
+ * Sayfadaki bütün butonlar bu listeyi bir kez çekip paylaşıyor (bkz.
+ * `FavoriteButton`), yani ürün başına ek sorgu yok.
+ *
+ * Yalnızca oturumdaki kullanıcının verisini döner; kimlik dışarıdan alınmaz.
+ */
+export async function getMyFavoriteIds(): Promise<string[]> {
+  const userId = await getUserId()
+  if (!userId) return []
+
+  try {
+    const rows = await prisma.favorite.findMany({
+      where: { userId },
+      select: { productId: true },
+      take: 500,
+    })
+    return rows.map((r: { productId: string }) => r.productId)
+  } catch (error) {
+    console.error('[favorites] liste alınamadı:', error)
+    return []
+  }
+}

@@ -132,7 +132,13 @@ export default function OrderControls({
       {/* Durum */}
       <section className="bg-white rounded-2xl shadow-sm p-6">
         <h2 className="font-semibold text-gray-800 border-b pb-3 mb-4">Sipariş Durumu</h2>
+        {/* Ekran okuyucu için: bu alanların hiçbirinde htmlFor/id eşleşmesi
+            yoktu, yani alanlar isimsiz okunuyordu. */}
+        <label htmlFor="siparis-durum" className="sr-only">
+          Sipariş durumu
+        </label>
         <select
+          id="siparis-durum"
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-3 focus:ring-2 focus:ring-gray-900 focus:border-transparent"
@@ -156,8 +162,11 @@ export default function OrderControls({
       <section className="bg-white rounded-2xl shadow-sm p-6">
         <h2 className="font-semibold text-gray-800 border-b pb-3 mb-4">Kargo Bilgisi</h2>
 
-        <label className="block text-xs font-medium text-gray-600 mb-1">Kargo Firması</label>
+        <label htmlFor="kargo-firmasi" className="block text-xs font-medium text-gray-600 mb-1">
+          Kargo Firması
+        </label>
         <select
+          id="kargo-firmasi"
           value={carrierValue}
           onChange={(e) => setCarrierValue(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-3"
@@ -169,8 +178,11 @@ export default function OrderControls({
           ))}
         </select>
 
-        <label className="block text-xs font-medium text-gray-600 mb-1">Takip Numarası</label>
+        <label htmlFor="takip-numarasi" className="block text-xs font-medium text-gray-600 mb-1">
+          Takip Numarası
+        </label>
         <input
+          id="takip-numarasi"
           value={trackingValue}
           onChange={(e) => setTrackingValue(e.target.value)}
           placeholder="Örn: 1234567890123"
@@ -192,7 +204,11 @@ export default function OrderControls({
       {/* Admin notu */}
       <section className="bg-white rounded-2xl shadow-sm p-6">
         <h2 className="font-semibold text-gray-800 border-b pb-3 mb-4">İç Not</h2>
+        <label htmlFor="ic-not" className="sr-only">
+          Yönetici iç notu
+        </label>
         <textarea
+          id="ic-not"
           value={note}
           onChange={(e) => setNote(e.target.value)}
           rows={3}

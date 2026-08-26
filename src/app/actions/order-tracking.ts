@@ -1,6 +1,8 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { prisma } from '@/lib/db'
+import { clientIp, rateLimit } from '@/lib/rate-limit'
 import { formatOrderNo, normalizeOrderNoInput } from '@/lib/order-number'
 import type { IconName } from '@/components/ui/Icon'
 
@@ -76,6 +78,19 @@ export async function trackOrder(
   orderNumber: string,
   email: string,
 ): Promise<TrackOrderResponse> {
+  // ── Hız sınırı ───────────────────────────────────────────────────────────
+  // Bu uç noktada hiç sınır yoktu. Sipariş numarası tarih öneki + rastgele
+  // hane olduğu için, kurbanın e-postasını bilen biri bir günü tarayarak
+  // sipariş durumunu, tutarı ve KARGO TAKİP NUMARASINI öğrenebiliyordu.
+  // (Numara uzayı da 4 haneden 6 haneye çıkarıldı; bkz. lib/order-number.ts.)
+  const limit = rateLimit('siparis-takip', clientIp(await headers()), 10, 10 * 60 * 1000)
+  if (!limit.ok) {
+    return {
+      ok: false,
+      error: 'Çok fazla sorgulama yaptınız. Lütfen birkaç dakika sonra tekrar deneyin.',
+    }
+  }
+
   const { digits, raw: orderNo } = normalizeOrderNoInput(orderNumber ?? '')
   const mail = (email ?? '').trim().toLowerCase()
 

@@ -1,3 +1,4 @@
+import { SATICI } from '@/lib/legal'
 import Link from 'next/link'
 import Image from 'next/image'
 import { KURULUS_ANLATIM, SITE_CONFIG } from '@/lib/constants'
@@ -46,7 +47,7 @@ const MARKALAR = [
   {
     key: 'alb-su-aritma',
     name: 'Alb Su Teknolojileri',
-    desc: 'Su arıtma, klima ve elektronik sistemler',
+    desc: 'A.O. Smith yetkili bayii · evsel ve endüstriyel su arıtma',
     color: 'bg-albsu-600',
     href: '/alb-su-aritma',
   },
@@ -77,9 +78,9 @@ export default function Footer() {
                 </span>
               </Link>
               <p className="text-gray-400 text-sm leading-relaxed">
-                {KURULUS_ANLATIM} tarım alanında faaliyet gösteren Bayırlıoğlu
-                şirketi şu anda ALB Tarım ve Alb Su Teknolojileri markaları
-                altında Türkiye genelinde hizmet vermektedir.
+                {KURULUS_ANLATIM} faaliyet gösteren Bayırlıoğlu şirketi şu anda
+                ALB Tarım ve Alb Su Teknolojileri markaları altında Türkiye
+                genelinde hizmet vermektedir.
               </p>
               <div className="flex flex-col gap-2">
                 {INSTAGRAM.map((h) => (
@@ -218,22 +219,33 @@ export default function Footer() {
       <div className="border-t border-white/10 py-5">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="text-gray-600 text-xs leading-relaxed space-y-1">
-            {/* DOLDURULACAK: Ticaret unvanı, MERSİS ve vergi bilgileri resmi
-                kayıtlardaki hâliyle yazılmalıdır. */}
+            {/* Künye tek kaynaktan geliyor: src/lib/legal.ts → SATICI.
+                Eskiden buradaki değerler elle yazılıydı ve boş olanlar "—"
+                gösteriliyordu; sözleşme metniyle iki ayrı yerde tutuluyordu. */}
             <p>
-              <span className="text-gray-500">Ticaret Unvanı:</span> Bayırlıoğlu
-              {' · '}
-              <span className="text-gray-500">Vergi Dairesi / No:</span> —
-              {' · '}
-              <span className="text-gray-500">MERSİS No:</span> —
+              <span className="text-gray-500">Ticaret Unvanı:</span> {SATICI.unvan}
+              {SATICI.vergiDairesi && SATICI.vergiNo && (
+                <>
+                  {' · '}
+                  <span className="text-gray-500">Vergi Dairesi / No:</span>{' '}
+                  {SATICI.vergiDairesi} / {SATICI.vergiNo}
+                </>
+              )}
+              {SATICI.mersis && (
+                <>
+                  {' · '}
+                  <span className="text-gray-500">MERSİS No:</span> {SATICI.mersis}
+                </>
+              )}
             </p>
             <p>
-              <span className="text-gray-500">Adres:</span> Saçkan Kavşağı Doğusu
-              Savcı-Şok Market Yanı, Yeşilyurt, Akdeniz Cd. No:20/22, 33640 Anamur / Mersin
+              <span className="text-gray-500">Adres:</span> {SATICI.adres}
             </p>
-            <p className="text-gray-600">
-              Bu site ETBİS&apos;e kayıtlıdır.
-            </p>
+            {/* ETBİS cümlesi KOŞULSUZ yazılıydı. Kayıt yapılmadıysa bu yanlış
+                beyandır; artık yalnızca SATICI.etbisKayitli true iken çıkıyor. */}
+            {SATICI.etbisKayitli && (
+              <p className="text-gray-600">Bu site ETBİS&apos;e kayıtlıdır.</p>
+            )}
           </div>
         </div>
       </div>

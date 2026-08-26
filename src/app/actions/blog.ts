@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/db'
 import { verifyAdminToken } from '@/lib/admin-auth'
+import { sanitizeBlogHtml } from '@/lib/sanitize'
 import { slugify } from '@/lib/utils'
 import type { BlogActionResult } from '@/lib/blog'
 
@@ -29,7 +30,11 @@ function parseForm(formData: FormData) {
     ((formData.get(key) as string | null) ?? '').trim().slice(0, max)
 
   const title = text('title', 200)
-  const content = text('content', 60_000)
+  // Gövde HTML kabul ediyor; veritabanına GİRMEDEN beyaz listeye indirgeniyor.
+  // Uzunluk sınırı temizlikten SONRA uygulanıyor ki kırpma yarım etiket bırakmasın.
+  const content = sanitizeBlogHtml(
+    ((formData.get('content') as string | null) ?? '').trim(),
+  ).slice(0, 60_000)
   const rawSlug = text('slug', 220)
 
   if (title.length < 3) throw new Error('Başlık en az 3 karakter olmalıdır.')

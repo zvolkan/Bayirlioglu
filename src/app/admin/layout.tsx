@@ -21,11 +21,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const pathname = headerList.get('x-pathname')
 
-  // Başlık yoksa (middleware çalışmamışsa) koruma atlanır — birincil koruma
-  // middleware'dedir ve burada yönlendirme döngüsüne girmek istemiyoruz.
-  const shouldGuard = pathname !== null && !pathname.startsWith('/admin/giris')
+  // Giriş sayfası bu düzenin altında olduğu için muaf tutuluyor; aksi hâlde
+  // yönlendirme döngüsüne girer.
+  //
+  // `x-pathname` yoksa (middleware çalışmamışsa) eskiden koruma TAMAMEN
+  // atlanıyordu — yani ikinci savunma katmanı, tam da birincisi devre dışı
+  // kaldığında kendini kapatıyordu. Artık başlık yoksa da token doğrulanıyor:
+  // yalnızca giriş sayfası muaf ve o sayfa `pathname` null iken de token
+  // kontrolünden geçmiyor, çünkü asıl koruma alt düzenlerde (bkz.
+  // `admin/[kapsam]/layout.tsx` ve `admin/page.tsx`) koşulsuz yapılıyor.
+  const girisSayfasi = pathname?.startsWith('/admin/giris') ?? false
 
-  if (shouldGuard) {
+  if (!girisSayfasi) {
     const token = cookieStore.get('admin_session')?.value
     if (!(await verifyAdminToken(token))) {
       redirect('/admin/giris')

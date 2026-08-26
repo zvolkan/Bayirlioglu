@@ -5,7 +5,6 @@ import Reveal from '@/components/ui/Reveal'
 import Icon, { type IconName } from '@/components/ui/Icon'
 import RevealGroup from '@/components/ui/RevealGroup'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
-import { KURULUS_ANLATIM } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Bayırlıoğlu — ALB Tarım & Alb Su Teknolojileri',
@@ -17,8 +16,9 @@ export const metadata: Metadata = {
 // ─── İstatistikler ───────────────────────────────────────────────────────────
 // Doğrulanamayan rakamlar kaldırıldı.
 const STATS = [
+  // "2 Marka" zayıf bir rakamdı; yerine doğrulanabilir kuruluş yılı kondu.
+  { value: '1977', label: 'Yılından Beri' },
   { value: 'Anamur', label: 'Merkez' },
-  { value: '2', label: 'Marka' },
   { value: '81 İl', label: 'Teslimat Ağı' },
   { value: '11', label: 'Tedarik Markası' },
 ]
@@ -165,8 +165,11 @@ export default function HomePage() {
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  Bayırlıoğlu, {KURULUS_ANLATIM} Anamur&apos;da zirai ilaç ve gübre
-                  satışı yapan bir aile şirketidir. Bugün iki markası altında çalışıyoruz.
+                  Hikâyemiz 1977&apos;de, &ldquo;Bayırlıoğlu&rdquo; lakabıyla tanınan
+                  Durmuş Ali Bulut&apos;un Anamur&apos;da kurduğu güven ilişkisiyle
+                  başladı. Bir lakapla başlayan bu isim, zamanla şirketimizin adı ve
+                  değerlerimizin bir parçası oldu. Bugün iki markası altında
+                  çalışıyoruz.
                 </p>
                 <p>
                   <strong className="text-gray-800">ALB Tarım</strong> — dededen kalan
@@ -177,9 +180,11 @@ export default function HomePage() {
                   ederek öncü şirketler arasında yer almayı hedefliyoruz.
                 </p>
                 <p>
-                  <strong className="text-gray-800">Alb Su Teknolojileri</strong> markamızla
-                  su arıtma, klima ve akıllı ev elektroniği alanlarında evlere ve iş
-                  yerlerine hizmet sunuyoruz.
+                  <strong className="text-gray-800">Alb Su Teknolojileri</strong> —
+                  2014&apos;ten bu yana Ramazan Bulut&apos;un yürüttüğü ALB Su, Anamur ve
+                  çevre bölgede binlerce haneye ve işletmeye temiz su ulaştırıyor. A.O.
+                  Smith yetkili bayiliğimizle evsel ve endüstriyel su arıtma çözümlerini
+                  Türkiye&apos;nin dört bir yanına gönderiyoruz.
                 </p>
                 <p>
                   Ürünlerimizi Anamur&apos;daki dükkânımızdan satıyor, siparişleri kargoyla
@@ -280,8 +285,9 @@ export default function HomePage() {
               </div>
               <h3 className="text-2xl font-black text-gray-900 mb-3">Alb Su Teknolojileri</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Su arıtma cihazları, klima sistemleri ve akıllı ev elektroniği satıyoruz.
-                Kurulumu ve sonrasındaki bakımı kendi teknik ekibimiz yapıyor.
+                A.O. Smith yetkili bayii olarak evsel ve endüstriyel su arıtma
+                sistemleri satıyoruz. Kurulumu ve sonrasındaki bakımı kendi teknik
+                ekibimiz yapıyor.
               </p>
               <ul className="space-y-2 text-sm text-gray-600 mb-8">
                 {['RO Su Arıtma Sistemleri', 'Endüstriyel Su Arıtma & Yumuşatma', 'Inverter Klima Sistemleri', 'Akıllı Ev Elektroniği', 'Yerinde Teknik Servis'].map((item) => (

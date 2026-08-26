@@ -1,3 +1,4 @@
+import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
@@ -24,14 +25,23 @@ export default async function OdemeBeklemedePage({
 
   // Kimliği zaten adres çubuğunda olan siparişin müşteriye gösterilen
   // numarasını çeviriyoruz; destek araması bu numarayla yapılacak.
-  const order = siparis
-    ? await prisma.order
-        .findUnique({
-          where: { id: siparis },
-          select: { id: true, orderNumber: true },
-        })
-        .catch(() => null)
-    : null
+  // Sahiplik kontrolü: `/odeme/basarili` bunu zaten yapıyordu, burada
+  // eksikti — sipariş kimliğini ele geçiren biri müşteriye gösterilen sipariş
+  // numarasını öğrenebiliyordu (o numara sipariş takibinin iki anahtarından biri).
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const order =
+    siparis && user
+      ? await prisma.order
+          .findFirst({
+            where: { id: siparis, userId: user.id },
+            select: { id: true, orderNumber: true },
+          })
+          .catch(() => null)
+      : null
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">

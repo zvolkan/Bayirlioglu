@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { retrieveCheckoutForm } from '@/lib/iyzico'
-import { prisma, type TransactionClient } from '@/lib/db'
+import { prisma } from '@/lib/db'
 import { getSiteUrl } from '@/lib/site-url'
 import { notifyOrderConfirmed } from '@/lib/email/notify'
+import { appendOrderNote } from '@/lib/order-note'
+import { restoreStock } from '@/lib/stock'
 
 /**
  * iyzico ödeme geri dönüşü.
@@ -70,11 +72,28 @@ export async function POST(req: NextRequest) {
     return redirectGet(`${siteUrl}/odeme/basarisiz?hata=siparis`)
   }
 
-  // ── Idempotency: aynı callback ikinci kez gelirse yeniden işleme ─────────
-  if (order.paymentStatus === 'paid') {
-    return redirectGet(`${siteUrl}/odeme/basarili?siparis=${order.id}`)
-  }
-  if (order.status === 'CANCELLED') {
+  // ── Tekrar koruması ───────────────────────────────────────────────────────
+  //
+  // Burası BEYAZ liste: yalnızca ödeme bekleyen bakir bir sipariş işlenir.
+  //
+  // Eskiden kara listeydi ("paid ise çık, CANCELLED ise çık") ve iade edilmiş
+  // sipariş (status=REFUNDED, paymentStatus=refunded) ile iade sürerken olan
+  // sipariş (paymentStatus=refunding) bu iki kontrolden de geçiyordu. Ödeme
+  // token'ı da hiç silinmediği ve müşteri onu adres çubuğunda gördüğü için,
+  // parasını iade aldıktan sonra kendi token'ıyla bu adrese POST atan biri
+  // siparişi yeniden "ödendi" yapabiliyor, stok ikinci kez düşüyor ve ikinci
+  // onay e-postası gidiyordu.
+  const bakir = order.status === 'PENDING' && order.paymentStatus === 'pending'
+
+  if (!bakir) {
+    if (order.paymentStatus === 'paid') {
+      // Aynı callback'in ikinci kez gelmesi — normal, sessizce sonuç sayfasına
+      return redirectGet(`${siteUrl}/odeme/basarili?siparis=${order.id}`)
+    }
+    console.warn(
+      `[callback] işlenmeyecek sipariş durumu sipariş=${order.id} ` +
+        `status=${order.status} paymentStatus=${order.paymentStatus}`,
+    )
     return redirectGet(`${siteUrl}/odeme/basarisiz?hata=odeme`)
   }
 
@@ -90,40 +109,65 @@ export async function POST(req: NextRequest) {
       await prisma.order
         .update({
           where: { id: order.id },
-          data: { status: 'CANCELLED', paymentStatus: 'failed' },
+          // Token da siliniyor: başarısız ödemenin token'ı bir daha kullanılamasın
+          data: { status: 'CANCELLED', paymentStatus: 'failed', paymentToken: null },
         })
         .catch((e) => console.error('[callback] iptal kaydedilemedi:', order!.id, e))
+      // Sipariş oluşturulurken rezerve edilen stoğu serbest bırak
+      await restoreStock(order.id, 'ödeme başarısız')
       return redirectGet(`${siteUrl}/odeme/basarisiz?hata=odeme`)
     }
 
-    // Tahsil edilen tutar sipariş tutarıyla uyuşuyor mu?
+    // ── Tahsil edilen tutar sipariş tutarıyla uyuşuyor mu? ────────────────
+    //
+    // Karşılaştırma `price` ile yapılıyor, `paidPrice` ile DEĞİL: taksit açık
+    // (1-12 taksit) ve taksitli işlemde `paidPrice` vade farkını içerdiği için
+    // her taksitli siparişte sahte uyarı üretiyordu. `price` sepet tutarıdır ve
+    // gönderdiğimiz tutarla kuruşu kuruşuna eşleşmelidir.
     const expected = Number(order.totalAmount)
-    const paid = Number(result?.paidPrice ?? 0)
-    if (Number.isFinite(paid) && Math.abs(paid - expected) > 0.05) {
+    const sepetTutari = Number(result?.price ?? result?.paidPrice ?? 0)
+    const fark = Number.isFinite(sepetTutari) ? sepetTutari - expected : 0
+
+    if (Number.isFinite(sepetTutari) && Math.abs(fark) > 0.05) {
       console.error(
-        `[callback] TUTAR UYUŞMAZLIĞI sipariş=${order.id} beklenen=${expected} ödenen=${paid}`,
+        `[callback] TUTAR UYUŞMAZLIĞI sipariş=${order.id} beklenen=${expected} ` +
+          `iyzico=${sepetTutari} (ödenen=${result?.paidPrice})`,
       )
-      // Para tahsil edildiği için siparişi iptal etmiyoruz; incelenmek üzere
-      // işaretliyoruz.
-      await prisma.order
-        .update({
-          where: { id: order.id },
-          data: {
-            adminNote: `Tutar uyuşmazlığı: beklenen ${expected} TL, tahsil edilen ${paid} TL. İnceleme gerekiyor.`,
-          },
-        })
-        .catch(() => {})
+
+      // EKSİK tahsilat: siparişi ONAYLAMIYORUZ. Para çekilmiş olabileceği için
+      // iptal de etmiyoruz — PENDING bırakıp yöneticiye bırakıyoruz ve müşteriye
+      // "doğrulanıyor" ekranını gösteriyoruz. Eskiden bu durumda sipariş normal
+      // şekilde onaylanıp kargoya hazırlanıyordu.
+      if (fark < 0) {
+        await appendOrderNote(
+          order.id,
+          `EKSİK TAHSİLAT — beklenen ${expected} TL, iyzico ${sepetTutari} TL. ` +
+            `Sipariş onaylanmadı; iyzico panelinden kontrol edip elle onaylayın.`,
+        )
+        return redirectGet(`${siteUrl}/odeme/beklemede?siparis=${order.id}`)
+      }
+
+      // FAZLA tahsilat: müşteri mağdur değil, sipariş akışını durdurmuyoruz.
+      await appendOrderNote(
+        order.id,
+        `Fazla tahsilat: beklenen ${expected} TL, iyzico ${sepetTutari} TL. İnceleyin.`,
+      )
     }
 
     // ── ÖNCE siparişi onayla ─────────────────────────────────────────────
     // Para tahsil edildi; bu kaydın atılmaması her şeyden önemli. Tek başına
     // ve hızlı bir güncelleme olduğu için transaction'a sokulmuyor.
+    // Koşul yukarıdaki beyaz listeyle aynı: iki callback aynı anda gelirse
+    // ikincisi 0 satır günceller ve stok düşümüne hiç girmez.
+    // `paymentToken` da burada siliniyor — token tek kullanımlık olsun, ileride
+    // yeniden oynatılamasın.
     const confirmed = await prisma.order.updateMany({
-      where: { id: order.id, paymentStatus: { not: 'paid' } },
+      where: { id: order.id, status: 'PENDING', paymentStatus: 'pending' },
       data: {
         status: 'CONFIRMED',
         paymentStatus: 'paid',
         paymentId: result?.paymentId ? String(result.paymentId) : null,
+        paymentToken: null,
       },
     })
 
@@ -148,75 +192,16 @@ export async function POST(req: NextRequest) {
       console.error('[callback] kalem işlem kimlikleri kaydedilemedi:', order.id, txError)
     }
 
-    // Başka bir callback bizden önce işlediyse tekrar stok düşme
+    // Başka bir callback bizden önce işlediyse ikinci kez e-posta gönderme
     if (confirmed.count === 0) {
       return redirectGet(`${siteUrl}/odeme/basarili?siparis=${order.id}`)
     }
 
-    // ── SONRA stokları düş ───────────────────────────────────────────────
-    // Buradaki bir hata siparişi geçersiz kılmamalı: para alındı, sipariş
-    // onaylandı. Stok tutmazsa yönetici uyarılır, müşteriye hata gösterilmez.
-    try {
-      await prisma.$transaction(
-        async (tx: TransactionClient) => {
-          const items = await tx.orderItem.findMany({
-            where: { orderId: order!.id },
-            select: { productId: true, quantity: true },
-          })
-
-          const oversold: string[] = []
-
-          for (const item of items) {
-            const reduced = await tx.product.updateMany({
-              where: { id: item.productId, stockQuantity: { gte: item.quantity } },
-              data: { stockQuantity: { decrement: item.quantity } },
-            })
-
-            // Yetmiyorsa negatife düşürme, sıfırla ve not al
-            if (reduced.count === 0) {
-              oversold.push(item.productId)
-              await tx.product.updateMany({
-                where: { id: item.productId },
-                data: { stockQuantity: 0 },
-              })
-            }
-          }
-
-          await tx.order.update({
-            where: { id: order!.id },
-            data: {
-              stockReduced: true,
-              // Aşırı satış olduysa yönetici panelde görsün
-              ...(oversold.length > 0
-                ? {
-                    adminNote: `STOK YETERSİZ — şu ürünlerde stok eksiye düşecekti, 0'a çekildi: ${oversold.join(', ')}. Sipariş karşılanabiliyor mu kontrol edin.`,
-                  }
-                : {}),
-            },
-          })
-
-          if (oversold.length > 0) {
-            console.error(
-              `[callback] AŞIRI SATIŞ sipariş=${order!.id} ürünler=${oversold.join(',')}`,
-            )
-          }
-        },
-        // Çok kalemli siparişlerde varsayılan 5 sn yetmeyebiliyor
-        { timeout: 20_000, maxWait: 10_000 },
-      )
-    } catch (stockError) {
-      // Ödeme geçerli; yalnızca stok güncellemesi başarısız oldu
-      console.error('[callback] STOK GÜNCELLENEMEDİ (ödeme alındı):', order.id, stockError)
-      await prisma.order
-        .update({
-          where: { id: order.id },
-          data: {
-            adminNote:
-              'Ödeme alındı ancak stok düşümü başarısız oldu. Stokları elle düzeltin.',
-          },
-        })
-        .catch(() => {})
-    }
+    // ── Stok ─────────────────────────────────────────────────────────────
+    // Burada stok DÜŞÜLMÜYOR. Artık sipariş oluşturulurken (initialize)
+    // atomik olarak rezerve ediliyor; `stockReduced` zaten true. Eskiden stok
+    // burada düşülüyordu ve aynı ürün için aynı anda ödemeye giren herkes
+    // stok kontrolünü geçtiği için aşırı satış oluyordu.
 
     // Sipariş onay e-postası — başarısız olsa bile akışı durdurmaz
     await notifyOrderConfirmed(order.id)
@@ -228,15 +213,10 @@ export async function POST(req: NextRequest) {
     // çekilmiş olabilir; yönetici incelemesi için işaretleyip müşteriye
     // "doğrulanıyor" mesajı gösteriyoruz.
     console.error('[callback] doğrulama hatası:', order.id, err)
-    await prisma.order
-      .update({
-        where: { id: order.id },
-        data: {
-          adminNote:
-            'Ödeme doğrulaması sırasında hata oluştu. iyzico panelinden bu siparişin ödemesini kontrol edin.',
-        },
-      })
-      .catch(() => {})
+    await appendOrderNote(
+      order.id,
+      'Ödeme doğrulaması sırasında hata oluştu. iyzico panelinden bu siparişin ödemesini kontrol edin.',
+    )
     return redirectGet(`${siteUrl}/odeme/beklemede?siparis=${order.id}`)
   }
 }

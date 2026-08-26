@@ -7,6 +7,7 @@ import { getPublishedPost, getPublishedPosts, readingMinutes } from '@/lib/blog'
 import BrandArtwork from '@/components/ui/BrandArtwork'
 import Icon from '@/components/ui/Icon'
 import type { BrandKey } from '@/lib/types'
+import { sanitizeBlogHtml } from '@/lib/sanitize'
 
 interface Props {
   params: Promise<{ brand: string; slug: string }>
@@ -109,7 +110,9 @@ export default async function BlogPostPage({ params }: Props) {
 
           {/* İçerik */}
           <div className="prose prose-gray max-w-none text-gray-700 leading-relaxed">
-            <div dangerouslySetInnerHTML={{ __html: post.content }} />
+            {/* İkinci temizlik katmanı: bu düzeltmeden ÖNCE kaydedilmiş
+                yazılar veritabanında filtrelenmemiş HTML taşıyor olabilir. */}
+            <div dangerouslySetInnerHTML={{ __html: sanitizeBlogHtml(post.content) }} />
           </div>
 
           {/* Kategori */}

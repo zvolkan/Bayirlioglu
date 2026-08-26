@@ -4,9 +4,10 @@ import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
-import { uploadProductImage, deleteProductImage, getSignedUploadUrl } from '@/lib/supabase-admin'
-import { createAdminToken, verifyAdminToken, timingSafeEqual } from '@/lib/admin-auth'
+import { deleteProductImage, getSignedUploadUrl } from '@/lib/supabase-admin'
+import { createAdminToken, verifyAdminToken, timingSafeEqualHash } from '@/lib/admin-auth'
 import { safeInternalPath } from '@/lib/safe-redirect'
+import { clientIp, rateLimit, rateLimitReset } from '@/lib/rate-limit'
 
 const ADMIN_COOKIE = 'admin_session'
 const COOKIE_MAX_AGE = 60 * 60 * 8 // 8 saat
@@ -30,35 +31,26 @@ async function requireAdmin(): Promise<void> {
 
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 
-// Basit brute-force yavaşlatma. Sunucusuz ortamda örnek başına tutulur —
-// tek başına yeterli değildir ama otomatik denemeleri belirgin şekilde zorlaştırır.
+// Brute-force yavaşlatma — ayrıntılar ve sınırları için `src/lib/rate-limit.ts`.
+// IP başına 5, ayrıca IP'DEN BAĞIMSIZ olarak 15 dakikada toplam 20 deneme.
+// İkinci sayaç şart: IP taklit edilebildiği için tek başına IP sayacı
+// atlatılabiliyordu.
 const MAX_ATTEMPTS = 5
+const MAX_ATTEMPTS_GLOBAL = 20
 const ATTEMPT_WINDOW_MS = 15 * 60 * 1000
-const loginAttempts = new Map<string, { count: number; firstAt: number }>()
-
-function checkRateLimit(key: string): boolean {
-  const now = Date.now()
-  const record = loginAttempts.get(key)
-
-  if (!record || now - record.firstAt > ATTEMPT_WINDOW_MS) {
-    loginAttempts.set(key, { count: 1, firstAt: now })
-    return true
-  }
-  record.count += 1
-  return record.count <= MAX_ATTEMPTS
-}
 
 export async function adminLogin(formData: FormData) {
   const password = formData.get('password') as string
   const redirectTo = safeInternalPath(formData.get('redirect') as string, '/admin')
 
   const headerList = await headers()
-  const ip =
-    headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    headerList.get('x-real-ip') ||
-    'unknown'
+  const ip = clientIp(headerList)
 
-  if (!checkRateLimit(ip)) {
+  const perIp = rateLimit('admin-login', ip, MAX_ATTEMPTS, ATTEMPT_WINDOW_MS)
+  const global = rateLimit('admin-login', '__global__', MAX_ATTEMPTS_GLOBAL, ATTEMPT_WINDOW_MS)
+
+  if (!perIp.ok || !global.ok) {
+    if (!global.ok) console.warn('[admin] küresel giriş hız sınırı doldu')
     redirect('/admin/giris?error=rate-limit')
   }
 
@@ -70,13 +62,13 @@ export async function adminLogin(formData: FormData) {
     redirect('/admin/giris?error=config')
   }
 
-  if (!password || !timingSafeEqual(password, expected)) {
+  if (!password || !(await timingSafeEqualHash(password, expected))) {
     // Otomatik denemeleri yavaşlatmak için sabit gecikme
     await new Promise((resolve) => setTimeout(resolve, 600))
     redirect('/admin/giris?error=1')
   }
 
-  loginAttempts.delete(ip)
+  rateLimitReset('admin-login', ip)
 
   const cookieStore = await cookies()
   cookieStore.set(ADMIN_COOKIE, await createAdminToken(COOKIE_MAX_AGE), {
@@ -120,6 +112,24 @@ export async function createSignedUploadUrl(fileName: string) {
   }
 
   return getSignedUploadUrl(safeName)
+}
+
+/**
+ * Görsel adresini şema açısından doğrular.
+ *
+ * Eskiden serbest metin kutusundan gelen değer doğrudan veritabanına
+ * yazılıyordu; `javascript:` veya `data:` şemalı bir adres kabul ediliyordu.
+ * `next/image` zaten host beyaz listesiyle kısıtlı olduğu için pratik etkisi
+ * sınırlıydı, ama geçersiz adres bozuk görsel olarak kalıyordu.
+ */
+function gecerliGorselAdresi(raw: string | null): string | null {
+  const url = (raw ?? '').trim()
+  if (!url) return null
+  if (url.length > 500) return null
+  // Yalnızca https ve site-içi mutlak yol
+  if (!/^(https:\/\/|\/)/i.test(url)) return null
+  if (/^\/\//.test(url)) return null // protokol-göreli
+  return url
 }
 
 // ─── BRANDS & CATEGORIES ─────────────────────────────────────────────────────
@@ -243,13 +253,21 @@ function parseProductForm(formData: FormData): ProductInput | string {
   if (!Number.isInteger(categoryId) || categoryId <= 0) return 'Geçerli bir alt kategori seçin.'
   if (!Number.isInteger(brandId) || brandId <= 0) return 'Geçerli bir marka seçin.'
 
-  if (!Number.isFinite(price) || price < 0) return 'Geçerli bir fiyat girin.'
+  // Sıfır fiyat bilerek reddediliyor: ücretsiz ürün diye bir senaryo yok ve
+  // sıfır, ödeme akışında satır toplamını da sıfırlıyor.
+  if (!Number.isFinite(price) || price <= 0) return 'Geçerli bir fiyat girin.'
   if (price > 9_999_999) return 'Fiyat çok yüksek.'
 
   let salePrice: number | null = null
   if (salePriceRaw) {
     const value = Number(salePriceRaw)
-    if (!Number.isFinite(value) || value < 0) return 'Geçerli bir indirimli fiyat girin.'
+    // DİKKAT: "0" boş olmayan bir metin olduğu için yukarıdaki koşuldan geçiyor.
+    // Sıfır kontrolü olmadığında indirimli fiyat 0 kaydediliyordu; sepet
+    // `salePrice > 0` kuralıyla dolu fiyatı gösterirken ödeme tarafı `??` ile
+    // sıfırı geçirdiği için ürün bedavaya satılıyordu ve fark hiçbir ekranda
+    // görünmüyordu. Kampanyayı kapatmak için alan BOŞ bırakılmalı, 0 yazılmamalı.
+    if (!Number.isFinite(value) || value <= 0)
+      return 'İndirimli fiyat sıfırdan büyük olmalıdır. Kampanyayı kaldırmak için alanı boş bırakın.'
     if (value >= price) return 'İndirimli fiyat, normal fiyattan düşük olmalıdır.'
     salePrice = value
   }
@@ -304,24 +322,19 @@ export async function createProduct(formData: FormData): Promise<ProductActionRe
     return { ok: false, error: 'Oturumunuz sona ermiş görünüyor. Lütfen yeniden giriş yapın.' }
   }
 
-  const imageFile = formData.get('imageFile') as File | null
-  let imageUrl = formData.get('imageUrl') as string | null
+  // NOT: Eskiden burada `formData.get('imageFile')` ile ikinci bir yükleme yolu
+  // vardı. O yolda ne uzantı beyaz listesi, ne MIME kontrolü, ne boyut sınırı
+  // vardı; uzantı doğrudan istemcinin verdiği dosya adından türüyor ve
+  // `contentType` olarak yine istemcinin bildirdiği tür kullanılıyordu — yani
+  // herkese açık kovaya `text/html` içerikli bir dosya yazılabiliyordu.
+  // Arayüz bu yolu zaten kullanmıyor (ProductForm gönderimden önce alanı
+  // siliyor, dosya doğrudan `createSignedUploadUrl` ile Supabase'e gidiyor).
+  // Ölü ve tehlikeli olduğu için kaldırıldı.
+  let imageUrl = gecerliGorselAdresi(formData.get('imageUrl') as string | null)
 
   const parsed = parseProductForm(formData)
   if (typeof parsed === 'string') return { ok: false, error: parsed }
   const input = parsed
-
-  if (imageFile && imageFile.size > 0) {
-    try {
-      const ext = (imageFile.name.split('.').pop() ?? 'jpg').replace(/[^a-zA-Z0-9]/g, '')
-      imageUrl = await uploadProductImage(imageFile, `${input.slug}.${ext}`)
-    } catch (error) {
-      return {
-        ok: false,
-        error: error instanceof Error ? error.message : 'Görsel yüklenemedi.',
-      }
-    }
-  }
 
   let product: { id: string }
   try {
@@ -387,25 +400,20 @@ export async function updateProduct(
     return { ok: false, error: 'Oturumunuz sona ermiş görünüyor. Lütfen yeniden giriş yapın.' }
   }
 
-  const imageFile = formData.get('imageFile') as File | null
-  let imageUrl = formData.get('imageUrl') as string | null
+  // NOT: Eskiden burada `formData.get('imageFile')` ile ikinci bir yükleme yolu
+  // vardı. O yolda ne uzantı beyaz listesi, ne MIME kontrolü, ne boyut sınırı
+  // vardı; uzantı doğrudan istemcinin verdiği dosya adından türüyor ve
+  // `contentType` olarak yine istemcinin bildirdiği tür kullanılıyordu — yani
+  // herkese açık kovaya `text/html` içerikli bir dosya yazılabiliyordu.
+  // Arayüz bu yolu zaten kullanmıyor (ProductForm gönderimden önce alanı
+  // siliyor, dosya doğrudan `createSignedUploadUrl` ile Supabase'e gidiyor).
+  // Ölü ve tehlikeli olduğu için kaldırıldı.
+  let imageUrl = gecerliGorselAdresi(formData.get('imageUrl') as string | null)
   const replaceImage = formData.get('replaceImage') === 'true'
 
   const parsed = parseProductForm(formData)
   if (typeof parsed === 'string') return { ok: false, error: parsed }
   const input = parsed
-
-  if (imageFile && imageFile.size > 0) {
-    try {
-      const ext = (imageFile.name.split('.').pop() ?? 'jpg').replace(/[^a-zA-Z0-9]/g, '')
-      imageUrl = await uploadProductImage(imageFile, `${input.slug}.${ext}`)
-    } catch (error) {
-      return {
-        ok: false,
-        error: error instanceof Error ? error.message : 'Görsel yüklenemedi.',
-      }
-    }
-  }
 
   try {
     await prisma.product.update({ where: { id }, data: input })

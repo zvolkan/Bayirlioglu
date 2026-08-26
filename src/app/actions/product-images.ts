@@ -61,6 +61,11 @@ export async function addProductImage(
   const cleanUrl = url.trim()
   if (!cleanUrl) return { ok: false, error: 'Görsel adresi boş olamaz.' }
   if (cleanUrl.length > 500) return { ok: false, error: 'Görsel adresi çok uzun.' }
+  // Şema doğrulaması: eskiden `javascript:` veya `data:` şemalı adres de kabul
+  // ediliyordu. Yalnızca https ve site-içi mutlak yol geçerli.
+  if (!/^(https:\/\/|\/)/i.test(cleanUrl) || /^\/\//.test(cleanUrl)) {
+    return { ok: false, error: 'Geçersiz görsel adresi. https:// ile başlamalı.' }
+  }
 
   try {
     const count = await prisma.productImage.count({ where: { productId } })

@@ -87,12 +87,21 @@ export async function signUp(formData: FormData) {
   }
 
   if (data.user) {
-    // Kullanıcıyı kendi DB'ye kaydet
-    await prisma.user.upsert({
-      where: { id: data.user.id },
-      update: { email, name },
-      create: { id: data.user.id, email, name },
-    })
+    // Kullanıcıyı kendi DB'ye kaydet.
+    //
+    // try/catch ŞART: Supabase hesabı bu noktada ZATEN oluşturulmuş oluyor.
+    // Bu yazma korumasızken patladığında kullanıcı genel hata ekranı görüyor,
+    // tekrar kayıt olmayı denediğinde "Bu e-posta adresi zaten kayıtlı"
+    // yanıtını alıyor ve kilitleniyordu.
+    try {
+      await prisma.user.upsert({
+        where: { id: data.user.id },
+        update: { email, name },
+        create: { id: data.user.id, email, name },
+      })
+    } catch (dbError) {
+      console.error('[auth] kayıt senkronizasyonu başarısız:', data.user.id, dbError)
+    }
   }
 
   redirect('/giris?mesaj=email-dogrulama')

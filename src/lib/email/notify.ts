@@ -334,7 +334,12 @@ export async function notifyOrderCancelled(orderId: string, reason?: string): Pr
 
 // ─── İade / iptal bildirimi ──────────────────────────────────────────────────
 
-export async function notifyOrderRefunded(orderId: string, reason?: string): Promise<void> {
+export async function notifyOrderRefunded(
+  orderId: string,
+  reason?: string,
+  /** Kısmi iadede gerçekten iade edilen tutar. Verilmezse sipariş toplamı. */
+  amount?: number,
+): Promise<void> {
   try {
     const order = await loadOrderForEmail(orderId)
     if (!order?.user.email) return
@@ -342,7 +347,7 @@ export async function notifyOrderRefunded(orderId: string, reason?: string): Pro
     const mail = orderRefundedEmail({
       orderNo: formatOrderNo(order),
       customerName: order.shipFullName ?? order.user.name ?? 'Müşterimiz',
-      amount: Number(order.totalAmount),
+      amount: typeof amount === 'number' ? amount : Number(order.totalAmount),
       reason,
     })
 

@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { toggleFavorite } from '@/app/actions/favorites'
+import { favorileriYukle, favoriDurumunuYaz } from './favorite-cache'
 import Icon from '@/components/ui/Icon'
 import { cn } from '@/lib/utils'
 
@@ -21,7 +22,14 @@ import { cn } from '@/lib/utils'
 
 interface Props {
   productId: string
-  /** Sunucudan gelen başlangıç durumu (liste sorgusunda biliniyorsa) */
+  /**
+   * Sunucudan gelen başlangıç durumu.
+   *
+   * Verilmezse buton, oturumdaki kullanıcının favori listesini (sayfa başına
+   * TEK istek) çekip kendi durumunu belirliyor. Eskiden her zaman `false` ile
+   * başlıyordu: zaten favorilenmiş ürünün kalbi boş görünüyor, kullanıcı
+   * basınca kayıt siliniyor ve favori sessizce kayboluyordu.
+   */
   initial?: boolean
   className?: string
   /** Kart üzerinde küçük, ürün detayında büyük */
@@ -35,8 +43,21 @@ export default function FavoriteButton({
   size = 'sm',
 }: Props) {
   const [isFavorite, setIsFavorite] = useState(initial)
+  // Kullanıcı butona bastıysa sunucudan gelen ilk durum onu ezmemeli
+  const [dokunuldu, setDokunuldu] = useState(false)
   const [pending, startTransition] = useTransition()
   const router = useRouter()
+
+  useEffect(() => {
+    if (initial) return
+    let iptal = false
+    favorileriYukle().then((kume) => {
+      if (!iptal && !dokunuldu) setIsFavorite(kume.has(productId))
+    })
+    return () => {
+      iptal = true
+    }
+  }, [productId, initial, dokunuldu])
 
   const handleClick = (e: React.MouseEvent) => {
     // Kart tamamen <Link> içinde olabiliyor
@@ -45,6 +66,7 @@ export default function FavoriteButton({
 
     // İyimser güncelleme — istek dönmeden kalp doluyor
     const next = !isFavorite
+    setDokunuldu(true)
     setIsFavorite(next)
 
     startTransition(async () => {
@@ -52,6 +74,7 @@ export default function FavoriteButton({
 
       if (result.ok) {
         setIsFavorite(result.isFavorite)
+        favoriDurumunuYaz(productId, result.isFavorite)
         return
       }
 

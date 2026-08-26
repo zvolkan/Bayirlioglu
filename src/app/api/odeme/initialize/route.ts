@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-import { prisma } from '@/lib/db'
+import { prisma, type TransactionClient } from '@/lib/db'
 import { initializeCheckoutForm } from '@/lib/iyzico'
 import { calculateTotals, money, extractVat } from '@/lib/checkout'
 import { generateOrderNumber, isUniqueConstraintError } from '@/lib/order-number'
 import { getSiteUrl } from '@/lib/site-url'
+import { reserveStock, YetersizStokHatasi } from '@/lib/stock'
+import { rateLimit } from '@/lib/rate-limit'
 
 /** Sözleşme metinleri değiştiğinde artırılmalı — hangi sürümün onaylandığı kaydedilir */
 const CONTRACT_VERSION = '2026-08-2'
@@ -31,6 +33,18 @@ export async function POST(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Giriş yapmanız gerekiyor.' }, { status: 401 })
+
+  // ── Hız sınırı ───────────────────────────────────────────────────────────
+  // Her başarılı çağrı bir PENDING sipariş, bir sipariş numarası ve (artık) bir
+  // stok rezervasyonu tüketiyor. Sınırsız çağrı hem numara uzayını tüketip
+  // checkout'u kilitleyebilir hem de stoğu bloke edebilirdi.
+  const odemeLimit = rateLimit('odeme-baslat', user.id, 10, 10 * 60 * 1000)
+  if (!odemeLimit.ok) {
+    return NextResponse.json(
+      { error: 'Çok fazla ödeme denemesi yaptınız. Lütfen birkaç dakika sonra tekrar deneyin.' },
+      { status: 429 },
+    )
+  }
 
   let body: {
     cartItems?: IncomingItem[]
@@ -145,7 +159,21 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const unitPrice = Number(product.salePrice ?? product.price)
+    // `??` YERİNE `> 0`: null-birleştirme operatörü sıfırı geçerli bir değer
+    // sayıyor, sepet ise (`store/cartStore.ts`) `salePrice > 0` kuralını
+    // kullanıyordu. Veritabanına 0 indirimli fiyat düşmüşse sepet dolu fiyatı
+    // gösterip ödeme tarafı sıfır hesaplıyordu. İki taraf artık aynı kuralda.
+    const sale = Number(product.salePrice)
+    const unitPrice = Number.isFinite(sale) && sale > 0 ? sale : Number(product.price)
+
+    if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
+      console.error('[ödeme] geçersiz birim fiyat:', product.id, product.price, product.salePrice)
+      return NextResponse.json(
+        { error: 'Sepetteki bir ürünün fiyatı geçersiz. Lütfen bizimle iletişime geçin.' },
+        { status: 409 },
+      )
+    }
+
     validated.push({
       id: product.id,
       name: product.name,
@@ -302,13 +330,43 @@ export async function POST(req: NextRequest) {
 
   for (;;) {
     try {
-      order = await prisma.order.create({
-        data: { ...orderData, orderNumber: generateOrderNumber() },
-        select: { id: true, orderNumber: true },
+      // ── Sipariş + STOK REZERVASYONU tek transaction'da ──────────────────
+      //
+      // Stok eskiden yalnızca ödeme geri dönüşünde düşülüyordu; burada sadece
+      // "yeterli mi?" diye okunuyordu. Aynı anda ödemeye giren N kullanıcı bu
+      // kontrolü geçip hepsi ödeyebiliyor, sonra 1 adetlik ürün için N sipariş
+      // oluşuyordu. Artık stok burada atomik olarak rezerve ediliyor; yetmezse
+      // transaction geri alınıyor ve sipariş hiç oluşmuyor.
+      order = await prisma.$transaction(async (tx: TransactionClient) => {
+        const created = await tx.order.create({
+          data: {
+            ...orderData,
+            orderNumber: generateOrderNumber(),
+            // Stok bu transaction'da düşüldüğü için bayrak baştan açık
+            stockReduced: true,
+          },
+          select: { id: true, orderNumber: true },
+        })
+
+        await reserveStock(
+          tx,
+          validated.map((i) => ({ productId: i.id, quantity: i.quantity })),
+        )
+
+        return created
       })
       break
     } catch (error) {
-      if (attempt < 5 && isUniqueConstraintError(error)) {
+      if (error instanceof YetersizStokHatasi) {
+        const urun = validated.find((i) => i.id === error.productId)
+        return NextResponse.json(
+          {
+            error: `"${urun?.name ?? 'Bir ürün'}" için yeterli stok kalmadı. Sepetinizi güncelleyip tekrar deneyin.`,
+          },
+          { status: 409 },
+        )
+      }
+      if (attempt < 8 && isUniqueConstraintError(error)) {
         attempt++
         continue
       }

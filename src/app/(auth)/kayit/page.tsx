@@ -88,6 +88,10 @@ export default async function KayitPage({
               />
             </div>
 
+            {/* Şifre kuralı sunucu tarafıyla aynı olmalı (actions/auth.ts:41):
+                en az 8 karakter, bir harf ve bir rakam. Burada minLength={6} ve
+                "En az 6 karakter" yazıyordu; kullanıcı 6 haneli şifre girip
+                formu gönderiyor, sunucudan hata alıp geri dönüyordu. */}
             <div>
               <label htmlFor="kayit-password" className="block text-sm font-medium text-gray-700 mb-1.5">Şifre</label>
               <input
@@ -95,10 +99,13 @@ export default async function KayitPage({
                 name="password"
                 id="kayit-password"
                 required
-                minLength={6}
-                placeholder="En az 6 karakter"
+                minLength={8}
+                autoComplete="new-password"
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               />
+              <p className="text-xs text-gray-400 mt-1.5">
+                En az 8 karakter, bir harf ve bir rakam içermeli.
+              </p>
             </div>
 
             <button

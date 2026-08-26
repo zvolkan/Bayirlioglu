@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
+import { notifyContactMessage, notifyDealerApplication } from '@/lib/email/form-notify'
 
 /**
  * İletişim ve bayi başvuru formları.
@@ -76,6 +77,19 @@ export async function submitContactMessage(input: ContactInput): Promise<FormRes
         message: data.message,
       },
     })
+
+    // Yöneticiye bildirim — gönderilemezse mesaj yine kaydedilmiş olur.
+    // Eskiden hiç bildirim gitmiyordu; panele bakılmazsa mesaj görülmüyordu.
+    await notifyContactMessage({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email.toLowerCase(),
+      phone: data.phone,
+      subject: data.subject,
+      message: data.message,
+      brandKey: data.brandKey,
+    })
+
     return { ok: true }
   } catch (error) {
     console.error('[form] iletişim mesajı kaydedilemedi:', error)
@@ -136,6 +150,21 @@ export async function submitDealerApplication(input: DealerInput): Promise<FormR
         message: data.message || null,
       },
     })
+
+    await notifyDealerApplication({
+      companyName: data.companyName,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email.toLowerCase(),
+      phone: data.phone,
+      city: data.city,
+      district: data.district,
+      brandInterest: data.brandInterest,
+      businessType: data.businessType,
+      annualRevenue: data.annualRevenue,
+      message: data.message,
+    })
+
     return { ok: true }
   } catch (error) {
     console.error('[form] bayi başvurusu kaydedilemedi:', error)
