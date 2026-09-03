@@ -45,7 +45,13 @@ export async function GET(request: Request) {
   if (!secret) {
     return NextResponse.json({ error: 'CRON_SECRET tanımlı değil.' }, { status: 503 })
   }
-  if (request.headers.get('authorization') !== `Bearer ${secret}`) {
+  // Başlık ya da sorgu dizesi — ikincisi tarayıcıdan doğrudan açabilmek için.
+  // Sorgu dizesindeki sır erişim kayıtlarına yazılır; bu uç geçici olduğu ve
+  // CRON_SECRET zaten yenilenecek olduğu için kabul edilebilir bir ödünleşme.
+  const basliktan = request.headers.get('authorization') === `Bearer ${secret}`
+  const sorgudan = new URL(request.url).searchParams.get('anahtar') === secret
+
+  if (!basliktan && !sorgudan) {
     return NextResponse.json({ error: 'Yetkisiz.' }, { status: 401 })
   }
 
