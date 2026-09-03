@@ -1,5 +1,9 @@
 import { MetadataRoute } from 'next'
-import { prisma } from '@/lib/db'
+import { getDbAsync } from '@/lib/db'
+
+// DİKKAT: sitemap DERLEME sırasında da çalışıyor ve o anda istek bağlamı yok.
+// `prisma` proxy'si `getCloudflareContext()`in senkron sürümüne dayandığı için
+// burada çalışmaz; asenkron sürüm kullanılıyor.
 import { SITE_CONFIG } from '@/lib/constants'
 
 /**
@@ -93,7 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let blogRoutes: MetadataRoute.Sitemap = []
 
   try {
-    const posts = await prisma.blogPost.findMany({
+    const posts = await (await getDbAsync()).blogPost.findMany({
       where: { isPublished: true },
       select: { slug: true, updatedAt: true, brand: { select: { key: true } } },
     })
@@ -112,7 +116,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let productRoutes: MetadataRoute.Sitemap = []
 
   try {
-    const products = await prisma.product.findMany({
+    const products = await (await getDbAsync()).product.findMany({
       where: { isActive: true },
       select: { slug: true, updatedAt: true, brand: { select: { key: true } } },
       orderBy: { updatedAt: 'desc' },

@@ -83,7 +83,7 @@ export async function trackOrder(
   // hane olduğu için, kurbanın e-postasını bilen biri bir günü tarayarak
   // sipariş durumunu, tutarı ve KARGO TAKİP NUMARASINI öğrenebiliyordu.
   // (Numara uzayı da 4 haneden 6 haneye çıkarıldı; bkz. lib/order-number.ts.)
-  const limit = rateLimit('siparis-takip', clientIp(await headers()), 10, 10 * 60 * 1000)
+  const limit = await rateLimit('siparis-takip', clientIp(await headers()), 10, 10 * 60 * 1000)
   if (!limit.ok) {
     return {
       ok: false,

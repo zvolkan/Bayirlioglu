@@ -154,7 +154,7 @@ export default function CheckoutClient({ addresses }: Props) {
         }),
       })
 
-      const data = await res.json()
+      const data = (await res.json()) as { error?: string; token?: string }
 
       if (!res.ok) {
         setError(data.error ?? 'Ödeme başlatılamadı.')
@@ -163,6 +163,12 @@ export default function CheckoutClient({ addresses }: Props) {
       }
 
       // Ödeme sayfasına yönlendir (cart başarı sayfasında temizlenir)
+      if (!data.token) {
+        setError('Ödeme başlatılamadı, lütfen tekrar deneyin.')
+        setLoading(false)
+        return
+      }
+
       window.location.href = `/api/odeme/form?token=${data.token}`
     } catch {
       setError('Bir hata oluştu, lütfen tekrar deneyin.')

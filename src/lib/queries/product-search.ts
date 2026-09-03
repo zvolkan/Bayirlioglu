@@ -14,17 +14,16 @@ import type { Product, Category, BrandKey } from '@/lib/types'
  * tags) hiç çekilmiyor.
  */
 
-export type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'newest' | 'name'
-
-export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: 'featured', label: 'Öne Çıkanlar' },
-  { value: 'price-asc', label: 'Fiyat: Düşükten Yükseğe' },
-  { value: 'price-desc', label: 'Fiyat: Yüksekten Düşüğe' },
-  { value: 'newest', label: 'En Yeniler' },
-  { value: 'name', label: 'İsme Göre (A-Z)' },
-]
-
-export const PAGE_SIZE = 24
+// Saf (veritabanından bağımsız) sabitler ayrı bir dosyaya taşındı:
+// istemci bileşenleri buradan import edince Prisma + pg yığını tarayıcı
+// paketine sürükleniyordu. Sunucu tarafındaki mevcut import'lar bozulmasın
+// diye burada yeniden dışa veriliyorlar.
+export {
+  SORT_OPTIONS,
+  PAGE_SIZE,
+  type SortOption,
+} from './product-search-options'
+import { PAGE_SIZE, type SortOption } from './product-search-options'
 
 export interface ProductSearchOptions {
   brandKey: BrandKey

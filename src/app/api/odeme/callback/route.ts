@@ -26,8 +26,11 @@ export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get('content-type') ?? ''
     if (contentType.includes('application/json')) {
-      const body = await req.json()
-      token = body.token
+      // Cloudflare çalışma zamanı tipleriyle `json()` artık `unknown` dönüyor
+      // (Node tiplerinde `any` idi). Tür daraltması bilerek yapılıyor:
+      // gövde dışarıdan geliyor, körü körüne güvenilmemeli.
+      const body = (await req.json()) as { token?: unknown }
+      token = typeof body?.token === 'string' ? body.token : null
     } else {
       const formData = await req.formData()
       token = formData.get('token') as string

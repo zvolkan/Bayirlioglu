@@ -46,8 +46,8 @@ export async function adminLogin(formData: FormData) {
   const headerList = await headers()
   const ip = clientIp(headerList)
 
-  const perIp = rateLimit('admin-login', ip, MAX_ATTEMPTS, ATTEMPT_WINDOW_MS)
-  const global = rateLimit('admin-login', '__global__', MAX_ATTEMPTS_GLOBAL, ATTEMPT_WINDOW_MS)
+  const perIp = await rateLimit('admin-login', ip, MAX_ATTEMPTS, ATTEMPT_WINDOW_MS)
+  const global = await rateLimit('admin-login', '__global__', MAX_ATTEMPTS_GLOBAL, ATTEMPT_WINDOW_MS)
 
   if (!perIp.ok || !global.ok) {
     if (!global.ok) console.warn('[admin] küresel giriş hız sınırı doldu')
@@ -68,7 +68,7 @@ export async function adminLogin(formData: FormData) {
     redirect('/admin/giris?error=1')
   }
 
-  rateLimitReset('admin-login', ip)
+  await rateLimitReset('admin-login', ip)
 
   const cookieStore = await cookies()
   cookieStore.set(ADMIN_COOKIE, await createAdminToken(COOKIE_MAX_AGE), {

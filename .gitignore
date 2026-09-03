@@ -37,3 +37,8 @@ tara.mjs
 rapor.json
 /onizleme
 *.py
+
+# Cloudflare
+.open-next
+.dev.vars
+cloudflare-env.d.ts

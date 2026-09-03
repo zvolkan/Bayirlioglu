@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   // Her başarılı çağrı bir PENDING sipariş, bir sipariş numarası ve (artık) bir
   // stok rezervasyonu tüketiyor. Sınırsız çağrı hem numara uzayını tüketip
   // checkout'u kilitleyebilir hem de stoğu bloke edebilirdi.
-  const odemeLimit = rateLimit('odeme-baslat', user.id, 10, 10 * 60 * 1000)
+  const odemeLimit = await rateLimit('odeme-baslat', user.id, 10, 10 * 60 * 1000)
   if (!odemeLimit.ok) {
     return NextResponse.json(
       { error: 'Çok fazla ödeme denemesi yaptınız. Lütfen birkaç dakika sonra tekrar deneyin.' },

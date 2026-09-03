@@ -22,14 +22,15 @@ export function getSiteUrl(): string {
     warned = true
     console.error(
       '[config] NEXT_PUBLIC_SITE_URL tanımlı değil. Ödeme geri dönüşleri ve ' +
-        'sözleşme metinleri yanlış adrese işaret edecek. Vercel ortam ' +
-        'değişkenlerine gerçek alan adını ekleyin.',
+        'sözleşme metinleri yanlış adrese işaret edecek. wrangler.jsonc ' +
+        'içindeki vars bölümüne gerçek alan adını ekleyin.',
     )
   }
 
-  // Vercel otomatik değişkeni son çare olarak kullanılır
-  const vercelUrl = process.env.VERCEL_URL?.trim()
-  if (vercelUrl) return `https://${vercelUrl.replace(/\/+$/, '')}`
-
+  // Cloudflare'de VERCEL_URL diye bir değişken YOK ve karşılığı da yok.
+  // Vercel'de bu yedek sessiz bir emniyet ağıydı; burada olmadığı için
+  // NEXT_PUBLIC_SITE_URL gerçekten zorunlu. Tanımsızsa yukarıdaki hata log'a
+  // düşer ve site geliştirme adresini yayınlar — bu kasıtlı: sessizce yanlış
+  // çalışmaktansa gürültü çıkarsın.
   return FALLBACK_DEV
 }

@@ -1,8 +1,43 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-const Iyzipay = require('iyzipay')
+/**
+ * iyzico istemcisi — `fetch` tabanlı.
+ *
+ * ── Neden kütüphane kullanılmıyor ───────────────────────────────────────────
+ *
+ * `iyzipay` npm paketi Cloudflare Workers'ta ÇALIŞAMAZ. Sebep, paketin
+ * kurulum kodunda (`lib/Iyzipay.js`):
+ *
+ *     var modelsPath = __dirname + '/resources';
+ *     fs.readdirSync(modelsPath).forEach(function (fileName) {
+ *         var resource = require(modelsPath + '/' + fileName);
+ *
+ * `new Iyzipay(...)` her çağrıldığında kütüphane kendi kaynak klasörünü
+ * DİSKTEN okuyup dosyaları tek tek `require` ediyor. Workers'ta gerçek bir
+ * dosya sistemi yok; ayrıca hesaplanan yollu `require` ifadesini hiçbir
+ * paketleyici statik olarak çözemediği için o dosyalar pakete hiç girmiyor.
+ * İstemci kurulamıyor bile.
+ *
+ * Bu dosya aynı işi doğrudan iyzico REST API'sine `fetch` ile yaparak
+ * görüyor. Dışa verilen fonksiyonların imzaları AYNI kaldı; çağıran hiçbir
+ * dosya değişmedi.
+ *
+ * ── Kimlik doğrulama (IYZWSv2) ──────────────────────────────────────────────
+ *
+ *   signature = HMAC-SHA256(secretKey, randomString + uri + JSON.stringify(body))
+ *   params    = "apiKey:<apiKey>&randomKey:<rnd>&signature:<sig>"
+ *   header    = "IYZWSv2 " + base64(params)
+ *
+ * `uri` tam adres değil, yalnızca YOL kısmıdır (örn. `/payment/detail`).
+ * İmza gövdenin metin hâli üzerinden hesaplandığı için, imzalanan metnin
+ * gönderilen gövdeyle BİREBİR aynı olması gerekir — bu yüzden gövde bir kez
+ * `JSON.stringify` edilip hem imzada hem istekte o metin kullanılıyor.
+ *
+ * HMAC için Web Crypto kullanılıyor (`node:crypto` yerine); hem Workers hem
+ * Node ortamında çalışır. Aynı desen `src/lib/admin-auth.ts` içinde de var.
+ */
 
 const SANDBOX_URI = 'https://sandbox-api.iyzipay.com'
 const PRODUCTION_URI = 'https://api.iyzipay.com'
+const CLIENT_VERSION = 'iyzipay-node-2.0.69'
 
 let sandboxWarned = false
 
@@ -24,38 +59,125 @@ function resolveUri(): string {
           'gerçek ödeme alınmayacak.',
       )
     }
-    return explicit
+    return explicit.replace(/\/+$/, '')
   }
   return process.env.NODE_ENV === 'production' ? PRODUCTION_URI : SANDBOX_URI
 }
 
-function getClient() {
+function getKeys(): { apiKey: string; secretKey: string } {
   const apiKey = process.env.IYZICO_API_KEY
   const secretKey = process.env.IYZICO_SECRET_KEY
   if (!apiKey || !secretKey) {
     throw new Error('IYZICO_API_KEY veya IYZICO_SECRET_KEY eksik.')
   }
-  return new Iyzipay({ apiKey, secretKey, uri: resolveUri() })
+  return { apiKey, secretKey }
 }
 
-export function initializeCheckoutForm(request: Record<string, unknown>): Promise<any> {
-  return new Promise((resolve, reject) => {
-    getClient().checkoutFormInitialize.create(request, (err: unknown, result: unknown) => {
-      if (err) reject(err)
-      else resolve(result)
+const encoder = new TextEncoder()
+
+function toHex(bytes: ArrayBuffer): string {
+  return [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+function toBase64(value: string): string {
+  // btoa yalnızca latin-1 kabul ediyor; imza parametreleri ASCII olduğu için
+  // sorun yok, yine de güvenli tarafta kalmak adına baytlardan üretiyoruz.
+  const bytes = encoder.encode(value)
+  let binary = ''
+  for (const b of bytes) binary += String.fromCharCode(b)
+  return btoa(binary)
+}
+
+async function hmacSha256Hex(secret: string, data: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  )
+  return toHex(await crypto.subtle.sign('HMAC', key, encoder.encode(data)))
+}
+
+/** Kütüphanenin ürettiğiyle aynı biçimde rastgele dizi */
+function randomString(): string {
+  const bytes = new Uint8Array(12)
+  crypto.getRandomValues(bytes)
+  return Date.now().toString() + toHex(bytes.buffer).slice(0, 12)
+}
+
+/**
+ * iyzico'ya imzalı bir POST atar.
+ *
+ * `path` yalnızca yol kısmıdır ve imzaya birebir bu değer girer.
+ */
+async function iyzicoPost(path: string, body: Record<string, unknown>): Promise<any> {
+  const { apiKey, secretKey } = getKeys()
+  const rnd = randomString()
+
+  // Gövde TEK KEZ metne çevriliyor: imzalanan metinle gönderilen metin
+  // birebir aynı olmak zorunda.
+  const payload = JSON.stringify(body)
+
+  const signature = await hmacSha256Hex(secretKey, rnd + path + payload)
+  const authorization =
+    'IYZWSv2 ' +
+    toBase64(`apiKey:${apiKey}&randomKey:${rnd}&signature:${signature}`)
+
+  let res: Response
+  try {
+    res = await fetch(resolveUri() + path, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: authorization,
+        'x-iyzi-rnd': rnd,
+        'x-iyzi-client-version': CLIENT_VERSION,
+      },
+      body: payload,
     })
-  })
+  } catch (error) {
+    // Ağ hatası — çağıranlar bunu yakalayıp siparişi askıda bırakıyor
+    throw new Error(`iyzico'ya ulaşılamadı (${path}): ${String(error).slice(0, 200)}`)
+  }
+
+  const text = await res.text()
+
+  let parsed: any
+  try {
+    parsed = JSON.parse(text)
+  } catch {
+    throw new Error(
+      `iyzico beklenmeyen yanıt verdi (${path}, HTTP ${res.status}): ${text.slice(0, 300)}`,
+    )
+  }
+
+  // iyzico hataları da HTTP 200 ile döner ve gövdede `status: "failure"` olur.
+  // Bu yüzden HTTP durumuna göre hata FIRLATMIYORUZ — çağıran kod zaten
+  // `result.status` kontrolü yapıyor ve `errorMessage` alanını okuyor.
+  // Yalnızca 5xx'te fırlatıyoruz; orada gövde anlamlı olmayabilir.
+  if (res.status >= 500) {
+    throw new Error(
+      `iyzico sunucu hatası (${path}, HTTP ${res.status}): ` +
+        `${parsed?.errorMessage ?? text.slice(0, 200)}`,
+    )
+  }
+
+  return parsed
+}
+
+// ─── Uç noktalar ─────────────────────────────────────────────────────────────
+// Yollar iyzipay paketinin resources/ klasöründen birebir alındı.
+
+export function initializeCheckoutForm(request: Record<string, unknown>): Promise<any> {
+  return iyzicoPost('/payment/iyzipos/checkoutform/initialize/auth/ecom', request)
 }
 
 export function retrieveCheckoutForm(token: string, conversationId: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    getClient().checkoutForm.retrieve(
-      { locale: 'tr', conversationId, token },
-      (err: unknown, result: unknown) => {
-        if (err) reject(err)
-        else resolve(result)
-      }
-    )
+  return iyzicoPost('/payment/iyzipos/checkoutform/auth/ecom/detail', {
+    locale: 'tr',
+    conversationId,
+    token,
   })
 }
 
@@ -74,21 +196,13 @@ export function refundPayment(params: {
   conversationId: string
   ip?: string
 }): Promise<any> {
-  return new Promise((resolve, reject) => {
-    getClient().refundV2.create(
-      {
-        locale: 'tr',
-        conversationId: params.conversationId,
-        paymentId: params.paymentId,
-        price: params.price,
-        currency: 'TRY',
-        ip: params.ip ?? '127.0.0.1',
-      },
-      (err: unknown, result: unknown) => {
-        if (err) reject(err)
-        else resolve(result)
-      },
-    )
+  return iyzicoPost('/v2/payment/refund', {
+    locale: 'tr',
+    conversationId: params.conversationId,
+    paymentId: params.paymentId,
+    price: params.price,
+    currency: 'TRY',
+    ip: params.ip ?? '127.0.0.1',
   })
 }
 
@@ -98,19 +212,11 @@ export function cancelPayment(params: {
   conversationId: string
   ip?: string
 }): Promise<any> {
-  return new Promise((resolve, reject) => {
-    getClient().cancel.create(
-      {
-        locale: 'tr',
-        conversationId: params.conversationId,
-        paymentId: params.paymentId,
-        ip: params.ip ?? '127.0.0.1',
-      },
-      (err: unknown, result: unknown) => {
-        if (err) reject(err)
-        else resolve(result)
-      },
-    )
+  return iyzicoPost('/payment/cancel', {
+    locale: 'tr',
+    conversationId: params.conversationId,
+    paymentId: params.paymentId,
+    ip: params.ip ?? '127.0.0.1',
   })
 }
 
@@ -130,18 +236,10 @@ export function approvePaymentItem(params: {
   paymentTransactionId: string
   conversationId: string
 }): Promise<any> {
-  return new Promise((resolve, reject) => {
-    getClient().approval.create(
-      {
-        locale: 'tr',
-        conversationId: params.conversationId,
-        paymentTransactionId: params.paymentTransactionId,
-      },
-      (err: unknown, result: unknown) => {
-        if (err) reject(err)
-        else resolve(result)
-      },
-    )
+  return iyzicoPost('/payment/iyzipos/item/approve', {
+    locale: 'tr',
+    conversationId: params.conversationId,
+    paymentTransactionId: params.paymentTransactionId,
   })
 }
 
@@ -155,17 +253,9 @@ export function retrievePayment(params: {
   paymentId: string
   conversationId: string
 }): Promise<any> {
-  return new Promise((resolve, reject) => {
-    getClient().payment.retrieve(
-      {
-        locale: 'tr',
-        conversationId: params.conversationId,
-        paymentId: params.paymentId,
-      },
-      (err: unknown, result: unknown) => {
-        if (err) reject(err)
-        else resolve(result)
-      },
-    )
+  return iyzicoPost('/payment/detail', {
+    locale: 'tr',
+    conversationId: params.conversationId,
+    paymentId: params.paymentId,
   })
 }

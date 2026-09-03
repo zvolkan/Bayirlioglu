@@ -9,7 +9,7 @@ import Icon from '@/components/ui/Icon'
 import { categoryIcon } from '@/lib/category-icon'
 import { BRANDS } from '@/lib/constants'
 import { useCartStore } from '@/store/cartStore'
-import { SORT_OPTIONS, type SortOption } from '@/lib/queries/product-search'
+import { SORT_OPTIONS, type SortOption } from '@/lib/queries/product-search-options'
 import type { BrandKey, Product, Category } from '@/lib/types'
 import { toast } from 'react-hot-toast'
 

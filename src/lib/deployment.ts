@@ -1,22 +1,34 @@
+import { getCloudflareContext } from '@opennextjs/cloudflare'
+
 /**
- * Hangi build'in çalıştığını gösteren kısa etiket.
+ * Hangi sürümün çalıştığını gösteren kısa etiket.
  *
  * Bir uç nokta ortam değişkenlerini görürken diğerinin görmemesi neredeyse her
- * zaman iki isteğin FARKLI deployment'lara gitmesinden kaynaklanır: değişken
- * eklendikten sonra alınan yeni build ile, iyzico'nun geri döndüğü eski build
- * aynı olmayabiliyor. Hata notlarına bu etiketi de yazınca hangi build'in
+ * zaman iki isteğin FARKLI dağıtımlara gitmesinden kaynaklanır: değişken
+ * eklendikten sonra alınan yeni sürüm ile, iyzico'nun geri döndüğü eski sürüm
+ * aynı olmayabiliyor. Hata notlarına bu etiketi de yazınca hangi sürümün
  * yazdığı tartışmasız oluyor.
+ *
+ * Vercel'de `VERCEL_DEPLOYMENT_ID` kullanılıyordu. Cloudflare'deki karşılığı
+ * `version_metadata` bağlaması; `wrangler.jsonc` içinde tanımlı.
+ *
+ * DİKKAT: Commit SHA yeterli DEĞİL. Aynı commit'i yeniden dağıttığınızda SHA
+ * aynı kalır ama sürüm (ve ona bağlanan ortam değişkenleri) değişir.
  */
 export function deploymentTag(): string {
-  const env = process.env.VERCEL_ENV ?? 'local'
+  try {
+    const { env } = getCloudflareContext()
+    const meta = (env as unknown as {
+      CF_VERSION_METADATA?: { id?: string; tag?: string }
+    }).CF_VERSION_METADATA
 
-  // DİKKAT: Commit SHA yeterli DEĞİL. Aynı commit'i yeniden deploy ettiğinizde
-  // SHA aynı kalır ama deployment (ve dolayısıyla ona bağlanan ortam
-  // değişkenleri) değişir. Ortam değişkenleri deployment oluşturulurken
-  // bağlandığı için, "değişkeni ekledim ama eski deployment'ta yoktu" durumunu
-  // ayırt etmenin tek yolu deployment kimliğidir.
-  const deploymentId = process.env.VERCEL_DEPLOYMENT_ID
-  const commit = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7)
+    const id = meta?.id?.slice(0, 8)
+    const tag = meta?.tag
+    const ortam = process.env.NODE_ENV === 'production' ? 'production' : 'preview'
 
-  return [env, deploymentId, commit].filter(Boolean).join(' · ')
+    return [ortam, id, tag].filter(Boolean).join(' · ') || ortam
+  } catch {
+    // İstek bağlamı yok (yerel geliştirme, derleme zamanı)
+    return 'local'
+  }
 }

@@ -36,7 +36,7 @@ export default function AdresDuzenlePage() {
 
       const res = await fetch(`/api/adreslerim/${id}`)
       if (!res.ok) { router.push('/hesabim'); return }
-      const addr = await res.json()
+      const addr = (await res.json()) as Address
       setAddress(addr)
       setLoading(false)
     })

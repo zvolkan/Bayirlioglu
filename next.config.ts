@@ -1,7 +1,9 @@
 import type { NextConfig } from 'next';
-
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['iyzipay'],
+  // NOT: `serverExternalPackages: ['iyzipay']` kaldırıldı. iyzipay paketi
+  // Workers'ta çalışamadığı için (kurulumunda fs.readdirSync + hesaplanan
+  // yollu require var) kaldırıldı; iyzico artık src/lib/iyzico.ts içinde
+  // doğrudan fetch ile çağrılıyor.
   images: {
     remotePatterns: [
       {
