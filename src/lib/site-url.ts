@@ -22,8 +22,11 @@ export function getSiteUrl(): string {
     warned = true
     console.error(
       '[config] NEXT_PUBLIC_SITE_URL tanımlı değil. Ödeme geri dönüşleri ve ' +
-        'sözleşme metinleri yanlış adrese işaret edecek. wrangler.jsonc ' +
-        'içindeki vars bölümüne gerçek alan adını ekleyin.',
+        'sözleşme metinleri yanlış adrese işaret edecek. Bu değişken DERLEME ' +
+        'sırasında pakete gömülür; çalışma zamanı sırrı veya wrangler.jsonc ' +
+        'vars girdisi tarayıcı tarafına ULAŞMAZ. Cloudflare panelinde ' +
+        'Settings → Build → Build variables and secrets bölümüne ekleyin ve ' +
+        'yeniden derleyin.',
     )
   }
 
