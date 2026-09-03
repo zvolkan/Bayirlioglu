@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db'
-import { Prisma } from '@prisma/client'
+import type { Prisma } from '@prisma/client'
 import type { Product, Category, BrandKey } from '@/lib/types'
 
 // ─── Prisma çıktısını uygulama tipine dönüştür ────────────────────────────────

@@ -1,6 +1,7 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { cache } from 'react'
-import { PrismaClient } from '@prisma/client'
+// DİKKAT: '@prisma/client' DEĞİL, '@prisma/client/wasm'. Sebebi aşağıda.
+import { PrismaClient } from '@prisma/client/wasm'
 import { PrismaPg } from '@prisma/adapter-pg'
 
 /**
@@ -33,6 +34,34 @@ import { PrismaPg } from '@prisma/adapter-pg'
  * üretim sırasında veritabanına giden yerler — bu projede `src/app/sitemap.ts`
  * ve varsa `generateStaticParams` kullanan sayfalar — aşağıdaki `getDbAsync()`
  * fonksiyonunu kullanmalı. Aksi hâlde `next build` sırasında hata alırsınız.
+ *
+ * ── Neden '@prisma/client/wasm' ─────────────────────────────────────────────
+ *
+ * Prisma tek bir paketin içinde iki ayrı istemci üretiyor ve hangisinin
+ * kullanılacağına package.json "exports" koşullarıyla karar veriyor. Üretilen
+ * `.prisma/client/package.json` şöyle:
+ *
+ *   { node: "./index.js", "edge-light": "./wasm.js", workerd: "./wasm.js", ... }
+ *
+ * `index.js` Node istemcisi: WASM dosyasını `fs.readFileSync` ile DİSKTEN
+ * okuyor. `wasm.js` ise onu ESM `import` ile alıyor — Workers'ta çalışan tek
+ * sürüm bu.
+ *
+ * Sorun şu: OpenNext, worker paketini esbuild ile üretirken `platform: "node"`
+ * kullanıyor (ve buna ek olarak `workerd` koşulunu ekliyor). İki koşul da
+ * aktif olunca kazananı esbuild değil, Prisma'nın nesne SIRALAMASI belirliyor
+ * — `node` anahtarı `workerd`den önce yazıldığı için Node istemcisi seçiliyor.
+ * Sonuç, canlıda görülen hata:
+ *
+ *   ENOENT: no such file or directory, readAll
+ *   '/bundle/node_modules/.prisma/client/query_compiler_bg.wasm'
+ *
+ * `@prisma/client/wasm` alt yolunun exports girdisinde hiç koşul yok; doğrudan
+ * `wasm.js`e çıkıyor. Böylece seçim çözümleyicinin insafına bırakılmıyor.
+ * `.wasm` dosyası da esbuild tarafından dışsal işaretlenip wrangler tarafından
+ * pakete konuyor, yani artık diskten okunmuyor.
+ *
+ * Tipler değişmiyor: `wasm.d.ts` aynı üretilmiş tipleri yeniden dışa veriyor.
  *
  * ── Bilinen açık sorun ──────────────────────────────────────────────────────
  *
