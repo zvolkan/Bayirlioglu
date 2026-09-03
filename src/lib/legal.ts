@@ -1,4 +1,4 @@
-import { SITE_CONFIG, COMPANY_NAME } from './constants'
+import { SITE_CONFIG } from './constants'
 import { KARGO_LIMIT, KARGO_UCRETI, TESLIMAT_SURESI } from './checkout'
 
 /**
@@ -20,43 +20,60 @@ import { KARGO_LIMIT, KARGO_UCRETI, TESLIMAT_SURESI } from './checkout'
 
 // ─── Satıcı künyesi ──────────────────────────────────────────────────────────
 //
-// DOLDURULACAK: Aşağıdaki üç alan ticaret sicil kayıtlarınızdaki hâliyle
-// yazılmalıdır. Mesafeli Sözleşmeler Yönetmeliği m.5 satıcının açık kimlik
-// bilgilerini zorunlu tutuyor; boş kalırsa sözleşme eksik sayılır.
-// Aynı bilgiler footer'daki yasal künyede de duruyor, ikisini birlikte
-// güncelleyin.
+// Mesafeli Sözleşmeler Yönetmeliği m.5 satıcının açık kimlik bilgilerini
+// zorunlu tutuyor. Buradaki değerler ticaret sicil kayıtlarındaki hâlleriyle
+// yazılmıştır ve tek kaynaktır: sözleşme metinleri, ön bilgilendirme formu ve
+// footer'daki yasal künye hepsi buradan besleniyor.
+//
+// `unvan` bilerek `COMPANY_NAME`den ayrıldı: o sabit sitede kullanılan kısa
+// ticari isim ("Bayırlıoğlu"), yönetmelik ise ticaret sicilindeki TAM resmî
+// unvanı istiyor. İkisi farklı şeyler; kısaltmayın.
 
 export const SATICI = {
-  unvan: COMPANY_NAME,
-  mersis: '', // örn. 0123456789000001
-  vergiDairesi: '', // örn. Anamur
-  vergiNo: '',
+  unvan: 'BAYIRLIOĞLU TARIM İNŞAAT OTOMOTİV İTHALAT İHRACAT PAZARLAMA SANAYİ VE TİCARET LİMİTED ŞİRKETİ',
+  mersis: '0153122147800001',
+  vergiDairesi: 'ANAMUR VERGİ DAİRESİ',
+  vergiNo: '1531221478',
   adres: SITE_CONFIG.address,
   telefon: SITE_CONFIG.phone,
   eposta: SITE_CONFIG.email,
   /** Cayma hakkı kapsamındaki iadelerin gönderileceği adres */
   iadeAdresi: SITE_CONFIG.address,
   /**
-   * ETBİS kaydı tamamlandığında `true` yapın.
+   * ETBİS kaydı tamamlandı (beyan: 2026).
    *
    * Footer eskiden KOŞULSUZ olarak "Bu site ETBİS'e kayıtlıdır." diyordu.
-   * Kayıt yapılmadıysa bu yanlış beyandır ve idari yaptırıma açıktır. Artık
-   * cümle yalnızca bu değer `true` iken görünüyor.
+   * Kayıt yapılmadıysa bu yanlış beyandır ve idari yaptırıma açıktır; bu yüzden
+   * cümle bu bayrağa bağlandı. Kayıt bir gün düşerse burayı `false` yapın,
+   * cümle kendiliğinden kaybolur.
    */
-  etbisKayitli: false,
+  etbisKayitli: true,
 } as const
 
+/**
+ * Künyede hangi alanlar hâlâ boş?
+ *
+ * Eskiden yalnızca "eksik" diye tek bir bayrak vardı ve log'da hangi alanın
+ * eksik olduğu yazmıyordu; üçünden biri dolunca bile aynı mesaj çıkıyordu.
+ */
+const EKSIK_ALANLAR = (
+  [
+    ['MERSİS no', SATICI.mersis],
+    ['vergi dairesi', SATICI.vergiDairesi],
+    ['vergi no', SATICI.vergiNo],
+  ] as const
+)
+  .filter(([, deger]) => deger.trim() === '')
+  .map(([ad]) => ad)
+
 /** Künye eksiksiz mi? Eksikse yayına çıkmadan tamamlanmalı. */
-export const KUNYE_TAM =
-  SATICI.mersis.trim() !== '' &&
-  SATICI.vergiDairesi.trim() !== '' &&
-  SATICI.vergiNo.trim() !== ''
+export const KUNYE_TAM = EKSIK_ALANLAR.length === 0
 
 // Üretim derlemesinde eksik künyeyi sessizce geçmeyelim: log'a düşsün ki
-// deploy sonrası fark edilsin.
+// deploy sonrası fark edilsin. Bu bir UYARIDIR, hata değil — akışı durdurmaz.
 if (process.env.NODE_ENV === 'production' && !KUNYE_TAM) {
   console.error(
-    '[yasal] Satıcı künyesi eksik (MERSİS / vergi dairesi / vergi no). ' +
+    `[yasal] Satıcı künyesinde eksik alan: ${EKSIK_ALANLAR.join(', ')}. ` +
       'Mesafeli Sözleşmeler Yönetmeliği m.5 bu bilgileri zorunlu tutuyor; ' +
       'src/lib/legal.ts içindeki SATICI nesnesini doldurun.',
   )

@@ -224,11 +224,17 @@ export default function Footer() {
                 gösteriliyordu; sözleşme metniyle iki ayrı yerde tutuluyordu. */}
             <p>
               <span className="text-gray-500">Ticaret Unvanı:</span> {SATICI.unvan}
-              {SATICI.vergiDairesi && SATICI.vergiNo && (
+              {/* Vergi numarası vergi dairesinden bağımsız gösteriliyor:
+                  yönetmeliğin zorunlu tuttuğu alan numaranın kendisi, daire
+                  tamamlayıcı bilgi. Eskiden ikisi tek koşula bağlıydı ve daire
+                  boşken numara da gizleniyordu. */}
+              {SATICI.vergiNo && (
                 <>
                   {' · '}
-                  <span className="text-gray-500">Vergi Dairesi / No:</span>{' '}
-                  {SATICI.vergiDairesi} / {SATICI.vergiNo}
+                  <span className="text-gray-500">
+                    {SATICI.vergiDairesi ? 'Vergi Dairesi / No:' : 'Vergi No:'}
+                  </span>{' '}
+                  {SATICI.vergiDairesi ? `${SATICI.vergiDairesi} / ${SATICI.vergiNo}` : SATICI.vergiNo}
                 </>
               )}
               {SATICI.mersis && (
