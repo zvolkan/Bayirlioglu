@@ -2,11 +2,26 @@
 // Veritabanı: PostgreSQL (Supabase)
 
 generator client {
-  provider        = "prisma-client-js"
-  // driverAdapters : Workers'ta klasik sorgu motoru çalışmıyor; Hyperdrive
-  //                  bağlantısı @prisma/adapter-pg üzerinden kuruluyor.
-  // queryCompiler  : Rust'sız (WASM) sorgu derleyici. Paket boyutunu ~14 MB'tan
-  //                  ~1,6 MB'a indiriyor — Workers'ın boyut sınırı için kritik.
+  provider   = "prisma-client-js"
+
+  // engineType = "client"  ←  BU SATIR OLMADAN queryCompiler ETKİSİZ.
+  //
+  // previewFeatures listesine "queryCompiler" yazmak özelliği yalnızca
+  // KULLANILABİLİR yapıyor; hangi motorun üretileceğini belirlemiyor. Motor
+  // tipi ayrıca seçilmezse Prisma varsayılana, yani "library"ye düşüyor ve
+  // istemciyi yerel Rust sorgu motoruna (libquery_engine.so.node) bağlı
+  // üretiyor. O ikili dosya Workers'ta çalışamaz; workerd'de dosya sistemi
+  // olmadığı için istemci açılışta
+  //   "Prisma Client could not locate the Query Engine for runtime ..."
+  // diyerek patlar. Tam olarak bu yaşandı.
+  //
+  // "client" seçildiğinde Prisma, Rust ikilisi yerine WASM sorgu derleyicisini
+  // kullanan istemciyi üretiyor: Workers'ta çalışıyor ve paket ~14 MB'tan
+  // ~1,6 MB'a iniyor.
+  engineType = "client"
+
+  // driverAdapters : bağlantı @prisma/adapter-pg üzerinden Hyperdrive'a gidiyor
+  // queryCompiler  : sorgu planlaması Rust yerine WASM tarafında yapılıyor
   previewFeatures = ["driverAdapters", "queryCompiler"]
 }
 
