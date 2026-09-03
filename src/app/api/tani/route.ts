@@ -91,23 +91,43 @@ export async function GET(request: Request) {
     return NextResponse.json(rapor, { status: 500 })
   }
 
-  // ── 3. Şema görünüyor mu ──────────────────────────────────────────────────
+  // ── 3. HANGİ veritabanına bağlandık ───────────────────────────────────────
+  //
+  // Hyperdrive bağlantı dizesindeki kullanıcı/veritabanı adlarını maskeliyor,
+  // o yüzden bağlamaya bakarak hedefi anlayamıyoruz. Bunu veritabanının
+  // kendisine soruyoruz.
   try {
-    rapor.tabloSayisi = await db.$queryRawUnsafe(
-      "select count(*)::int as n from information_schema.tables where table_schema = 'public'",
+    rapor.kimlik = await db.$queryRawUnsafe(
+      'select current_database() as vt, current_user as kullanici, ' +
+        'inet_server_addr()::text as sunucu, current_schemas(true)::text as aramaYolu',
     )
   } catch (e) {
-    rapor.tabloSayisi = hataOzeti(e)
+    rapor.kimlik = hataOzeti(e)
   }
 
-  // ── 4. Gerçek bir Prisma modeli — marka sayfasının yaptığı işin özeti ─────
+  // ── 4. Şemada NE var ──────────────────────────────────────────────────────
+  //
+  // Sayı yetmiyor: 8 tablo görülüp 16 beklenince asıl soru "hangi 8" oluyor.
+  // Tablo adları hangi veritabanına bakıldığını tek bakışta söylüyor.
+  try {
+    rapor.tablolar = await db.$queryRawUnsafe(
+      "select table_schema || '.' || table_name as tablo " +
+        'from information_schema.tables ' +
+        "where table_schema not in ('pg_catalog','information_schema') " +
+        'order by 1',
+    )
+  } catch (e) {
+    rapor.tablolar = hataOzeti(e)
+  }
+
+  // ── 5. Gerçek bir Prisma modeli — marka sayfasının yaptığı işin özeti ─────
   try {
     rapor.urunSayisi = await db.product.count()
   } catch (e) {
     rapor.urunSayisi = hataOzeti(e)
   }
 
-  // ── 5. Aynı istekte ikinci sorgu — maxUses:1 sonrası yeniden kullanım ─────
+  // ── 6. Aynı istekte ikinci sorgu — maxUses:1 sonrası yeniden kullanım ─────
   try {
     rapor.ikinciSorgu = await db.product.count()
   } catch (e) {
