@@ -98,7 +98,10 @@ export async function GET(request: Request) {
   // kendisine soruyoruz.
   try {
     rapor.kimlik = await db.$queryRawUnsafe(
-      'select current_database() as vt, current_user as kullanici, ' +
+      // ::text şart: current_database() ve current_user, Postgres'in `name`
+      // tipini döndürüyor ve Prisma sürücü adaptörü onu çözemeyip
+      // "Failed to deserialize column of type 'name'" hatası veriyor.
+      'select current_database()::text as vt, current_user::text as kullanici, ' +
         'inet_server_addr()::text as sunucu, current_schemas(true)::text as aramaYolu',
     )
   } catch (e) {
