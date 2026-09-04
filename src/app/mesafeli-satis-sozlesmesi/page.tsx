@@ -80,7 +80,7 @@ export default function MesafeliSatisSozlesmesiPage() {
             <p className="mt-3">
               İade ve değişim koşullarının özeti için{' '}
               <Link href="/iade-politikasi" className="text-gray-900 font-medium hover:underline">
-                İade Politikası
+                İptal ve İade Koşulları
               </Link>{' '}
               sayfasına da göz atabilirsiniz.
             </p>

@@ -78,7 +78,7 @@ export default function CookieConsent() {
                 href="/gizlilik"
                 className="underline font-medium text-gray-800 hover:text-gray-900"
               >
-                Gizlilik Politikası
+                Gizlilik ve Güvenlik
               </Link>{' '}
               ve{' '}
               <Link

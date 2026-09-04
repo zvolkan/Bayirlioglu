@@ -273,7 +273,7 @@ export default function BayiBasvuruPage() {
                         className="mt-0.5 rounded"
                       />
                       <label htmlFor="terms" className="text-sm text-gray-600 cursor-pointer">
-                        <Link href="/gizlilik" className="underline text-gray-800">Gizlilik Politikası</Link> ve{' '}
+                        <Link href="/gizlilik" className="underline text-gray-800">Gizlilik ve Güvenlik</Link> metnini ve{' '}
                         <Link href="/kullanim-kosullari" className="underline text-gray-800">Kullanım Koşulları</Link>'nı
                         okudum ve kabul ediyorum.
                       </label>

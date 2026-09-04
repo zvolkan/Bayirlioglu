@@ -25,11 +25,14 @@ const INSTAGRAM = [
   { marka: 'Alb Su Teknolojileri', kullanici: 'albsuteknolojileri', href: 'https://www.instagram.com/albsuteknolojileri' },
 ]
 
+// Bağlantı adları sayfa başlıklarıyla birebir aynı tutuluyor. Ödeme kuruluşu
+// incelemesinde footer'daki ad ile açılan sayfanın başlığının uyuşması aranıyor;
+// "İade Politikası" yazıp "İptal ve İade Koşulları" sayfasına düşmek eksik sayılır.
 const YASAL_LINKS = [
-  { label: 'Gizlilik Politikası', href: '/gizlilik' },
+  { label: 'Gizlilik ve Güvenlik', href: '/gizlilik' },
   { label: 'Kullanım Koşulları', href: '/kullanim-kosullari' },
   { label: 'Mesafeli Satış Sözleşmesi', href: '/mesafeli-satis-sozlesmesi' },
-  { label: 'İade Politikası', href: '/iade-politikasi' },
+  { label: 'İptal ve İade Koşulları', href: '/iade-politikasi' },
   { label: 'KVKK Aydınlatma Metni', href: '/kvkk' },
 ]
 
@@ -211,6 +214,38 @@ export default function Footer() {
               </ul>
             </div>
 
+          </div>
+        </div>
+      </div>
+
+      {/* ÖDEME YÖNTEMLERİ — iyzico logo bandı
+          iyzico'nun şartı: "Web sitenizde 'iyzico ile Öde', Visa ve Mastercard
+          logolarının yer alması gerekmektedir." Resmî paketteki footer bandı
+          üçünü de tek görselde taşıyor — iyzico ile Öde, Mastercard, Visa,
+          American Express ve troy. Ayrı kart logosu eklemeye gerek yok.
+
+          ÖLÇÜLENDİRME: genişlik sabit, yükseklik `h-auto`. `h-7` gibi sabit bir
+          yükseklikle `max-w-full` birlikte kullanılırsa dar ekranda genişlik
+          kısılıp yükseklik sabit kalıyor ve logo YATAY EZİLİYOR; marka kılavuzu
+          logonun deforme edilmesini yasaklıyor. Bu haliyle oran her ölçüde
+          korunuyor. Koyu zemin olduğu için beyaz sürüm. */}
+      <div className="border-t border-white/10 py-6">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <p className="text-gray-500 text-xs leading-relaxed max-w-md">
+              Tüm ödemeler <span className="text-gray-300">iyzico</span> altyapısı üzerinden,
+              3D&nbsp;Secure ve SSL şifreli bağlantıyla alınır. Kart bilgileriniz
+              sitemizde saklanmaz.
+            </p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/odeme/iyzico-band-beyaz.svg"
+              alt="iyzico ile Öde — Mastercard, Visa, American Express ve troy kabul edilir"
+              width={456}
+              height={32}
+              className="w-[360px] max-w-full h-auto opacity-90"
+              loading="lazy"
+            />
           </div>
         </div>
       </div>

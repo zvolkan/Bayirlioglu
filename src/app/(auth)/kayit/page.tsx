@@ -118,7 +118,7 @@ export default async function KayitPage({
             <p className="text-xs text-gray-400 text-center">
               Kayıt olarak{' '}
               <Link href="/kullanim-kosullari" className="underline">Kullanım Koşulları</Link>'nı ve{' '}
-              <Link href="/gizlilik" className="underline">Gizlilik Politikası</Link>'nı kabul etmiş olursunuz.
+              <Link href="/gizlilik" className="underline">Gizlilik ve Güvenlik</Link> metnini kabul etmiş olursunuz.
             </p>
           </form>
 

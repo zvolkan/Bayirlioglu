@@ -420,10 +420,30 @@ export default function CheckoutClient({ addresses }: Props) {
               </div>
             </div>
 
-            {/* Güvenlik notu */}
-            <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700">
-              <Icon name="kilit" className="w-5 h-5 flex-shrink-0" />
-              <span>Ödemeniz İyzico güvencesiyle SSL şifreli bağlantı üzerinden gerçekleşir. Kart bilgileriniz sitemizde saklanmaz.</span>
+            {/* Güvenlik notu
+                Marka adı "İyzico" değil "iyzico" — iyzico kendi marka
+                kılavuzunda her zaman küçük harfle yazılmasını istiyor ve üye
+                işyeri incelemesinde bakılan ayrıntılardan biri bu.
+                Logo, resmî paketten geldiği gibi kullanılıyor. */}
+            <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 space-y-3">
+              <div className="flex items-center gap-3 text-sm text-blue-700">
+                <Icon name="kilit" className="w-5 h-5 flex-shrink-0" />
+                <span>
+                  Ödemeniz iyzico güvencesiyle, 3D Secure ve SSL şifreli bağlantı üzerinden
+                  gerçekleşir. Kart bilgileriniz sitemizde saklanmaz.
+                </span>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/odeme/iyzico-band-renkli.svg"
+                alt="iyzico ile Öde — Mastercard, Visa, American Express ve troy kabul edilir"
+                width={456}
+                height={32}
+                // Sabit yükseklik + max-w-full birlikte logoyu dar ekranda yatay
+                // eziyor. Genişlik sabit, yükseklik serbest: oran her zaman korunur.
+                className="w-[340px] max-w-full h-auto"
+                loading="lazy"
+              />
             </div>
           </div>
 
