@@ -480,8 +480,11 @@ export default function ProductForm({
               defaultValue={String(defaultValues.vatRate ?? 20)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="1">%1 — Temel gıda, bazı tarım girdileri</option>
-              <option value="10">%10 — Gübre, tohum, yem vb.</option>
+              {/* %1 seçeneği kaldırıldı, yerine %0 geldi. Gübreler artık
+                  KDV'siz satıldığı için %10 satırındaki "Gübre, tohum, yem"
+                  ifadesi de %0'a taşındı — eski etiket yanlış yönlendiriyordu. */}
+              <option value="0">%0 — Gübre, tohum, yem vb. KDV&apos;siz girdiler</option>
+              <option value="10">%10 — İndirimli oran</option>
               <option value="20">%20 — Genel oran</option>
             </select>
           </div>

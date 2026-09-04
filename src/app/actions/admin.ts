@@ -292,10 +292,31 @@ function parseProductForm(formData: FormData): ProductInput | string {
     isActive: formData.get('isActive') === 'true',
     isFeatured: formData.get('isFeatured') === 'true',
     productBrand: ((formData.get('productBrand') as string) || '').trim().slice(0, 100) || null,
-    vatRate: [1, 10, 20].includes(Number(formData.get('vatRate')))
-      ? Number(formData.get('vatRate'))
-      : 20,
+    vatRate: gecerliKdvOrani(formData.get('vatRate')),
   }
+}
+
+/** Formda seçilebilen KDV oranları. %1 kaldırıldı, yerine %0 geldi. */
+const KDV_ORANLARI = [0, 10, 20] as const
+
+/**
+ * Form alanından KDV oranını okur.
+ *
+ * DİKKAT — buradaki tip kontrolü şart. Eskiden kod şöyleydi:
+ *
+ *   [1, 10, 20].includes(Number(formData.get('vatRate'))) ? ... : 20
+ *
+ * `formData.get()` alan yoksa `null` döner ve `Number(null)` 0'dır. Liste
+ * `[1, 10, 20]` iken 0 listede olmadığı için sessizce 20'ye düşüyordu, yani
+ * kaza sonucu doğru davranıyordu. Liste `[0, 10, 20]` olunca aynı kod, alan
+ * hiç gönderilmemiş bir formda ürünü KDV'siz yapardı. Bu yüzden önce değerin
+ * gerçekten gönderilmiş bir metin olduğunu doğruluyoruz.
+ */
+function gecerliKdvOrani(deger: FormDataEntryValue | null): number {
+  if (typeof deger !== 'string' || deger.trim() === '') return 20
+
+  const oran = Number(deger)
+  return (KDV_ORANLARI as readonly number[]).includes(oran) ? oran : 20
 }
 
 /** Prisma'nın benzersizlik/ilişki hatalarını okunabilir mesaja çevirir */
