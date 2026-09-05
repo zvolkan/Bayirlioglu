@@ -45,13 +45,33 @@ function validatePassword(password: string): string | null {
   return null
 }
 
+/**
+ * Kimlik doğrulama geri dönüşlerinde kullanılacak kök adres.
+ *
+ * ── Neden istek başlığına değil, sabite bakıyor ─────────────────────────────
+ *
+ * Eskiden önce `origin` başlığı okunuyordu, yani adres çubuğunda ne yazıyorsa
+ * geri dönüş oraya kuruluyordu. Bu üretimde sorun çıkarıyor: ziyaretçi
+ * `www.bayirlioglu.com` üzerinden gelirse `origin` da www'lu oluyor ve
+ * Supabase'in Redirect URLs listesinde yalnızca www'suz adres varsa istek
+ * REDDEDİLMİYOR — Supabase sessizce kendi "Site URL" ayarına düşüyor. Site URL
+ * eski Vercel adresinde kaldığında da kullanıcı giriş sonrası
+ * `bayirlioglu.vercel.app`e savruluyor. Hata mesajı yok, sadece yanlış adres.
+ *
+ * Üretimde artık tek bir kaynak var: `NEXT_PUBLIC_SITE_URL`. Ödeme geri
+ * dönüşleri de (`getSiteUrl()`) aynı sabiti kullanıyor; ikisinin aynı adresi
+ * üretmesi, "ödeme apex'e, giriş www'ya" gibi ayrışmaları baştan engelliyor.
+ *
+ * Geliştirmede (`next dev`) `origin` başlığı kullanılmaya devam ediyor, aksi
+ * hâlde yerelde çalışırken üretim adresine yönlenirdiniz.
+ */
 async function getSiteOrigin(): Promise<string> {
+  const sabit = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, '')
+
+  if (process.env.NODE_ENV === 'production' && sabit) return sabit
+
   const headersList = await headers()
-  return (
-    headersList.get('origin') ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    'http://localhost:3000'
-  )
+  return headersList.get('origin') ?? sabit ?? 'http://localhost:3000'
 }
 
 export async function signUp(formData: FormData) {
@@ -130,8 +150,11 @@ export async function signIn(formData: FormData) {
 
 export async function signInWithGoogle(redirectTo?: string) {
   const supabase = await createClient()
-  const headersList = await headers()
-  const origin = headersList.get('origin') ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  // Kendi `origin` okumasını yapıyordu; artık diğer akışlarla aynı kaynağı
+  // kullanıyor (bkz. getSiteOrigin). Google girişinde yanlış kök adres,
+  // Supabase'i sessizce "Site URL"e düşürdüğü için en çok burada canımızı
+  // yakan yerdi.
+  const origin = await getSiteOrigin()
 
   const next = safeInternalPath(redirectTo, '/hesabim')
 
