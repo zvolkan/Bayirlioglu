@@ -180,13 +180,17 @@ export default function Header() {
                 className="flex items-center flex-shrink-0 transition-transform duration-300 hover:scale-105 active:scale-95"
                 onClick={() => setMenuOpen(false)}
               >
+                {/* Dağ + kurt markası. Oran 2,67:1 (yatay) olduğu için kare
+                    kutuya sığdırılmıyor — yükseklik sabit, genişlik serbest.
+                    Kare kutu + object-contain kullanılsa logo kutunun ancak
+                    üçte birini doldurur ve minicik görünürdü. */}
                 <Image
-                  src="/images/logo-mark-white.svg"
+                  src="/images/bayirlioglu-mark-beyaz.svg"
                   alt="Bayırlıoğlu"
-                  width={44}
-                  height={44}
-                  className={`object-contain transition-all duration-500 ease-out ${
-                    scrolled ? 'w-8 h-8 sm:w-9 sm:h-9' : 'w-9 h-9 sm:w-10 sm:h-10'
+                  width={2080}
+                  height={780}
+                  className={`w-auto object-contain transition-all duration-500 ease-out ${
+                    scrolled ? 'h-6 sm:h-7' : 'h-7 sm:h-8'
                   }`}
                   priority
                 />

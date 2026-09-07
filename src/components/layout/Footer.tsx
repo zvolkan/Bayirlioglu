@@ -72,11 +72,11 @@ export default function Footer() {
                 {/* Header ve ana sayfadaki logonun aynısı — footer koyu zeminde
                     olduğu için beyaz sürüm kullanılıyor. */}
                 <Image
-                  src="/images/logo-mark-white.svg"
+                  src="/images/bayirlioglu-mark-beyaz.svg"
                   alt="Bayırlıoğlu"
-                  width={40}
-                  height={40}
-                  className="w-10 h-10 object-contain flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
+                  width={2080}
+                  height={780}
+                  className="h-8 w-auto object-contain flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
                 />
                 <span className="text-white font-bold text-lg leading-tight">
                   Bayırlıoğlu

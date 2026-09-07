@@ -72,11 +72,12 @@ export default function HomePage() {
             {/* Logo mark */}
             <div className="flex justify-center mb-6 anim-scale-in">
               <Image
-                src="/images/logo-mark-white.svg"
+                src="/images/bayirlioglu-mark-beyaz.svg"
                 alt="Bayırlıoğlu"
-                width={72}
-                height={72}
-                className="w-16 h-16 sm:w-20 sm:h-20 object-contain opacity-90 float-soft"
+                width={2080}
+                height={780}
+                className="h-14 sm:h-20 w-auto object-contain opacity-90 float-soft"
+                priority
               />
             </div>
 

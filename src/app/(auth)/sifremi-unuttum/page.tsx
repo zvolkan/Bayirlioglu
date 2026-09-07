@@ -23,7 +23,8 @@ export default async function SifremiUnuttumPage({
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-4">
             {/* Eskiden "BG" harfleri yazıyordu; dört auth sayfasında da
-                kopyalanmıştı. Artık gerçek logo, tek bileşenden. */}
+                kopyalanmıştı. Artık markanın tam kilidi (dağ + yazı), tek
+                bileşenden. Yazı logonun içinde olduğu için ayrıca metin yok. */}
             <GrupLogo />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Şifrenizi mi Unuttunuz?</h1>

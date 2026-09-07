@@ -34,8 +34,19 @@ function layout(title: string, bodyHtml: string): string {
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e4e4e7;">
 
-        <tr><td style="background:#18181b;padding:20px 28px;">
-          <p style="margin:0;color:#ffffff;font-size:17px;font-weight:700;letter-spacing:.02em;">Bayırlıoğlu</p>
+        <!-- Logo neden SVG değil PNG:
+             Gmail ve Outlook e-postada SVG göstermiyor, görsel sessizce boş
+             çıkardı. Bu yüzden aynı logonun PNG sürümü kullanılıyor (beyaz,
+             şeffaf zeminli — arkasındaki koyu hücre görünüyor).
+             Adres MUTLAK olmalı: e-posta istemcisi siteyi tanımaz.
+             Görselleri engelleyen istemciler için alt metni marka adı, yani
+             görsel yüklenmese bile başlık okunur kalıyor.
+             DİKKAT: bu blok bir şablon dizesinin (template literal) içinde;
+             yorum metninde ters tırnak KULLANMAYIN, dizeyi kapatır. -->
+        <tr><td style="background:#18181b;padding:18px 28px;">
+          <img src="${siteUrl}/images/bayirlioglu-logo-beyaz.png"
+               alt="Bayırlıoğlu" width="132" height="66"
+               style="display:block;border:0;outline:none;text-decoration:none;height:auto;max-width:132px;" />
         </td></tr>
 
         <tr><td style="padding:28px;">
