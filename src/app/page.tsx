@@ -97,41 +97,54 @@ export default function HomePage() {
               su sistemlerinin kurulumunu ve servisini kendi ekibimiz yapıyor.
             </p>
 
-            {/* Marka seçim kartları — büyük CTA */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+            {/* ── Marka seçim kartları ──────────────────────────────────
+                Önceki hâli iki büyük, doygun renkli bloktu ve logoların altına
+                beyaz birer altlık konmuştu. Altlık şu yüzden gerekmişti: ALB
+                Tarım logosunun yaprağı yeşil, kartın zemini de yeşildi; logo
+                doğrudan konsa eriyip kayboluyordu. Ama beyaz kare, karanlık
+                hero'nun ortasında yapıştırılmış uygulama simgesi gibi duruyordu.
+
+                Çözüm altlığı güzelleştirmek değil, ZEMİNİ değiştirmek oldu.
+                Kartlar artık hero'nun kendi karanlığı üzerinde duran yarı
+                saydam cam yüzeyler. Renkli logolar bu nötr zeminde kendiliğinden
+                okunuyor, altlığa gerek kalmıyor. Marka rengi kayboldu sanmayın:
+                kenarlık ve gölge fareyle üzerine gelindiğinde markanın rengine
+                dönüyor.
+
+                Yerleşim de dikeyden yataya çevrildi. Eskiden logo/başlık/eylem
+                alt alta diziliyor ve kart 150 pikseli aşıyordu; mobilde iki
+                kart ekranın yarısını yiyordu. Yatay dizilimde yükseklik ~72
+                piksele düştü. */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
               <Link
                 href="/alb-tarim"
-                className="anim-fade-up anim-delay-400 arrow-slide group relative flex flex-col items-center gap-3 bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white rounded-2xl p-7 transition-all duration-300 shadow-xl hover:shadow-green-600/40 hover:-translate-y-1.5 hover:scale-[1.02]"
+                className="anim-fade-up anim-delay-400 arrow-slide group flex items-center gap-3.5 rounded-2xl border border-white/12 bg-white/[0.06] px-4 py-3.5 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-tarim-400/50 hover:bg-white/[0.1] hover:shadow-lg hover:shadow-tarim-500/15"
               >
-                {/* Marka görseli tek kaynaktan: components/ui/BrandLogo.
-                    Kart zemini koyu yeşil; ALB Tarım logosunun yaprağı da yeşil
-                    olduğu için logo doğrudan kartın üzerine konsa eriyip
-                    kayboluyordu. Beyaz bir altlık kontrastı garantiye alıyor. */}
-                <span className="bg-white rounded-2xl p-2 shadow-sm icon-pop">
-                  <BrandLogo brand="alb-tarim" boyut="lg" />
+                <BrandLogo brand="alb-tarim" boyut="md" className="icon-pop" />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-bold text-white leading-tight">ALB Tarım</span>
+                  <span className="mt-0.5 block truncate text-xs text-white/55">
+                    Gübre · Zirai Danışmanlık
+                  </span>
                 </span>
-                <div>
-                  <p className="font-black text-xl">ALB Tarım</p>
-                  <p className="text-green-100/80 text-sm mt-1">Gübre · Zirai İlaç · Danışmanlık</p>
-                </div>
-                <span className="mt-2 text-sm font-semibold flex items-center gap-1.5 text-green-100">
-                  Keşfet <span className="arrow">→</span>
+                <span className="arrow flex-shrink-0 text-white/40 transition-colors group-hover:text-white">
+                  →
                 </span>
               </Link>
 
               <Link
                 href="/alb-su-aritma"
-                className="anim-fade-up anim-delay-500 arrow-slide group relative flex flex-col items-center gap-3 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl p-7 transition-all duration-300 shadow-xl hover:shadow-blue-600/40 hover:-translate-y-1.5 hover:scale-[1.02]"
+                className="anim-fade-up anim-delay-500 arrow-slide group flex items-center gap-3.5 rounded-2xl border border-white/12 bg-white/[0.06] px-4 py-3.5 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-albsu-400/50 hover:bg-white/[0.1] hover:shadow-lg hover:shadow-albsu-500/15"
               >
-                <span className="bg-white rounded-2xl p-2 shadow-sm icon-pop">
-                  <BrandLogo brand="alb-su-aritma" boyut="lg" />
+                <BrandLogo brand="alb-su-aritma" boyut="md" className="icon-pop" />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-bold text-white leading-tight">Alb Su Teknolojileri</span>
+                  <span className="mt-0.5 block truncate text-xs text-white/55">
+                    Su Arıtma · Klima · Yedek Parça
+                  </span>
                 </span>
-                <div>
-                  <p className="font-black text-xl">Alb Su Teknolojileri</p>
-                  <p className="text-blue-100/80 text-sm mt-1">Su Arıtma · Klima · Elektronik</p>
-                </div>
-                <span className="mt-2 text-sm font-semibold flex items-center gap-1.5 text-blue-100">
-                  Keşfet <span className="arrow">→</span>
+                <span className="arrow flex-shrink-0 text-white/40 transition-colors group-hover:text-white">
+                  →
                 </span>
               </Link>
             </div>
@@ -184,8 +197,8 @@ export default function HomePage() {
                 <p>
                   <strong className="text-gray-800">ALB Tarım</strong> — dededen kalan
                   şirketimizin adıyla yola çıktık, bugün kendi formüllerimizle gübre
-                  üreten bir şirket hâline geldik. Tarımın her alanında zirai ilaç, gübre
-                  ve zirai danışmanlık hizmeti veriyoruz. Türk tarımının gelişmesine
+                  üreten bir şirket hâline geldik. Tarımın her alanında gübre ve zirai
+                  danışmanlık hizmeti veriyoruz. Türk tarımının gelişmesine
                   katkıda bulunmayı; teknolojiyi ve yenilikçi gelişmeleri yakından takip
                   ederek öncü şirketler arasında yer almayı hedefliyoruz.
                 </p>
@@ -268,13 +281,13 @@ export default function HomePage() {
               />
               <h3 className="text-2xl font-black text-gray-900 mb-3">ALB Tarım</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Kendi formüllerimizle ürettiğimiz gübreler, zirai ilaçlar ve tarım
-                ekipmanları satıyoruz; zirai danışmanlık veriyoruz. Anamur&apos;daki
+                Kendi formüllerimizle ürettiğimiz gübreleri satıyor, zirai
+                danışmanlık veriyoruz. Anamur&apos;daki
                 dükkânımızdan alabilir ya da siparişinizi kargoyla adresinize
                 gönderebilirsiniz.
               </p>
               <ul className="space-y-2 text-sm text-gray-600 mb-8">
-                {['Organik & Kimyasal Gübreler', 'Kendi Formülümüz Gübreler', 'Bitki Koruma Ürünleri', 'Zirai Danışmanlık'].map((item) => (
+                {['Organik & Kimyasal Gübreler', 'Kendi Formülümüz Gübreler', 'Toprak & Yaprak Analizi', 'Zirai Danışmanlık'].map((item) => (
                   <li key={item} className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                     {item}

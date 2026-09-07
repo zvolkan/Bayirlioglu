@@ -60,7 +60,7 @@ export default async function AdminGirisEkrani() {
         <MarkaKarti
           href="/admin/alb-tarim"
           ad={BRANDS['alb-tarim'].name}
-          aciklama="Gübre, zirai ilaç ve tarım ekipmanları"
+          aciklama="Gübre ve zirai danışmanlık"
           marka="alb-tarim"
           renkler={{
             kenar: 'border-green-200 hover:border-green-400',
@@ -75,7 +75,7 @@ export default async function AdminGirisEkrani() {
         <MarkaKarti
           href="/admin/alb-su-aritma"
           ad={BRANDS['alb-su-aritma'].name}
-          aciklama="Su arıtma, klima ve elektronik"
+          aciklama="Su arıtma, klima ve yedek parça"
           marka="alb-su-aritma"
           renkler={{
             kenar: 'border-blue-200 hover:border-blue-400',

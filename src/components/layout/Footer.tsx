@@ -45,7 +45,7 @@ const MARKALAR: { key: BrandKey; name: string; desc: string; color: string; href
   {
     key: 'alb-tarim',
     name: 'ALB Tarım',
-    desc: 'Gübre, zirai ilaç, tarım ekipmanları ve danışmanlık',
+    desc: 'Kendi formülümüzle ürettiğimiz gübreler ve zirai danışmanlık',
     color: 'bg-tarim-600',
     href: '/alb-tarim',
   },

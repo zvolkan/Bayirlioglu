@@ -28,8 +28,8 @@ const TARIM_SERVICES: { icon: IconName; title: string; desc: string; features: s
   {
     icon: 'filiz',
     title: 'Tarım Danışmanlığı',
-    desc: 'Uzman agronomlarımız tarladan sofraya tüm süreçte yanınızda. Toprak analizi, ürün seçimi ve gübreleme planlaması.',
-    features: ['Toprak analizi', 'Ürün seçim danışmanlığı', 'Gübreleme planı', 'Hasat sonrası rehberlik'],
+    desc: 'Uzman agronomlarımız tarladan sofraya tüm süreçte yanınızda. Toprak analizi, ürün seçimi, gübreleme ve bitki koruma planlaması.',
+    features: ['Toprak analizi', 'Ürün seçim danışmanlığı', 'Gübreleme planı', 'Bitki koruma programı', 'Hasat sonrası rehberlik'],
   },
   {
     icon: 'traktor',
@@ -37,8 +37,26 @@ const TARIM_SERVICES: { icon: IconName; title: string; desc: string; features: s
     desc: 'Uzmanlarımız tarlanıza gelir, yerinde inceleme yaparak en doğru çözümü sunar.',
     features: ['Ücretsiz saha analizi', 'Yerinde toprak ve bitki gözlemi', 'Özel aksiyon planı'],
   },
+  {
+    icon: 'analiz',
+    title: 'Bitki Koruma Ürünleri — Mağazadan Satış',
+    desc: 'Bitki koruma ürünlerinin internetten satışı mevzuat gereği yapılamaz. Bu ürünleri Anamur\'daki iş yerimizden, Çiftçi Kayıt Sistemi (ÇKS) kaydı bulunan çiftçilere satıyoruz. Danışmanlık görüşmesinde ihtiyacınızı belirleyip doğru ürünü mağazada temin edebilirsiniz.',
+    features: ['İnternetten satışı yoktur', 'ÇKS belgesi ile mağazadan satış', 'Danışmanlıkla birlikte ürün seçimi', 'Anamur\'daki iş yerimizde'],
+  },
   // "Sulama Sistem Kurulumu" hizmeti kaldırıldı: ALB Tarım sulama sistemi
-  // kurulumu yapmıyor. Gübre, zirai ilaç ve danışmanlık odaklı çalışıyoruz.
+  // kurulumu yapmıyor. Tarım ekipmanı satışı da yok.
+  //
+  // ── ZİRAİ İLAÇ: internette YOK, mağazada VAR ────────────────────────────
+  //
+  // Bitki koruma ürünlerinin internetten satışı mevzuat gereği yasak; bu
+  // yüzden ürün kataloğunda yer almıyor, arama motoru anahtar kelimelerinde
+  // de geçmemeli. Ancak Anamur'daki iş yerinde, ÇKS kaydı bulunan çiftçilere
+  // satışı yapılıyor. Bunu gizlemek de yanlış olurdu: danışmanlık verirken
+  // ortaya çıkan ihtiyacın nerede karşılandığını söylemek gerekiyor.
+  //
+  // Aşağıdaki kart tam olarak bu ayrımı kuruyor — "mağazadan, ÇKS ile".
+  // Metni değiştirirken "internetten satın alın" çağrısına dönüşmemesine
+  // dikkat edin.
   // "Çiftçi Eğitimi" hizmeti kaldırıldı: seminer, sertifika programı ve online
   // eğitim gibi bir faaliyet sitenin hiçbir yerinde yok. Böyle bir çalışmanız
   // varsa yeniden ekleyelim.

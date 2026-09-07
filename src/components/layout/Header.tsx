@@ -168,11 +168,22 @@ export default function Header() {
           isHeroPage && !scrolled ? 'border-white/15' : 'border-white/10'
         }`}>
           <div className="container-main">
+            {/* ── Yerleşim ────────────────────────────────────────────────
+                Eskiden üç grup (logo · marka seçici · eylemler) tek bir
+                `justify-between` içindeydi. Geniş ekranda kap 1280 piksele
+                kadar açıldığı için gruplar birbirinden kopuyor, aralarda iki
+                büyük boşluk kalıyordu; header boş görünüyordu.
+
+                Şimdi logo ile marka seçici SOLDA tek küme; `justify-between`
+                yalnızca bu kümeyle sağdaki eylemleri ayırıyor. Tek boşluk
+                kaldı ve o da doğal yerinde. */}
             <div
-              className={`flex items-center justify-between transition-[height] duration-500 ease-out ${
+              className={`flex items-center justify-between gap-3 transition-[height] duration-500 ease-out ${
                 scrolled ? 'h-12 sm:h-14' : 'h-14 sm:h-16'
               }`}
             >
+
+              <div className="flex min-w-0 items-center gap-3 sm:gap-5">
 
               {/* LOGO */}
               <Link
@@ -196,10 +207,13 @@ export default function Header() {
                 />
               </Link>
 
-              {/* MARKA SEÇİCİ */}
-              <div className={`flex items-center gap-0.5 rounded-xl p-1 transition-all duration-500 ${
-                isHeroPage && !scrolled ? 'bg-white/10 backdrop-blur-sm' : 'bg-white/8'
-              }`}>
+              {/* MARKA SEÇİCİ
+                  Sekmelerin arkasındaki gri hap kaldırıldı. Logo ile sekmeler
+                  yan yana gelince o zemin bir "çerçeve" gibi okunuyor ve
+                  header'ı kutulu gösteriyordu. Seçili markayı zaten sekmenin
+                  kendi dolgusu belli ediyor; kapsayıcının ayrıca bir zemine
+                  ihtiyacı yok. */}
+              <div className="flex items-center gap-0.5">
                 {BRAND_TABS.map((tab) => (
                   <button
                     key={tab.key}
@@ -215,6 +229,8 @@ export default function Header() {
                     <span className="hidden sm:inline">{tab.label}</span>
                   </button>
                 ))}
+              </div>
+
               </div>
 
               {/* SAĞ — Arama, Sepet, Giriş, Hamburger */}

@@ -23,7 +23,12 @@ const values: { title: string; description: string; icon: IconName }[] = [
   {
     title: 'İşimiz',
     description:
-      'Çiftçiye gübre, zirai ilaç ve tarım ekipmanı; ev ile iş yerlerine su arıtma sistemi satıyoruz. Su arıtmada kurulumu ve bakımı kendi ekibimiz yapıyor.',
+      // Zirai ilaç bilerek burada anılıyor ama internet satışı olarak DEĞİL:
+      // bitki koruma ürünlerinin internetten satışı mevzuat gereği yasak,
+      // Anamur'daki iş yerinde ÇKS kaydı olan çiftçilere satılıyor. Sayfa
+      // metninde bunu söylemek doğru; arama motoru anahtar kelimelerine
+      // eklemek değil.
+      'Çiftçiye gübre satıyor, zirai danışmanlık veriyoruz; ev ile iş yerlerine su arıtma sistemi satıyoruz. Bitki koruma ürünlerini yalnızca Anamur\'daki iş yerimizden, ÇKS kaydı bulunan çiftçilere veriyoruz. Su arıtmada kurulumu ve bakımı kendi ekibimiz yapıyor.',
     icon: 'hedef',
   },
   {
@@ -59,7 +64,7 @@ const markalar: {
     bgLight: 'bg-green-50',
     borderColor: 'border-green-200',
     href: '/alb-tarim',
-    desc: 'Kendi formülleriyle ürettiği gübreler, zirai ilaçlar ve tarım ekipmanları alanında faaliyet göstermektedir. Çiftçilerimize uygun fiyat, hızlı teslimat ve uzman zirai danışmanlık sunmaktadır.',
+    desc: 'Kendi formülleriyle ürettiği gübreler alanında faaliyet göstermektedir. Çiftçilerimize uygun fiyat, hızlı teslimat ve uzman zirai danışmanlık sunmaktadır. Bitki koruma ürünleri internetten satılmamakta; ÇKS kaydı bulunan çiftçilere iş yerimizden verilmektedir.',
     kuruluş: '1977',
     key: 'alb-tarim',
   },

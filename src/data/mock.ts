@@ -32,7 +32,7 @@ export const MOCK_SERVICES_TARIM: ServiceWithIcon[] = [
   {
     id: 2,
     title: 'Zirai Danışmanlık',
-    description: 'Toprak ve yaprak analizine dayalı gübreleme ile bitki koruma programı hazırlıyoruz.',
+    description: 'Toprak ve yaprak analizine dayalı gübreleme ve bitki koruma programı hazırlıyoruz.',
     icon: 'filiz',
     features: ['Arazi ziyareti', 'Besleme programı', 'Hastalık-zararlı takibi', 'Sezon boyu saha takibi'],
     brand: 'alb-tarim',

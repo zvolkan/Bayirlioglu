@@ -24,7 +24,7 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     tagline: 'Toprağınıza\nDeğer Katın',
     subtitle: 'Modern tarım teknolojileriyle',
     description:
-      'Kendi formüllerimizle ürettiğimiz gübrelerden zirai ilaçlara kadar verimliliğinizi artıran çözümler sunuyoruz. Ürün seçiminde yardımcı oluyor, siparişinizi kargoyla adresinize gönderiyoruz.',
+      'Kendi formüllerimizle ürettiğimiz gübrelerle verimliliğinizi artıran çözümler sunuyoruz. Toprak ve yaprak analizine dayalı zirai danışmanlık veriyor, ürün seçiminde yardımcı oluyor, siparişinizi kargoyla adresinize gönderiyoruz.',
     badge: '2026 Yeni Sezon Ürünleri Mevcut',
     cta: { label: 'Ürünlerimizi İnceleyin', href: '/urunler' },
     ctaSecondary: { label: 'Ücretsiz Danışmanlık Al', href: '/iletisim' },

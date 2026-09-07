@@ -28,8 +28,17 @@ export const metadata: Metadata = {
   title: { template: `%s | ${COMPANY_NAME}`, default: COMPANY_NAME },
   description: BRAND.description,
   keywords: ACTIVE_BRAND_KEY === 'alb-tarim'
-    ? ['alb tarım', 'gübre', 'zirai ilaç', 'tarım ilaçları', 'organik gübre', 'zirai danışmanlık']
-    : ['albsu', 'su arıtma', 'klima', 'su arıtma cihazı', 'ev elektroniği'],
+    // ── SEO anahtar kelimeleri: neyin OLMADIĞINA dikkat ──────────────────
+    //
+    // 'zirai ilaç' ve 'tarım ilaçları' KALDIRILDI ve bir daha eklenmemeli.
+    // Zirai ilacın internetten satışı mevzuat gereği yasak; satmadığınız ve
+    // satamayacağınız bir ürün için arama trafiği çekmek yalnızca yanıltıcı
+    // değil, denetimde aleyhe delil olur.
+    //
+    // 'tarım ekipmanları' da kaldırıldı: ekipman satışı yok. ALB Tarım'ın
+    // sattığı tek ürün grubu gübre; yanında zirai danışmanlık veriliyor.
+    ? ['alb tarım', 'gübre', 'organik gübre', 'damla sulama gübresi', 'yaprak gübresi', 'zirai danışmanlık']
+    : ['albsu', 'su arıtma', 'klima', 'su arıtma cihazı', 'filtre', 'yedek parça'],
   openGraph: {
     type: 'website', locale: 'tr_TR',
     siteName: COMPANY_NAME, title: COMPANY_NAME, description: BRAND.description,

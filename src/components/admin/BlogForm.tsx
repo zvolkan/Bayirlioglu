@@ -32,9 +32,14 @@ interface Props {
   }
 }
 
+// 'Zirai İlaç' yerine 'Bitki Koruma' kondu. Ürünlerin internetten satışı
+// yasak olduğu için başlığın satış çağrısı gibi okunmaması önemli; buna
+// karşılık bilgilendirici yazı yazmak serbest ve zaten danışmanlığın bir
+// parçası. Bu alan serbest metin girişi (datalist yalnızca öneri listesi),
+// dolayısıyla eski yazıların kategorisi kendiliğinden değişmez.
 const KATEGORILER = [
   'Gübreleme',
-  'Zirai İlaç',
+  'Bitki Koruma',
   'Bitki Besleme',
   'Toprak Analizi',
   'Su Arıtma',
