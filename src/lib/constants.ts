@@ -12,6 +12,15 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     key: 'alb-tarim',
     name: 'ALB Tarım',
     shortCode: 'AT',
+    // Bulut + yaprak/el logosu. Kaynak, basılı logonun fotoğrafıydı; şeffaf
+    // kenarları kırpıldı, kâğıt greni temizlendi ve 512 piksel genişliğe
+    // indirildi. WebP seçildi çünkü aynı görüntü PNG olarak 115 KB, WebP
+    // olarak 35 KB tutuyor ve logo neredeyse her sayfada yükleniyor.
+    //
+    // Oran YATAY (512×308) — Alb Su damlasının tam tersi. BrandLogo bunu
+    // `object-contain` ile hallediyor; ölçüyü elle sabitlemeyin.
+    logo: '/images/alb-tarim-logo.webp',
+    logoAspect: { width: 512, height: 308 },
     tagline: 'Toprağınıza\nDeğer Katın',
     subtitle: 'Modern tarım teknolojileriyle',
     description:
@@ -76,6 +85,12 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     key: 'alb-su-aritma',
     name: 'Alb Su Teknolojileri',
     shortCode: 'AS',
+    // Damla biçimli ALB logosu. Kenarındaki beyaz kontur sayesinde hem açık
+    // hem koyu zeminde okunuyor, bu yüzden tek dosya her yerde kullanılıyor.
+    // Oran dikey (694×969); yerleştirirken yüksekliği sabitleyip genişliği
+    // serbest bırakın, aksi hâlde logo ezilir.
+    logo: '/images/alb-su-logo.svg',
+    logoAspect: { width: 694, height: 969 },
     tagline: 'Temiz suyun\nadresi',
     subtitle: "1977'den gelen ticaret geleneğiyle",
     description:

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Icon, { type IconName } from '@/components/ui/Icon'
+import BrandLogo from '@/components/ui/BrandLogo'
+import type { BrandKey } from '@/lib/types'
 import { KURULUS_ANLATIM, SITE_CONFIG } from '@/lib/constants'
 
 export const metadata: Metadata = {
@@ -47,7 +49,8 @@ const markalar: {
   href: string
   desc: string
   kuruluş: string
-  icon: IconName
+  /** `icon` yerine marka anahtarı: görsel artık BrandLogo'dan geliyor */
+  key: BrandKey
 }[] = [
   {
     name: 'ALB Tarım',
@@ -58,7 +61,7 @@ const markalar: {
     href: '/alb-tarim',
     desc: 'Kendi formülleriyle ürettiği gübreler, zirai ilaçlar ve tarım ekipmanları alanında faaliyet göstermektedir. Çiftçilerimize uygun fiyat, hızlı teslimat ve uzman zirai danışmanlık sunmaktadır.',
     kuruluş: '1977',
-    icon: 'filiz',
+    key: 'alb-tarim',
   },
   {
     name: 'Alb Su Teknolojileri',
@@ -69,7 +72,7 @@ const markalar: {
     href: '/alb-su-aritma',
     desc: `A.O. Smith yetkili bayii olarak evsel ve endüstriyel su arıtma sistemleri satıyor. Montaj ve filtre değişimini kendi ekibi yapar; teknik servis ${SITE_CONFIG.workingHours} saatlerinde hizmet verir.`,
     kuruluş: '2014',
-    icon: 'damla',
+    key: 'alb-su-aritma',
   },
 ]
 
@@ -156,9 +159,7 @@ export default function HakkimizdaPage() {
                 className={`bg-white rounded-2xl border ${m.borderColor} shadow-sm hover:shadow-md transition-shadow p-4 sm:p-8`}
               >
                 <div className="flex items-center gap-4 mb-5">
-                  <div className={`${m.color} w-12 h-12 rounded-xl flex items-center justify-center text-2xl`}>
-                    <Icon name={m.icon} className="w-6 h-6 text-white" />
-                  </div>
+                  <BrandLogo brand={m.key} boyut="md" kutuSinifi={`${m.color} rounded-xl`} />
                   <div>
                     <h3 className={`text-xl font-bold ${m.textColor}`}>{m.name}</h3>
                     <p className="text-gray-400 text-xs">Kuruluş: {m.kuruluş}</p>

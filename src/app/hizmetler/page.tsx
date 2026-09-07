@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { MOCK_SERVICES_TARIM, MOCK_SERVICES_ALBSU } from '@/data/mock'
 import { SITE_CONFIG } from '@/lib/constants'
 import Icon, { type IconName } from '@/components/ui/Icon'
+import BrandLogo from '@/components/ui/BrandLogo'
 
 export const metadata: Metadata = {
   title: 'Hizmetler',
@@ -79,9 +80,7 @@ export default function HizmetlerPage() {
       <section className="py-16 sm:py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="flex items-center gap-4 mb-10">
-            <div className="bg-green-600 w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
-              <Icon name="filiz" className="w-5 h-5 text-white" />
-            </div>
+            <BrandLogo brand="alb-tarim" boyut="md" kutuSinifi="bg-green-600 rounded-xl" />
             <div>
               <p className="text-green-700 text-xs font-semibold uppercase tracking-widest">Marka</p>
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">ALB Tarım Hizmetleri</h2>
@@ -125,9 +124,7 @@ export default function HizmetlerPage() {
       <section className="py-16 sm:py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="flex items-center gap-4 mb-10">
-            <div className="bg-blue-600 w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
-              <Icon name="damla" className="w-5 h-5 text-white" />
-            </div>
+            <BrandLogo brand="alb-su-aritma" boyut="md" kutuSinifi="bg-blue-600 rounded-xl" />
             <div>
               <p className="text-blue-700 text-xs font-semibold uppercase tracking-widest">Marka</p>
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Alb Su Teknolojileri Hizmetleri</h2>

@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db'
 import { formatOrderNo } from '@/lib/order-number'
 import { signOut } from '@/app/actions/auth'
 import Icon from '@/components/ui/Icon'
+import BrandLogo from '@/components/ui/BrandLogo'
 import ProfileForm from './_components/ProfileForm'
 import RepeatOrderButton from './_components/RepeatOrderButton'
 
@@ -188,9 +189,7 @@ export default async function HesabimPage() {
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between p-5 border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-sm">
-                    <Icon name="filiz" className="w-4 h-4 text-white" />
-                  </div>
+                  <BrandLogo brand="alb-tarim" boyut="sm" kutuSinifi="bg-green-600 rounded-lg" />
                   <h2 className="font-semibold text-gray-900">ALB Tarım Siparişleri</h2>
                 </div>
                 <Link href="/alb-tarim/urunler" className="text-xs text-green-600 font-semibold hover:underline">
@@ -250,9 +249,7 @@ export default async function HesabimPage() {
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="flex items-center justify-between p-5 border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-sm">
-                    <Icon name="damla" className="w-4 h-4 text-white" />
-                  </div>
+                  <BrandLogo brand="alb-su-aritma" boyut="sm" kutuSinifi="bg-blue-600 rounded-lg" />
                   <h2 className="font-semibold text-gray-900">Alb Su Teknolojileri Siparişleri</h2>
                 </div>
                 <Link href="/alb-su-aritma/urunler" className="text-xs text-blue-600 font-semibold hover:underline">

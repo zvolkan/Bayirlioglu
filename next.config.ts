@@ -5,9 +5,22 @@ import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
  * `next dev` sırasında Cloudflare bağlamalarını (Hyperdrive, Durable Object,
  * ASSETS …) yerel süreçte kullanılabilir kılar. Bu satır olmadan `npm run dev`
  * çalışırken `getCloudflareContext()` boş döner ve veritabanına gidilemez.
- * Üretim derlemesinde ve `wrangler deploy`de etkisi yoktur.
+ *
+ * ── Neden koşula alındı ─────────────────────────────────────────────────────
+ *
+ * "Üretim derlemesinde etkisi yoktur" diye yazmıştım; YANLIŞTI. Fonksiyonun
+ * kendi içinde geliştirme/üretim ayrımı yok — yalnızca `AsyncLocalStorage`ın
+ * global olup olmadığına bakıyor ve o `next build` sırasında da tanımlı. Yani
+ * her üretim derlemesinde miniflare ayağa kalkıyor, Hyperdrive bağlaması için
+ * yerel bir bağlantı dizesi arıyor ve bulamazsa derlemeyi düşürüyordu.
+ *
+ * Derlemenin çalışması için gerekli olmayan bu adım artık yalnızca
+ * geliştirmede çalışıyor. `next build` NODE_ENV'i 'production' yapar,
+ * `next dev` ise 'development'.
  */
-initOpenNextCloudflareForDev();
+if (process.env.NODE_ENV === 'development') {
+  initOpenNextCloudflareForDev();
+}
 
 /**
  * ─── Derleme zamanı ortam değişkeni denetimi ────────────────────────────────

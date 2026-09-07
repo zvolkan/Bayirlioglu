@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import GrupLogo from '@/components/ui/GrupLogo'
 import { signUp, signInWithGoogle } from '@/app/actions/auth'
 
 export const metadata: Metadata = {
@@ -19,10 +20,9 @@ export default async function KayitPage({
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center font-black text-white text-sm">
-              BG
-            </div>
-            <span className="font-bold text-xl text-gray-900">Bayırlıoğlu</span>
+            {/* Eskiden "BG" harfleri yazıyordu; dört auth sayfasında da
+                kopyalanmıştı. Artık gerçek logo, tek bileşenden. */}
+            <GrupLogo />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Hesap Oluşturun</h1>
           <p className="text-gray-500 text-sm mt-1">Sipariş takibi ve hızlı alışveriş için kayıt olun</p>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import GrupLogo from '@/components/ui/GrupLogo'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { updatePassword } from '@/app/actions/auth'
@@ -35,10 +36,9 @@ export default async function SifreYenilePage({
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center font-black text-white text-sm">
-              BG
-            </div>
-            <span className="font-bold text-xl text-gray-900">Bayırlıoğlu</span>
+            {/* Eskiden "BG" harfleri yazıyordu; dört auth sayfasında da
+                kopyalanmıştı. Artık gerçek logo, tek bileşenden. */}
+            <GrupLogo />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Yeni Şifre Belirleyin</h1>
           <p className="text-gray-500 text-sm mt-1">{user.email}</p>

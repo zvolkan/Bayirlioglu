@@ -2,8 +2,9 @@ import Link from 'next/link'
 import { adminLogout } from '@/app/actions/admin'
 import { getOrderCountsByStatus, getUnreadMessageCount } from '@/app/actions/admin-orders'
 import { getOpenReturnCount } from '@/app/actions/returns'
-import Icon from '@/components/ui/Icon'
 import { BRANDS } from '@/lib/constants'
+import BrandLogo from '@/components/ui/BrandLogo'
+import type { BrandKey } from '@/lib/types'
 import { yoneticiGerekli } from '@/lib/admin-guard'
 
 export const dynamic = 'force-dynamic'
@@ -60,7 +61,7 @@ export default async function AdminGirisEkrani() {
           href="/admin/alb-tarim"
           ad={BRANDS['alb-tarim'].name}
           aciklama="Gübre, zirai ilaç ve tarım ekipmanları"
-          ikon="filiz"
+          marka="alb-tarim"
           renkler={{
             kenar: 'border-green-200 hover:border-green-400',
             arka: 'from-green-50 to-emerald-50',
@@ -75,7 +76,7 @@ export default async function AdminGirisEkrani() {
           href="/admin/alb-su-aritma"
           ad={BRANDS['alb-su-aritma'].name}
           aciklama="Su arıtma, klima ve elektronik"
-          ikon="damla"
+          marka="alb-su-aritma"
           renkler={{
             kenar: 'border-blue-200 hover:border-blue-400',
             arka: 'from-blue-50 to-cyan-50',
@@ -117,7 +118,7 @@ function MarkaKarti({
   href,
   ad,
   aciklama,
-  ikon,
+  marka,
   renkler,
   aktifSiparis,
   okunmamis,
@@ -126,7 +127,7 @@ function MarkaKarti({
   href: string
   ad: string
   aciklama: string
-  ikon: 'filiz' | 'damla'
+  marka: BrandKey
   renkler: { kenar: string; arka: string; rozet: string; metin: string }
   aktifSiparis: number
   okunmamis: number
@@ -137,11 +138,12 @@ function MarkaKarti({
       href={href}
       className={`block rounded-3xl border-2 bg-gradient-to-br ${renkler.arka} ${renkler.kenar} p-7 transition-colors hover-lift`}
     >
-      <div
-        className={`w-14 h-14 rounded-2xl ${renkler.rozet} flex items-center justify-center mb-5`}
-      >
-        <Icon name={ikon} className="w-8 h-8 text-white" />
-      </div>
+      <BrandLogo
+        brand={marka}
+        boyut="lg"
+        kutuSinifi={`${renkler.rozet} rounded-2xl`}
+        className="mb-5"
+      />
       <h2 className={`text-xl font-black ${renkler.metin}`}>{ad}</h2>
       <p className="text-sm text-gray-600 mt-1">{aciklama}</p>
 

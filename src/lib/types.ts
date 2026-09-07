@@ -28,6 +28,17 @@ export interface BrandConfig {
   key: BrandKey;
   name: string;
   shortCode: string;
+  /**
+   * Markanın kendi logosu — `public/` altındaki yol.
+   *
+   * Tanımlıysa header, footer, ana sayfa kartları ve yönetim paneli bu görseli
+   * kullanır. Tanımlı DEĞİLSE ilgili yerler eski davranışa, yani genel ikona
+   * (filiz / damla) düşer. Böylece logosu henüz hazır olmayan bir marka
+   * yüzünden hiçbir yer boş kalmaz.
+   */
+  logo?: string;
+  /** Logonun doğal en/boy oranı — `logo` verildiyse gerekli. */
+  logoAspect?: { width: number; height: number };
   tagline: string;
   subtitle: string;
   description: string;

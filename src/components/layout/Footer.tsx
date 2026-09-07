@@ -1,4 +1,6 @@
 import { SATICI } from '@/lib/legal'
+import BrandLogo from '@/components/ui/BrandLogo'
+import type { BrandKey } from '@/lib/types'
 import Link from 'next/link'
 import Image from 'next/image'
 import { KURULUS_ANLATIM, SITE_CONFIG } from '@/lib/constants'
@@ -39,7 +41,7 @@ const YASAL_LINKS = [
 // İki marka rozeti footer'da yan yana duruyor; bu yüzden aktif markaya bağlı
 // `brand-*` değil, her markanın kendi sabit paleti kullanılıyor — yoksa ikisi
 // aynı renge düşer ve grup ana sayfasında ikisi de griye dönerdi.
-const MARKALAR = [
+const MARKALAR: { key: BrandKey; name: string; desc: string; color: string; href: string }[] = [
   {
     key: 'alb-tarim',
     name: 'ALB Tarım',
@@ -114,9 +116,16 @@ export default function Footer() {
                 {MARKALAR.map((m) => (
                   <Link key={m.key} href={m.href}
                     className="group flex items-start gap-3 hover:opacity-90 transition-opacity">
-                    <div className={`${m.color} w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-xs flex-shrink-0 mt-0.5`}>
-                      {m.name.charAt(0)}
-                    </div>
+                    {/* Eskiden markanın baş harfi ("A") renkli bir kareye
+                        yazılıyordu ve iki marka da aynı harfle başladığı için
+                        ayırt edilemiyordu. Artık gerçek logo geliyor; logosu
+                        olmayan markada renkli kare + ikon yedeği devrede. */}
+                    <BrandLogo
+                      brand={m.key}
+                      boyut="sm"
+                      kutuSinifi={`${m.color} rounded-lg`}
+                      className="mt-0.5"
+                    />
                     <div>
                       <p className="text-white text-sm font-semibold group-hover:text-gray-200 transition-colors">
                         {m.name}

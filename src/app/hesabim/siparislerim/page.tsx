@@ -9,6 +9,7 @@ import { signOut } from '@/app/actions/auth'
 import CancelOrderButton from './_components/CancelOrderButton'
 import RepeatOrderButton from '../_components/RepeatOrderButton'
 import Icon, { type IconName } from '@/components/ui/Icon'
+import BrandLogo from '@/components/ui/BrandLogo'
 import type { BrandKey } from '@/lib/types'
 
 export const metadata: Metadata = {
@@ -156,7 +157,6 @@ export default async function SiparislerimPage() {
                 {orders.map((order) => {
                   const status = STATUS_MAP[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700 border-gray-200' }
                   const isAlbTarim = order.brand.key === 'alb-tarim'
-                  const brandIcon: IconName = isAlbTarim ? 'filiz' : 'damla'
                   const dotColor = isAlbTarim ? 'bg-green-400' : 'bg-blue-400'
                   const cancellable = ['PENDING', 'CONFIRMED'].includes(order.status)
                   const shipped = ['SHIPPED', 'DELIVERED'].includes(order.status)
@@ -167,7 +167,7 @@ export default async function SiparislerimPage() {
                       {/* Header row */}
                       <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 py-4 border-b border-gray-100">
                         <div className="flex items-center gap-2 min-w-0">
-                          <Icon name={brandIcon} className="w-4 h-4 flex-shrink-0 text-gray-500" />
+                          <BrandLogo brand={order.brand.key} boyut="xs" ikonSinifi="text-gray-500" />
                           <div className="min-w-0">
                             <span className="text-xs font-mono text-gray-400">#{formatOrderNo(order)}</span>
                             <span className="text-gray-300 mx-1.5">·</span>

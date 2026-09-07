@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { adminLogout } from '@/app/actions/admin'
 import { gecerliKapsam, kapsamAdi, kapsamRengi, type Kapsam } from '@/lib/admin-kapsam'
 import { yoneticiGerekli } from '@/lib/admin-guard'
+import BrandLogo from '@/components/ui/BrandLogo'
 
 /**
  * Marka kapsamının ortak çerçevesi.
@@ -54,11 +55,20 @@ function KapsamBasligi({ kapsam }: { kapsam: Kapsam }) {
     <header className={`rounded-2xl border ${renk.kenar} ${renk.arka} p-4 sm:p-5`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span
-            className={`inline-flex items-center justify-center w-9 h-9 rounded-xl ${renk.dolgu} text-white text-xs font-black`}
-          >
-            {kapsam === 'belirtilmemis' ? '?' : kapsamAdi(kapsam).charAt(0)}
-          </span>
+          {/* Marka kapsamında gerçek logo gösteriliyor. Eskiden markanın baş
+              harfi yazılıydı ve iki marka da "A" ile başladığı için rozet ayırt
+              edici değildi — oysa bu başlığın tek işi yanlış markada
+              çalışıldığını fark ettirmek. Marka dışı kapsamda ("belirtilmemis")
+              logo yok, eski soru işareti duruyor. */}
+          {kapsam === 'belirtilmemis' ? (
+            <span
+              className={`inline-flex items-center justify-center w-9 h-9 rounded-xl ${renk.dolgu} text-white text-xs font-black`}
+            >
+              ?
+            </span>
+          ) : (
+            <BrandLogo brand={kapsam} boyut="md" kutuSinifi={`${renk.dolgu} rounded-xl`} />
+          )}
           <div>
             <p className="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">
               Yönetim Paneli

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import Reveal from '@/components/ui/Reveal'
 import Icon, { type IconName } from '@/components/ui/Icon'
+import BrandLogo from '@/components/ui/BrandLogo'
 import RevealGroup from '@/components/ui/RevealGroup'
 import AnimatedCounter from '@/components/ui/AnimatedCounter'
 
@@ -101,7 +102,13 @@ export default function HomePage() {
                 href="/alb-tarim"
                 className="anim-fade-up anim-delay-400 arrow-slide group relative flex flex-col items-center gap-3 bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white rounded-2xl p-7 transition-all duration-300 shadow-xl hover:shadow-green-600/40 hover:-translate-y-1.5 hover:scale-[1.02]"
               >
-                <Icon name="filiz" className="w-10 h-10 icon-pop" />
+                {/* Marka görseli tek kaynaktan: components/ui/BrandLogo.
+                    Kart zemini koyu yeşil; ALB Tarım logosunun yaprağı da yeşil
+                    olduğu için logo doğrudan kartın üzerine konsa eriyip
+                    kayboluyordu. Beyaz bir altlık kontrastı garantiye alıyor. */}
+                <span className="bg-white rounded-2xl p-2 shadow-sm icon-pop">
+                  <BrandLogo brand="alb-tarim" boyut="lg" />
+                </span>
                 <div>
                   <p className="font-black text-xl">ALB Tarım</p>
                   <p className="text-green-100/80 text-sm mt-1">Gübre · Zirai İlaç · Danışmanlık</p>
@@ -115,7 +122,9 @@ export default function HomePage() {
                 href="/alb-su-aritma"
                 className="anim-fade-up anim-delay-500 arrow-slide group relative flex flex-col items-center gap-3 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-2xl p-7 transition-all duration-300 shadow-xl hover:shadow-blue-600/40 hover:-translate-y-1.5 hover:scale-[1.02]"
               >
-                <Icon name="damla" className="w-10 h-10 icon-pop" />
+                <span className="bg-white rounded-2xl p-2 shadow-sm icon-pop">
+                  <BrandLogo brand="alb-su-aritma" boyut="lg" />
+                </span>
                 <div>
                   <p className="font-black text-xl">Alb Su Teknolojileri</p>
                   <p className="text-blue-100/80 text-sm mt-1">Su Arıtma · Klima · Elektronik</p>
@@ -250,9 +259,12 @@ export default function HomePage() {
             {/* ALB Tarım */}
             <Reveal variant="up" className="h-full">
             <div className="group h-full hover-lift rounded-3xl border border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-8 hover:shadow-xl hover:shadow-green-100">
-              <div className="w-14 h-14 rounded-2xl bg-green-600 flex items-center justify-center text-3xl mb-6 icon-pop">
-                <Icon name="filiz" className="w-8 h-8 text-white" />
-              </div>
+              <BrandLogo
+                brand="alb-tarim"
+                boyut="lg"
+                kutuSinifi="bg-green-600 rounded-2xl"
+                className="mb-6 icon-pop"
+              />
               <h3 className="text-2xl font-black text-gray-900 mb-3">ALB Tarım</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
                 Kendi formüllerimizle ürettiğimiz gübreler, zirai ilaçlar ve tarım
@@ -280,9 +292,12 @@ export default function HomePage() {
             {/* Alb Su Teknolojileri */}
             <Reveal variant="up" delay={120} className="h-full">
             <div className="group h-full hover-lift rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-cyan-50 p-8 hover:shadow-xl hover:shadow-blue-100">
-              <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-3xl mb-6 icon-pop">
-                <Icon name="damla" className="w-8 h-8 text-white" />
-              </div>
+              <BrandLogo
+                brand="alb-su-aritma"
+                boyut="lg"
+                kutuSinifi="bg-blue-600 rounded-2xl"
+                className="mb-6 icon-pop"
+              />
               <h3 className="text-2xl font-black text-gray-900 mb-3">Alb Su Teknolojileri</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
                 A.O. Smith yetkili bayii olarak evsel ve endüstriyel su arıtma
