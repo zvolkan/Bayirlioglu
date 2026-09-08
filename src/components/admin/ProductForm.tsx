@@ -84,6 +84,22 @@ export default function ProductForm({
     defaultValues.productBrand ?? '',
   )
 
+  // ── Yayın durumu ─────────────────────────────────────────────────────────
+  //
+  // Bu iki alan eskiden `defaultChecked` ile kontrolsüz (uncontrolled) çalışıyor
+  // ve yanına gizli bir `<input value="false">` konuyordu. İki sorun vardı:
+  //
+  //   1. `defaultChecked` yalnızca bileşen İLK kez bağlandığında okunuyor.
+  //      Tarayıcı geri/ileri gezinmesinde form durumunu kendi hafızasından
+  //      geri yükleyince, ürün aktif olsa bile kutu işaretsiz görünüyordu.
+  //   2. Aynı adı taşıyan gizli input + checkbox ikilisi, gönderim sırasında
+  //      `getAll()` ile ayrıştırılmak zorundaydı — kırılgan bir düzen.
+  //
+  // Kontrollü hâle getirilince ikisi de ortadan kalktı: değer React'te
+  // tutuluyor, gönderimde doğrudan oradan yazılıyor.
+  const [aktif, setAktif] = useState<boolean>(defaultValues.isActive ?? true)
+  const [oneCikan, setOneCikan] = useState<boolean>(defaultValues.isFeatured ?? false)
+
   const [specs, setSpecs] = useState<Spec[]>(
     defaultValues.specs?.map((s) => ({ name: s.name, value: s.value, unit: s.unit ?? '' })) ?? [
       { name: '', value: '', unit: '' },
@@ -136,6 +152,24 @@ export default function ProductForm({
   const [selectedParentId, setSelectedParentId] = useState<number>(() =>
     resolveInitialParentId(selectedBrandId),
   )
+
+  // ── Ürün markası alanı hangi markada görünsün? ───────────────────────────
+  //
+  // "Ürün Markası" listesi (TİMAC AGRO, HAIFA, LEBOSOL …) tamamen tarım
+  // tedarikçilerinden oluşuyor. ALB Su Arıtma tarafında karşılığı yok; orada
+  // zorunlu bir alan olarak durunca kaydetmeyi engelliyordu.
+  //
+  // Alan artık YALNIZCA ALB Tarım'da görünüyor ve yalnızca orada zorunlu.
+  // Diğer markalarda gizleniyor — ama gizli input ile mevcut değer korunuyor:
+  // alanı formdan tamamen çıkarmak, ALB Su ürününde eskiden kayıtlı bir marka
+  // varsa onu ilk kayıtta sessizce silerdi.
+  const seciliMarkaAnahtari = useMemo(
+    () => brands.find((b) => b.id === selectedBrandId)?.key ?? '',
+    [brands, selectedBrandId],
+  )
+  const urunMarkasiGorunur = seciliMarkaAnahtari === 'alb-tarim'
+  /** Alan gerçekten çiziliyor mu? Düz kategori düzeninde hiç çizilmiyor. */
+  const urunMarkasiAlaniVar = hasHierarchy && urunMarkasiGorunur
 
   // ── İthal Ürünler mi seçili? ─────────────────────────────────────────────
   const isIthalSelected = useMemo(() => {
@@ -248,11 +282,9 @@ export default function ProductForm({
 
     const formData = new FormData(e.currentTarget)
 
-    // Checkbox değerlerini normalize et:
-    // hidden("false") + checkbox("true") → formData.get() her zaman ilk "false"'u döndürür.
-    // getAll() ile iki değeri okuyup tek doğru değere indirgiyoruz.
-    formData.set('isActive', formData.getAll('isActive').includes('true') ? 'true' : 'false')
-    formData.set('isFeatured', formData.getAll('isFeatured').includes('true') ? 'true' : 'false')
+    // Yayın durumu React state'inden yazılıyor; DOM'dan okunmuyor.
+    formData.set('isActive', aktif ? 'true' : 'false')
+    formData.set('isFeatured', oneCikan ? 'true' : 'false')
 
     formData.set('specs', JSON.stringify(specs))
 
@@ -359,28 +391,30 @@ export default function ProductForm({
                 </select>
               </div>
 
-              {/* Ürün Markası (YENİ — her iki modda da gösterilir) */}
-              <div className="md:col-span-2">
-                <label htmlFor="urun-productBrand" className="block text-sm font-medium text-gray-700 mb-1">
-                  Ürün Markası *
-                  <span className="ml-1.5 text-xs font-normal text-gray-400">
-                    (Ürün kartında gösterilir)
-                  </span>
-                </label>
-                <select
-                  id="urun-productBrand"
-                  name="productBrand"
-                  required
-                  value={selectedProductBrand}
-                  onChange={(e) => handleProductBrandChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Seçiniz</option>
-                  {URUN_MARKALARI.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-              </div>
+              {/* Ürün Markası — yalnızca ALB Tarım'da */}
+              {urunMarkasiGorunur && (
+                <div className="md:col-span-2">
+                  <label htmlFor="urun-productBrand" className="block text-sm font-medium text-gray-700 mb-1">
+                    Ürün Markası *
+                    <span className="ml-1.5 text-xs font-normal text-gray-400">
+                      (Ürün kartında gösterilir)
+                    </span>
+                  </label>
+                  <select
+                    id="urun-productBrand"
+                    name="productBrand"
+                    required
+                    value={selectedProductBrand}
+                    onChange={(e) => handleProductBrandChange(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Seçiniz</option>
+                    {URUN_MARKALARI.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Alt Kategori (ürün tipi) */}
               <div className="md:col-span-2">
@@ -434,6 +468,17 @@ export default function ProductForm({
                 ))}
               </select>
             </div>
+          )}
+
+          {/*
+            Ürün markası alanı ekranda YOKSA değeri gizli olarak taşınır.
+            Alanı formdan tamamen çıkarmak, kayıtlı bir markayı ilk kaydetmede
+            sessizce silerdi — alan görünmediği için de kimse fark etmezdi.
+            Bu satır düz (hiyerarşisiz) kategori düzenini de kapsıyor; orada
+            alan hiçbir zaman çizilmiyordu ve değer zaten kayboluyordu.
+          */}
+          {!urunMarkasiAlaniVar && (
+            <input type="hidden" name="productBrand" value={selectedProductBrand} />
           )}
 
           {/* Ürün Adı */}
@@ -726,27 +771,25 @@ export default function ProductForm({
         <h2 className="font-semibold text-gray-800 text-base border-b pb-3 mb-4">Yayın Durumu</h2>
 
         <div className="flex flex-col sm:flex-row gap-4">
+          {/* `name` verilmiyor: değerler gönderimde state'ten yazılıyor
+              (bkz. handleSubmit). Gizli "false" input'una da gerek kalmadı. */}
           <label htmlFor="urun-isActive" className="flex items-center gap-3 cursor-pointer select-none">
-            <input type="hidden" name="isActive" value="false" />
             <input
               id="urun-isActive"
               type="checkbox"
-              name="isActive"
-              value="true"
-              defaultChecked={defaultValues.isActive ?? true}
+              checked={aktif}
+              onChange={(e) => setAktif(e.target.checked)}
               className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <span className="text-sm text-gray-700">Aktif (sitede görünsün)</span>
           </label>
 
           <label htmlFor="urun-isFeatured" className="flex items-center gap-3 cursor-pointer select-none">
-            <input type="hidden" name="isFeatured" value="false" />
             <input
               id="urun-isFeatured"
               type="checkbox"
-              name="isFeatured"
-              value="true"
-              defaultChecked={defaultValues.isFeatured ?? false}
+              checked={oneCikan}
+              onChange={(e) => setOneCikan(e.target.checked)}
               className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <span className="text-sm text-gray-700">Öne Çıkan (anasayfada görünsün)</span>

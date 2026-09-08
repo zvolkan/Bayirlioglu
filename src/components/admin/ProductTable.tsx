@@ -57,11 +57,20 @@ export default function ProductTable({ products, kapsam }: ProductTableProps) {
             {products.map((product) => {
               const primaryImage = product.images[0]
               const price = Number(product.price)
+              const duzenleYolu = `/admin/${kapsam}/urunler/${product.id}/duzenle`
               return (
                 <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                  {/* Görsel */}
+                  {/* Görsel — düzenlemeye götürür.
+                      Eskiden yalnızca satırın en sağındaki "Düzenle" düğmesi
+                      tıklanabilirdi; ürünü düzenlemek için gözle bulduğunuz
+                      satırda imleci ta sağa taşımak gerekiyordu. Görsel ve ad
+                      da aynı yere götürüyor artık. */}
                   <td className="px-4 py-3">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <Link
+                      href={duzenleYolu}
+                      className="block w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0 ring-offset-2 hover:ring-2 hover:ring-blue-400 transition"
+                      title={`${product.name} — düzenle`}
+                    >
                       {primaryImage ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -72,13 +81,17 @@ export default function ProductTable({ products, kapsam }: ProductTableProps) {
                       ) : (
                         <Icon name="paket" className="w-6 h-6 text-gray-300" />
                       )}
-                    </div>
+                    </Link>
                   </td>
 
-                  {/* Ürün adı + slug */}
+                  {/* Ürün adı + slug — düzenlemeye götürür */}
                   <td className="px-4 py-3">
-                    <p className="text-sm font-medium text-gray-900 line-clamp-1">{product.name}</p>
-                    <p className="text-xs text-gray-400 font-mono mt-0.5">{product.slug}</p>
+                    <Link href={duzenleYolu} className="group block">
+                      <p className="text-sm font-medium text-gray-900 line-clamp-1 group-hover:text-blue-600 group-hover:underline underline-offset-2 transition-colors">
+                        {product.name}
+                      </p>
+                      <p className="text-xs text-gray-400 font-mono mt-0.5">{product.slug}</p>
+                    </Link>
                   </td>
 
                   {/* Kategori */}
@@ -140,7 +153,7 @@ export default function ProductTable({ products, kapsam }: ProductTableProps) {
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     <div className="flex items-center justify-end gap-2">
                       <Link
-                        href={`/admin/${kapsam}/urunler/${product.id}/duzenle`}
+                        href={duzenleYolu}
                         className="px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                       >
                         Düzenle

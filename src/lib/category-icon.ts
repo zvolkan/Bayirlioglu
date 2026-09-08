@@ -67,11 +67,15 @@ const ESLEME: Record<string, IconName> = {
   'ev-su-isitici': 'alev',
   'ticari-boiler': 'alev',
   'su-sebili': 'dus',
+  'ev-su-sebili': 'bardak',
   endustriyel: 'fabrika',
   filtre: 'civata',
   klima: 'iklim',
   vantilator: 'fan',
   temizlik: 'temizlik',
+  supurge: 'temizlik',
+  'basincli-yikayici': 'temizlik',
+  'hava-temizleyici': 'iklim',
 }
 
 /** Kategoriler zamanla bu ön eklerle ikiye ayrıldı; ikon aynı kalmalı */
@@ -83,7 +87,7 @@ const ANAHTARLAR: [RegExp, IconName][] = [
   [/sebil/, 'dus'],
   [/klima/, 'iklim'],
   [/vantilator|fan/, 'fan'],
-  [/temizlik|supurge/, 'temizlik'],
+  [/temizlik|supurge|yikayici|basincli/, 'temizlik'],
   [/filtre|membran/, 'civata'],
   [/endustriyel|fabrika/, 'fabrika'],
   [/amino|molekul/, 'molekul'],

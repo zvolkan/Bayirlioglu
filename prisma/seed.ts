@@ -236,7 +236,7 @@ async function main() {
     create: {
       brandId: albSu.id, name: 'Eviniz İçin', slug: 'ev',
       icon: 'ev', sortOrder: 1,
-      description: 'Ev tipi su arıtma, ısıtma ve yumuşatma çözümleri',
+      description: 'Ev tipi su arıtma, ısıtma, yumuşatma, klima ve arıtmalı sebil çözümleri',
     },
   })
 
@@ -256,7 +256,7 @@ async function main() {
     create: {
       brandId: albSu.id, name: 'Küçük Ev Aletleri', slug: 'kucuk-ev-aletleri',
       icon: 'fis', sortOrder: 3,
-      description: 'Klima, vantilatör, robot süpürge ve temizlik aletleri',
+      description: 'Vantilatör, elektrikli ve robot süpürge, basınçlı yıkayıcı',
     },
   })
 
@@ -299,6 +299,32 @@ async function main() {
       brandId: albSu.id, name: 'Su Arıtma', slug: 'ev-su-aritma',
       icon: 'analiz', sortOrder: 3, parentId: catEv.id,
       description: 'Tezgah altı RO ve alkali su arıtma sistemleri',
+    },
+  })
+
+  // Klima "Küçük Ev Aletleri"nden buraya taşındı: klima bir küçük ev aleti
+  // değil, evin sabit donanımı. Ürünler kategoriye bağlı olduğu için taşıma
+  // ile birlikte geldiler.
+  const catKlima = await prisma.category.upsert({
+    where: { slug: 'klima' },
+    update: { parentId: catEv.id, name: 'Klima Sistemleri', icon: 'iklim', sortOrder: 4 },
+    create: {
+      brandId: albSu.id, name: 'Klima Sistemleri', slug: 'klima',
+      icon: 'iklim', sortOrder: 4, parentId: catEv.id,
+      description: 'Duvar tipi, salon tipi ve kaset tipi inverter klima sistemleri',
+    },
+  })
+
+  // Sebilin ev tarafındaki eşi. İşyeri tarafındaki `su-sebili` duruyor —
+  // evsel kompakt modeller ile büyük ofis sebilleri aynı ürün grubu değil,
+  // bu yüzden iki ayrı kategori.
+  const catEvSuSebili = await prisma.category.upsert({
+    where: { slug: 'ev-su-sebili' },
+    update: { parentId: catEv.id, name: 'Arıtmalı Su Sebili', icon: 'bardak', sortOrder: 5 },
+    create: {
+      brandId: albSu.id, name: 'Arıtmalı Su Sebili', slug: 'ev-su-sebili',
+      icon: 'bardak', sortOrder: 5, parentId: catEv.id,
+      description: 'Ev tipi arıtmalı içme suyu sebilleri — tezgah üstü ve kompakt modeller',
     },
   })
 
@@ -346,33 +372,47 @@ async function main() {
 
   // ─── Alt kategoriler — Küçük Ev Aletleri ─────────────────────────────────
 
-  const catKlima = await prisma.category.upsert({
-    where: { slug: 'klima' },
-    update: { parentId: catKucukEvAletleri.id, name: 'Klima Sistemleri', icon: 'iklim', sortOrder: 1 },
-    create: {
-      brandId: albSu.id, name: 'Klima Sistemleri', slug: 'klima',
-      icon: 'iklim', sortOrder: 1, parentId: catKucukEvAletleri.id,
-      description: 'Duvar tipi, salon tipi ve kaset tipi inverter klima sistemleri',
-    },
-  })
-
   const catVantilator = await prisma.category.upsert({
     where: { slug: 'vantilator' },
-    update: { parentId: catKucukEvAletleri.id, name: 'Vantilatör', icon: 'fan', sortOrder: 2 },
+    update: { parentId: catKucukEvAletleri.id, name: 'Vantilatör', icon: 'fan', sortOrder: 1 },
     create: {
       brandId: albSu.id, name: 'Vantilatör', slug: 'vantilator',
-      icon: 'fan', sortOrder: 2, parentId: catKucukEvAletleri.id,
+      icon: 'fan', sortOrder: 1, parentId: catKucukEvAletleri.id,
       description: 'Kule tipi ve masa tipi vantilatörler',
     },
   })
 
+  // Eskiden hepsi tek bir "Temizlik Aletleri" kutusundaydı. Süpürge ile
+  // basınçlı yıkayıcı aynı ihtiyaca hitap etmiyor; ayrıldılar.
+  const catSupurge = await prisma.category.upsert({
+    where: { slug: 'supurge' },
+    update: { parentId: catKucukEvAletleri.id, name: 'Elektrikli & Robot Süpürge', icon: 'temizlik', sortOrder: 2 },
+    create: {
+      brandId: albSu.id, name: 'Elektrikli & Robot Süpürge', slug: 'supurge',
+      icon: 'temizlik', sortOrder: 2, parentId: catKucukEvAletleri.id,
+      description: 'Şarjlı dikey süpürgeler ve akıllı navigasyonlu robot süpürgeler',
+    },
+  })
+
+  const catBasincliYikayici = await prisma.category.upsert({
+    where: { slug: 'basincli-yikayici' },
+    update: { parentId: catKucukEvAletleri.id, name: 'Yüksek Basınçlı Yıkayıcı', icon: 'temizlik', sortOrder: 3 },
+    create: {
+      brandId: albSu.id, name: 'Yüksek Basınçlı Yıkayıcı', slug: 'basincli-yikayici',
+      icon: 'temizlik', sortOrder: 3, parentId: catKucukEvAletleri.id,
+      description: 'Araç, bahçe ve dış cephe temizliği için basınçlı yıkama makineleri',
+    },
+  })
+
+  // Süpürge ve yıkayıcı dışında kalan temizlik cihazları (pencere temizleme
+  // robotu gibi) burada duruyor.
   const catTemizlik = await prisma.category.upsert({
     where: { slug: 'temizlik' },
-    update: { parentId: catKucukEvAletleri.id, name: 'Temizlik Aletleri', icon: 'temizlik', sortOrder: 3 },
+    update: { parentId: catKucukEvAletleri.id, name: 'Temizlik Aletleri', icon: 'temizlik', sortOrder: 4 },
     create: {
       brandId: albSu.id, name: 'Temizlik Aletleri', slug: 'temizlik',
-      icon: 'temizlik', sortOrder: 3, parentId: catKucukEvAletleri.id,
-      description: 'Yüksek basınçlı yıkayıcı, elektrikli süpürge ve temizlik robotları',
+      icon: 'temizlik', sortOrder: 4, parentId: catKucukEvAletleri.id,
+      description: 'Cam ve yüzey temizleme robotları ile diğer temizlik cihazları',
     },
   })
 
@@ -809,7 +849,7 @@ async function main() {
   })
 
   await upsertProduct({
-    id: 'albsu-014', slug: 'ortimax-aritma-sebil-kisa', brandId: albSu.id, categoryId: catSuSebili.id,
+    id: 'albsu-014', slug: 'ortimax-aritma-sebil-kisa', brandId: albSu.id, categoryId: catEvSuSebili.id,
     name: 'Ortimax Arıtmalı Sebil — Kısa', sku: 'ALBSU-ORT-SBL-KIS', unit: 'adet', stock: 22,
     isFeatured: false, rating: 4.7, reviewCount: 84,
     price: 4500,
@@ -897,7 +937,7 @@ async function main() {
     tags: ['OPAL', 'su yumuşatma', 'çift tank', 'kesintisiz', 'is-yeri'],
   })
 
-  // ─── Albsu Ürünleri — Küçük Ev Aletleri › Klima Sistemleri ──────────────
+  // ─── Albsu Ürünleri — Eviniz İçin › Klima Sistemleri ────────────────────
 
   await upsertProduct({
     id: 'albsu-015', slug: 'ihlas-aura-18000-btu-klima', brandId: albSu.id, categoryId: catKlima.id,
@@ -973,10 +1013,10 @@ async function main() {
     tags: ['vantilatör', 'İhlas', 'AU3502', 'kule tipi', 'uzaktan kumanda', 'kucuk-ev-aleti'],
   })
 
-  // ─── Albsu Ürünleri — Küçük Ev Aletleri › Temizlik Aletleri ─────────────
+  // ─── Albsu Ürünleri — Küçük Ev Aletleri › Yıkayıcı & Süpürge ────────────
 
   await upsertProduct({
-    id: 'albsu-020', slug: 'karcher-k2-compact', brandId: albSu.id, categoryId: catTemizlik.id,
+    id: 'albsu-020', slug: 'karcher-k2-compact', brandId: albSu.id, categoryId: catBasincliYikayici.id,
     name: 'Kärcher K2 Compact Yüksek Basınçlı Yıkayıcı', sku: 'ALBSU-KARCH-K2', unit: 'adet', stock: 40,
     isFeatured: true, rating: 4.7, reviewCount: 201,
     price: 4200, salePrice: 3650,
@@ -993,7 +1033,7 @@ async function main() {
   })
 
   await upsertProduct({
-    id: 'albsu-021', slug: 'karcher-k5-premium-full-control', brandId: albSu.id, categoryId: catTemizlik.id,
+    id: 'albsu-021', slug: 'karcher-k5-premium-full-control', brandId: albSu.id, categoryId: catBasincliYikayici.id,
     name: 'Kärcher K5 Premium Full Control', sku: 'ALBSU-KARCH-K5', unit: 'adet', stock: 18,
     isFeatured: false, rating: 4.9, reviewCount: 134,
     price: 9800,
@@ -1011,7 +1051,7 @@ async function main() {
   })
 
   await upsertProduct({
-    id: 'albsu-022', slug: 'karcher-vc5-cordless-elektrikli-supurge', brandId: albSu.id, categoryId: catTemizlik.id,
+    id: 'albsu-022', slug: 'karcher-vc5-cordless-elektrikli-supurge', brandId: albSu.id, categoryId: catSupurge.id,
     name: 'Kärcher VC 5 Cordless Elektrikli Süpürge', sku: 'ALBSU-KARCH-VC5', unit: 'adet', stock: 30,
     isFeatured: true, rating: 4.6, reviewCount: 87,
     price: 4900, salePrice: 4200,
@@ -1029,7 +1069,7 @@ async function main() {
   })
 
   await upsertProduct({
-    id: 'albsu-023', slug: 'karcher-rcv5-robot-supurge', brandId: albSu.id, categoryId: catTemizlik.id,
+    id: 'albsu-023', slug: 'karcher-rcv5-robot-supurge', brandId: albSu.id, categoryId: catSupurge.id,
     name: 'Kärcher RCV 5 Robot Süpürge', sku: 'ALBSU-KARCH-RCV5', unit: 'adet', stock: 20,
     isFeatured: true, rating: 4.7, reviewCount: 112,
     price: 8500, salePrice: 7200,
