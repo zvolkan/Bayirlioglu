@@ -87,8 +87,27 @@ export default function HomePage() {
               Anamur Merkezli, Türkiye Geneli Teslimat
             </span>
 
+            {/*
+              "Bayırlıoğlu" kelimesinin altındaki kuyruklar (y, ğ) kesiliyordu.
+              Sebebi `bg-clip-text`: yazı saydam, görünen şey arkasındaki
+              gradyan ve o gradyan YALNIZCA elemanın kutusu kadar çiziliyor.
+              `leading-tight` ile satır kutusu, hem üstteki şapkayı (ğ) hem
+              alttaki kuyrukları alacak kadar yüksek değildi; kutunun dışında
+              kalan mürekkep boyanmadığı için yok olmuştu.
+
+              Asıl sebep yazı tipiydi ve `layout.tsx` içinde düzeltildi: Inter
+              yalnızca `latin` alt kümesiyle yükleniyordu, ı ve ğ harfleri o
+              kümede olmadığı için sistem yazı tipinden geliyordu ve kuyrukları
+              daha derindi. Burası ikinci savunma hattı: yazı tipi ne olursa
+              olsun boyanan alan biraz daha aşağı iniyor.
+
+              Düzeltme em cinsinden, çünkü taşma yazı boyutuyla birlikte büyür:
+              alta boya payı ekleniyor, aynı miktar negatif boşlukla geri
+              alınıyor — görünen aralık değişmiyor, yalnızca boyanan alan
+              genişliyor.
+            */}
             <h1 className="anim-fade-up anim-delay-200 text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-6">
-              <span className="gradient-pan block text-transparent bg-clip-text bg-gradient-to-r from-white via-stone-200 to-stone-400">
+              <span className="gradient-pan block pb-[0.2em] -mb-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-white via-stone-200 to-stone-400">
                 Bayırlıoğlu
               </span>
             </h1>

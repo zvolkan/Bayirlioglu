@@ -16,7 +16,24 @@ import CookieConsent from '@/components/layout/CookieConsent'
 import { Toaster } from 'react-hot-toast'
 import { jsonLdScript } from '@/lib/sanitize'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
+/**
+ * DİKKAT — `latin-ext` şart.
+ *
+ * Türkçenin ı, ğ, ş, İ, Ğ, Ş harfleri Inter'in `latin` alt kümesinde YOK;
+ * `latin-ext` içindeler. Yalnızca `latin` yüklendiğinde tarayıcı bu harfleri
+ * yazı tipinde bulamayıp sistem yazı tipine düşüyordu. Sonuç, aynı kelimenin
+ * iki farklı yazı tipiyle çizilmesi: "Bayırlıoğlu" kelimesinde B-a-y-r-l-o-l-u
+ * Inter'den, ı ve ğ başka bir yazı tipinden geliyordu. Harf genişlikleri ve
+ * özellikle alt kuyruk derinlikleri tutmadığı için satır kutusuna sığmıyor,
+ * kuyruklar kesik görünüyordu.
+ *
+ * Türkçe bir sitede bu alt küme opsiyonel değil.
+ */
+const inter = Inter({
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-inter',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   // metadataBase olmadan göreli OG görsel yolları çözülmüyor ve WhatsApp /

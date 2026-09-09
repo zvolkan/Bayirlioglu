@@ -9,6 +9,7 @@ import { formatPrice, cn } from '@/lib/utils'
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ArrowLeft, Package } from 'lucide-react'
 import { KARGO_LIMIT as CARGO_THRESHOLD, calculateTotals } from '@/lib/checkout'
 import { getFreshCartData } from '@/app/actions/cart'
+import BrandLogo from '@/components/ui/BrandLogo'
 
 export default function SepetPage() {
   const { items, removeItem, updateQuantity, getTotalPrice } = useCart()
@@ -92,29 +93,70 @@ export default function SepetPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-        <div className="text-center max-w-sm">
-          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <ShoppingCart className="w-12 h-12 text-gray-300" />
+      /*
+        Boş sepet ekranı, ana sayfa hero'sunun karanlık zeminini ve cam marka
+        kartlarını birebir kullanıyor.
+
+        Önceki hâli doygun yeşil/mavi düğmelerdi ve logolar okunsun diye
+        altlarına beyaz birer kutu konmuştu. Aynı çıkmaz hero'da da yaşanmıştı:
+        ALB Tarım logosunun yaprağı yeşil, Alb Su damlası mavi — ikisi de kendi
+        marka renginin üstünde kayboluyor. Çözüm orada da altlık eklemek değil,
+        ZEMİNİ nötrleştirmek olmuştu. Burada da öyle: koyu zemin üzerinde renkli
+        logolar kendiliğinden okunuyor, kutuya gerek kalmıyor ve göz almıyor.
+
+        Marka rengi kaybolmuyor; kenarlık ve gölge fareyle üzerine gelindiğinde
+        markanın rengine dönüyor.
+      */
+      <div className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden bg-neutral-950">
+        {/* Hero ile aynı üç katmanlı zemin */}
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-950 via-neutral-900 to-stone-900" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(82,82,82,0.35),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(120,113,108,0.2),transparent_55%)]" />
+
+        <div className="relative z-10 w-full max-w-2xl text-center py-16">
+          <div className="w-20 h-20 rounded-full border border-white/10 bg-white/[0.06] flex items-center justify-center mx-auto mb-6">
+            <ShoppingCart className="w-9 h-9 text-white/35" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Sepetiniz boş</h1>
-          <p className="text-gray-500 text-sm mb-8">
+          <h1 className="text-2xl font-bold text-white mb-2">Sepetiniz boş</h1>
+          <p className="text-white/60 text-sm mb-8 max-w-sm mx-auto">
             Henüz sepetinize ürün eklemediniz. Alışverişe başlamak için ürünlerimize göz atın.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Link
               href="/alb-tarim/urunler"
-              className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
+              className="arrow-slide group flex items-center gap-3.5 rounded-2xl border border-white/12 bg-white/[0.06] px-4 py-3.5 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-tarim-400/50 hover:bg-white/[0.1] hover:shadow-lg hover:shadow-tarim-500/15"
             >
-              <Package className="w-4 h-4" />
-              Bayırlıoğlu Tarım Ürünleri
+              <BrandLogo brand="alb-tarim" boyut="md" className="icon-pop" />
+              <span className="min-w-0 flex-1">
+                <span className="block font-bold text-white leading-tight">
+                  Bayırlıoğlu Tarım
+                </span>
+                <span className="mt-0.5 block truncate text-xs text-white/55">
+                  Gübre · Zirai Danışmanlık
+                </span>
+              </span>
+              <span className="arrow flex-shrink-0 text-white/40 transition-colors group-hover:text-white">
+                →
+              </span>
             </Link>
+
             <Link
               href="/alb-su-aritma/urunler"
-              className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
+              className="arrow-slide group flex items-center gap-3.5 rounded-2xl border border-white/12 bg-white/[0.06] px-4 py-3.5 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-albsu-400/50 hover:bg-white/[0.1] hover:shadow-lg hover:shadow-albsu-500/15"
             >
-              <Package className="w-4 h-4" />
-              Alb Su Teknolojileri Ürünleri
+              <BrandLogo brand="alb-su-aritma" boyut="md" className="icon-pop" />
+              <span className="min-w-0 flex-1">
+                <span className="block font-bold text-white leading-tight">
+                  Alb Su Teknolojileri
+                </span>
+                <span className="mt-0.5 block truncate text-xs text-white/55">
+                  Su Arıtma · Klima · Yedek Parça
+                </span>
+              </span>
+              <span className="arrow flex-shrink-0 text-white/40 transition-colors group-hover:text-white">
+                →
+              </span>
             </Link>
           </div>
         </div>
