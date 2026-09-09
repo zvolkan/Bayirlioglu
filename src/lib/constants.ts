@@ -33,6 +33,9 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
       message: 'Merhaba! ALB Tarım ürünleri hakkında bilgi almak istiyorum.',
       tooltip: "ALB Tarım'a WhatsApp'tan yazın!",
     },
+    // Aranabilir numara. Site genelinde ALB Tarım sayfalarında bu görünüyor;
+    // daha önce bazı yerlerde Alb Su'nun numarası yazıyordu.
+    telefon: process.env.NEXT_PUBLIC_TEL_ALB_TARIM ?? '905071781633',
     // Doğrulanabilir olmayan rakamlar kaldırıldı ("500+ Ürün Çeşidi" katalogda
     // 69 ürün varken yazıyordu; "15.000+ Mutlu Çiftçi" ölçülebilir değil).
     // Gerçek rakamlarınız olduğunda buraya yazın, site geneline yansır.
@@ -46,7 +49,7 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
         label: 'Ürünler',
         href: '/urunler',
         children: [
-          { label: 'ALB Tarım Ürünleri', href: '/urunler?kullanim=alb-tarim-urunleri' },
+          { label: 'Bayırlıoğlu Tarım Ürünleri', href: '/urunler?kullanim=alb-tarim-urunleri' },
           { label: 'İthal Ürünler', href: '/urunler?kullanim=ithal-urunler' },
         ],
       },
@@ -103,6 +106,7 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
       message: 'Merhaba! Alb Su Teknolojileri su arıtma sistemleri hakkında bilgi almak istiyorum.',
       tooltip: "Alb Su Teknolojileri'ne WhatsApp'tan yazın!",
     },
+    telefon: process.env.NEXT_PUBLIC_TEL_ALBSU ?? '905444142254',
     // Üçü de doğrulanabilir: kuruluş yılı, yetkili bayilik ve teslimat ağı.
     // Önceki hâlinde "Ücretsiz Su Analizi" yazıyordu; o bir hizmet vaadi ve
     // doğrulanması gerekenler listesindeydi.

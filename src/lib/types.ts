@@ -46,6 +46,16 @@ export interface BrandConfig {
   cta: CtaConfig;
   ctaSecondary: CtaConfig;
   whatsapp: WhatsAppConfig;
+  /**
+   * Markanın aranabilir telefon numarası — YALNIZCA RAKAM, ülke koduyla
+   * ("905071781633"). Görünen biçim `telefonGoster()` ile üretiliyor, böylece
+   * numara tek yerde duruyor ve iki farklı sayfada iki farklı biçimde
+   * yazılması ihtimali kalkıyor.
+   *
+   * WhatsApp numarasından ayrı tutuluyor: ikisi bugün aynı olsa da sabit hat
+   * ya da ayrı bir satış hattı devreye girdiğinde yalnızca burası değişsin.
+   */
+  telefon: string;
   stats: StatItem[];
   nav: NavItem[];
   video: string;

@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
 import { BRANDS } from '@/lib/constants'
+import { telefonGoster } from '@/lib/utils'
 import Icon from '@/components/ui/Icon'
 import { submitContactMessage } from '@/app/actions/forms'
 import type { BrandKey } from '@/lib/types'
@@ -99,7 +100,7 @@ export default function IletisimPage() {
               {
                 icon: 'telefon' as const,
                 title: 'Telefon',
-                lines: [isAlbSu ? '+90 544 414 22 54' : '+90 507 178 16 33', 'Pzt–Cmt: 08:30–19:00'],
+                lines: [telefonGoster(cfg.telefon), 'Pzt–Cmt: 08:30–19:00'],
               },
               {
                 icon: 'eposta' as const,

@@ -51,3 +51,34 @@ export function slugify(text: string): string {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
 }
+
+/**
+ * Telefon numarasını ekranda gösterilecek biçime çevirir.
+ *
+ *   telefonGoster('905071781633')  →  '+90 507 178 16 33'
+ *   telefonArama('905071781633')   →  '+905071781633'   (tel: bağlantısı için)
+ *
+ * ── Neden bir yardımcı fonksiyon ────────────────────────────────────────────
+ *
+ * Numaralar yapılandırmada YALNIZCA RAKAM olarak duruyor; WhatsApp bağlantısı
+ * zaten o biçimi istiyor. Görünen hâli ayrı bir metin olarak da saklansaydı
+ * ikisi zamanla birbirinden ayrılırdı — biri güncellenir, diğeri unutulurdu.
+ * Bu yüzden görünen biçim tek kaynaktan üretiliyor.
+ *
+ * Beklenmedik uzunlukta bir numara gelirse (dahili hat, sabit hat, yurtdışı)
+ * biçimlendirmeye zorlanmıyor: başına '+' konup olduğu gibi gösteriliyor.
+ * Yanlış yerlere boşluk serpiştirmektense ham hâli göstermek daha doğru.
+ */
+export function telefonGoster(rakamlar: string): string {
+  const t = rakamlar.replace(/\D/g, '');
+  // 90 + 3 haneli operatör + 7 hane = 12 hane (Türkiye cep/sabit standardı)
+  if (t.length === 12 && t.startsWith('90')) {
+    return `+90 ${t.slice(2, 5)} ${t.slice(5, 8)} ${t.slice(8, 10)} ${t.slice(10, 12)}`;
+  }
+  return `+${t}`;
+}
+
+/** `tel:` bağlantısı için — boşluksuz, '+' önekli. */
+export function telefonArama(rakamlar: string): string {
+  return `+${rakamlar.replace(/\D/g, '')}`;
+}

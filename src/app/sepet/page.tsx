@@ -107,7 +107,7 @@ export default function SepetPage() {
               className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm"
             >
               <Package className="w-4 h-4" />
-              ALB Tarım Ürünleri
+              Bayırlıoğlu Tarım Ürünleri
             </Link>
             <Link
               href="/alb-su-aritma/urunler"

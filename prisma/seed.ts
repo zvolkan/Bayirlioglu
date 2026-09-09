@@ -80,16 +80,25 @@ async function main() {
   })
 
   // ─── ALB Tarım: Üst (parent) kategori sistemi ─────────────────────────────
-  // Mevcut flat kategoriler (gubreler, sulama, ilac, toprak) "ALB Tarım Ürünleri"
-  // parent'ı altına taşınır. 3 yeni parent eklenir.
-
+  // Mevcut flat kategoriler (gubreler, sulama, ilac, toprak) bu parent altına
+  // taşınır. 3 yeni parent eklenir.
+  //
+  // Kategorinin ADRESİ (slug) `alb-tarim-urunleri` olarak kalıyor, yalnızca
+  // görünen ADI değişti. Adres değiştirmek dizine girmiş sayfaları ve
+  // paylaşılmış bağlantıları kırardı; ayrıca kategori ikonu da slug'a bakıyor.
   const catAlbTarimUrunleri = await prisma.category.upsert({
     where: { slug: 'alb-tarim-urunleri' },
-    update: { sortOrder: 1 },
+    // `update` içinde ad da var: seed mevcut bir veritabanında çalıştırıldığında
+    // eski adı ("ALB Tarım Ürünleri") olduğu gibi bırakmasın.
+    update: {
+      name: 'Bayırlıoğlu Tarım Ürünleri',
+      description: 'Bayırlıoğlu Tarım markasına ait gübre ve bitki besleme ürünleri',
+      sortOrder: 1,
+    },
     create: {
-      brandId: albTarim.id, name: 'ALB Tarım Ürünleri', slug: 'alb-tarim-urunleri',
+      brandId: albTarim.id, name: 'Bayırlıoğlu Tarım Ürünleri', slug: 'alb-tarim-urunleri',
       icon: 'filiz', sortOrder: 1,
-      description: 'ALB Tarım markasına ait gübre, sulama ve ilaç ürünleri',
+      description: 'Bayırlıoğlu Tarım markasına ait gübre ve bitki besleme ürünleri',
     },
   })
 

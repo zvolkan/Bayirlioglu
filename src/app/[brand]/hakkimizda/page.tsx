@@ -58,7 +58,7 @@ const ALBSU_TIMELINE: TimelineItem[] = [
       'Anamur ve çevre bölgede hanelere ve işletmelere temiz su ulaştırmaya başladı.',
   },
   {
-    year: '2022',
+    year: '2019',
     event:
       'A.O. Smith yetkili bayiliğini aldık. Evsel ve endüstriyel su arıtma ' +
       'çözümlerimizi Türkiye\'nin dört bir yanına ulaştırmaya başladık.',

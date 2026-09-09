@@ -3,7 +3,8 @@ import BrandLogo from '@/components/ui/BrandLogo'
 import type { BrandKey } from '@/lib/types'
 import Link from 'next/link'
 import Image from 'next/image'
-import { KURULUS_ANLATIM, SITE_CONFIG } from '@/lib/constants'
+import { BRANDS, KURULUS_ANLATIM, SITE_CONFIG } from '@/lib/constants'
+import { telefonGoster, telefonArama } from '@/lib/utils'
 
 const GRUP_LINKS = [
   { label: 'Hakkımızda', href: '/hakkimizda' },
@@ -173,8 +174,8 @@ export default function Footer() {
                   </svg>
                   <div>
                     <p className="text-gray-500 text-xs mb-1">ALB Tarım</p>
-                    <a href="tel:+905071781633" className="text-gray-400 hover:text-white transition-colors text-sm">
-                      +90 507 178 16 33
+                    <a href={`tel:${telefonArama(BRANDS['alb-tarim'].telefon)}`} className="text-gray-400 hover:text-white transition-colors text-sm">
+                      {telefonGoster(BRANDS['alb-tarim'].telefon)}
                     </a>
                   </div>
                 </li>
@@ -184,8 +185,8 @@ export default function Footer() {
                   </svg>
                   <div>
                     <p className="text-gray-500 text-xs mb-1">Alb Su Teknolojileri</p>
-                    <a href="tel:+905444142254" className="text-gray-400 hover:text-white transition-colors text-sm">
-                      +90 544 414 22 54
+                    <a href={`tel:${telefonArama(BRANDS['alb-su-aritma'].telefon)}`} className="text-gray-400 hover:text-white transition-colors text-sm">
+                      {telefonGoster(BRANDS['alb-su-aritma'].telefon)}
                     </a>
                   </div>
                 </li>

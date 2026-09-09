@@ -227,7 +227,7 @@ export default function HizmetlerPage() {
             <span
               className="inline-block bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold text-lg select-none"
             >
-              <Icon name="telefon" className="w-5 h-5 inline-block mr-2 align-text-bottom" />+90 544 414 22 54
+              <Icon name="telefon" className="w-5 h-5 inline-block mr-2 align-text-bottom" />{SITE_CONFIG.phone}
             </span>
             <Link
               href="/iletisim"

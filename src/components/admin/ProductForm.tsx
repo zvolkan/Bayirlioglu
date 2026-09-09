@@ -275,6 +275,43 @@ export default function ProductForm({
     }
   }
 
+  // ── Enter ile kaydetme ────────────────────────────────────────────────────
+  //
+  // Tarayıcı normalde Enter'a basınca formu kendiliğinden gönderir, ama bu
+  // "örtük gönderim" güvenilmez: açılır listelerde (select) çalışmaz, sayı
+  // alanlarında tarayıcıya göre değişir, geçersiz bir alan varsa da hiçbir şey
+  // olmadan sessizce durur. Fiyat güncellerken en çok kullanılan tuş bu olduğu
+  // için açıkça ele alınıyor.
+  //
+  // Üç istisna var:
+  //   • Çok satırlı alanlarda (açıklama) Enter satır atlamalı, kaydetmemeli.
+  //   • Düğme ya da bağlantı odaktayken Enter zaten onların işini yapıyor.
+  //   • Türkçe/başka dil klavyesinde metin birleştirme (IME) sürerken basılan
+  //     Enter bir harf seçimi olabilir; onu gönderim saymak yazıyı bozar.
+  function handleKeyDown(e: React.KeyboardEvent<HTMLFormElement>) {
+    if (e.key !== 'Enter') return
+    if (e.nativeEvent.isComposing) return
+
+    const hedef = e.target
+    if (
+      hedef instanceof HTMLTextAreaElement ||
+      hedef instanceof HTMLButtonElement ||
+      hedef instanceof HTMLAnchorElement
+    ) {
+      return
+    }
+
+    // Görsel yüklenirken ya da kayıt sürerken Enter'ı yut: ikinci bir gönderim
+    // aynı ürünü iki kez kaydetmeye çalışırdı.
+    e.preventDefault()
+    if (isPending || uploading) return
+
+    // requestSubmit(), düğmeye basmışsınız gibi davranır: zorunlu alan boşsa
+    // tarayıcı uyarısını gösterip o alana odaklanır. form.submit() bunu
+    // atlardı ve eksik veriyle kaydederdi.
+    e.currentTarget.requestSubmit()
+  }
+
   // ── Form gönderimi ────────────────────────────────────────────────────────
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -338,7 +375,7 @@ export default function ProductForm({
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-8">
 
       {/* Sunucudan dönen doğrulama hatası */}
       {submitError && (
@@ -806,6 +843,10 @@ export default function ProductForm({
 
       {/* ── Submit ── */}
       <div className="flex items-center justify-end gap-4">
+        <span className="mr-auto text-xs text-gray-400">
+          Kaydetmek için <kbd className="px-1.5 py-0.5 rounded border border-gray-300 bg-gray-50 font-sans">Enter</kbd>'a
+          basmanız yeterli (açıklama alanı hariç).
+        </span>
         <a
           href={`/admin/${brands.find((b) => b.id === selectedBrandId)?.key ?? 'alb-tarim'}/urunler`}
           className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"

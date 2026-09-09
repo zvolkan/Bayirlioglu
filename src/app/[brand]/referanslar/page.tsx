@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { BRANDS, SITE_CONFIG } from '@/lib/constants'
+import { BRANDS } from '@/lib/constants'
+import { telefonGoster, telefonArama } from '@/lib/utils'
 import type { BrandKey } from '@/lib/types'
 import Icon, { type IconName } from '@/components/ui/Icon'
 import Reveal from '@/components/ui/Reveal'
@@ -204,10 +205,10 @@ export default async function ReferanslarPage({ params }: Props) {
                 İletişime Geçin
               </Link>
               <a
-                href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
+                href={`tel:${telefonArama(cfg.telefon)}`}
                 className="inline-flex items-center gap-2 border-2 border-brand-400/60 hover:bg-brand-400/10 text-white px-7 py-3.5 rounded-xl font-semibold transition-colors"
               >
-                {SITE_CONFIG.phone}
+                {telefonGoster(cfg.telefon)}
               </a>
             </div>
           </Reveal>
