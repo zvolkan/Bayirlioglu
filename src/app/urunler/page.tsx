@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { permanentRedirect } from 'next/navigation'
 import { ACTIVE_BRAND_KEY } from '@/lib/constants'
 
 /**
@@ -25,5 +25,7 @@ export default async function EskiUrunlerPage({
   }
 
   const qs = query.toString()
-  redirect(`/${ACTIVE_BRAND_KEY}/urunler${qs ? `?${qs}` : ''}`)
+  // Kalıcı taşınma → 308. `redirect` 307 (geçici) döndürüyordu ve arama
+  // motoru eski adresi dizinde tutmaya devam ediyordu.
+  permanentRedirect(`/${ACTIVE_BRAND_KEY}/urunler${qs ? `?${qs}` : ''}`)
 }

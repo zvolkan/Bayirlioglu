@@ -110,6 +110,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   } catch (error) {
     console.error('[sitemap] blog yazıları okunamadı:', error)
+    throw new Error('Site haritası üretilemedi: blog yazıları okunamadı.', { cause: error })
   }
 
   // ── Gerçek ürünler ───────────────────────────────────────────────────────
@@ -132,8 +133,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     )
   } catch (error) {
-    // Veritabanına ulaşılamazsa site haritası yine de üretilsin
+    // ── Hata artık YUTULMUYOR ────────────────────────────────────────────
+    //
+    // Burada eskiden "veritabanına ulaşılamazsa site haritası yine de
+    // üretilsin" yazıyordu ve hata sessizce geçiliyordu. İyi niyetli ama
+    // tersine çalışan bir karar: veritabanı kesintisinde site çökmüyor,
+    // Google'a "hiç ürünüm yok" diyen geçerli bir site haritası sunuyordu.
+    // Arama motoru bunu kabul edip ürünleri dizinden düşürüyordu — üstelik
+    // HTTP 200 döndüğü için hiçbir izleme sistemi alarm vermiyordu.
+    //
+    // Eksik bir site haritası yayınlamak, hiç yayınlamamaktan daha zararlı.
+    // Hata fırlatıldığında Next.js 500 döndürüyor; Google bunu geçici sorun
+    // sayıp eldeki haritayı koruyor.
     console.error('[sitemap] ürünler alınamadı:', error)
+    throw new Error('Site haritası üretilemedi: ürünler okunamadı.', { cause: error })
   }
 
   return [...staticRoutes, ...brandRoutes, ...productRoutes, ...blogRoutes]

@@ -675,6 +675,14 @@ export default function ProductForm({
         {imagePreview && (
           <div className="relative w-40 h-40 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
             {/* eslint-disable-next-line @next/next/no-img-element */}
+            {/*
+              Burada bilerek ham <img> kullanılıyor. Kaynak, tarayıcıda
+              `URL.createObjectURL()` ile üretilmiş bir `blob:` adresi ya da
+              yeni yüklenmiş bir dosya; `next/image` bunları optimize
+              edemiyor (sunucudan erişilebilir bir adres değiller).
+              Yalnızca yönetim panelinde, tek bir önizleme olarak görünüyor.
+            */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={imagePreview} alt="Önizleme" className="w-full h-full object-contain" />
             {uploading && (
               <div className="absolute inset-0 bg-white/75 flex items-center justify-center">
@@ -844,7 +852,7 @@ export default function ProductForm({
       {/* ── Submit ── */}
       <div className="flex items-center justify-end gap-4">
         <span className="mr-auto text-xs text-gray-400">
-          Kaydetmek için <kbd className="px-1.5 py-0.5 rounded border border-gray-300 bg-gray-50 font-sans">Enter</kbd>'a
+          Kaydetmek için <kbd className="px-1.5 py-0.5 rounded border border-gray-300 bg-gray-50 font-sans">Enter</kbd>&apos;a
           basmanız yeterli (açıklama alanı hariç).
         </span>
         <a

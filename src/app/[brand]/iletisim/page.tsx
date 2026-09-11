@@ -161,25 +161,29 @@ export default function IletisimPage() {
                     <input
                       {...register('name')}
                       id="iletisim-name"
+                      aria-invalid={!!errors.name}
+                      aria-describedby={errors.name ? 'iletisim-name-hata' : undefined}
                       placeholder="Adınız Soyadınız"
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-colors ${
                         errors.name ? 'border-red-300 focus:border-red-400' : `border-gray-200 ${focusBorder}`
                       }`}
                     />
-                    {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+                    {errors.name && <p id="iletisim-name-hata" role="alert" className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                   </div>
                   <div>
                     <label htmlFor="iletisim-email" className="block text-sm font-semibold text-gray-700 mb-1.5">E-posta *</label>
                     <input
                       {...register('email')}
                       id="iletisim-email"
+                      aria-invalid={!!errors.email}
+                      aria-describedby={errors.email ? 'iletisim-email-hata' : undefined}
                       type="email"
                       placeholder="ornek@email.com"
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-colors ${
                         errors.email ? 'border-red-300 focus:border-red-400' : `border-gray-200 ${focusBorder}`
                       }`}
                     />
-                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+                    {errors.email && <p id="iletisim-email-hata" role="alert" className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                   </div>
                 </div>
 
@@ -199,6 +203,8 @@ export default function IletisimPage() {
                     <select
                       {...register('subject')}
                       id="iletisim-subject"
+                      aria-invalid={!!errors.subject}
+                      aria-describedby={errors.subject ? 'iletisim-subject-hata' : undefined}
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-colors ${
                         errors.subject ? 'border-red-300' : `border-gray-200 ${focusBorder}`
                       }`}
@@ -208,7 +214,7 @@ export default function IletisimPage() {
                         <option key={t} value={t}>{t}</option>
                       ))}
                     </select>
-                    {errors.subject && <p className="text-red-500 text-xs mt-1">{errors.subject.message}</p>}
+                    {errors.subject && <p id="iletisim-subject-hata" role="alert" className="text-red-500 text-xs mt-1">{errors.subject.message}</p>}
                   </div>
                 </div>
 
@@ -217,13 +223,15 @@ export default function IletisimPage() {
                   <textarea
                     {...register('message')}
                     id="iletisim-message"
+                    aria-invalid={!!errors.message}
+                    aria-describedby={errors.message ? 'iletisim-message-hata' : undefined}
                     rows={5}
                     placeholder="Mesajınızı buraya yazın..."
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-colors resize-none ${
                       errors.message ? 'border-red-300' : `border-gray-200 ${focusBorder}`
                     }`}
                   />
-                  {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message.message}</p>}
+                  {errors.message && <p id="iletisim-message-hata" role="alert" className="text-red-500 text-xs mt-1">{errors.message.message}</p>}
                 </div>
 
                 <button

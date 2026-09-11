@@ -38,7 +38,10 @@ export async function cancelStalePendingOrders(userId: string): Promise<void> {
 
     await prisma.order.updateMany({
       where: { id: { in: stale.map((o) => o.id) } },
-      data: { status: 'CANCELLED', paymentStatus: 'failed' },
+      // paymentToken da siliniyor: token duran bir iptal, ödeme formu ayrı
+      // sekmede açık kalmışsa sonradan tahsilata dönüşebiliyor ve callback
+      // iptal edilmiş siparişi görüp iyzico'ya hiç sormuyordu.
+      data: { status: 'CANCELLED', paymentStatus: 'failed', paymentToken: null },
     })
 
     // Rezerve edilen stoğu serbest bırak — aksi hâlde ödeme ekranını kapatan
@@ -76,15 +79,45 @@ export async function cancelAllStalePendingOrders(): Promise<number> {
 
   if (stale.length === 0) return 0
 
-  await prisma.order.updateMany({
-    where: { id: { in: stale.map((o) => o.id) } },
-    data: { status: 'CANCELLED', paymentStatus: 'failed' },
-  })
+  // ── Neden toplu güncelleme DEĞİL, sipariş sipariş ───────────────────────
+  //
+  // Burada önce 500 siparişin tamamı tek `updateMany` ile CANCELLED yapılıyor,
+  // sonra döngüyle tek tek stok iade ediliyordu. Worker'ın süre sınırına
+  // döngünün ortasında takılırsak sonuç şu oluyordu: siparişlerin HEPSİ iptal
+  // edilmiş, ama bir kısmının stoğu geri verilmemiş. Ve bir daha verilemez —
+  // çünkü bu görev yalnızca PENDING siparişleri arıyor, onlar artık CANCELLED.
+  // Stok kalıcı olarak kilitli kalıyordu.
+  //
+  // Sipariş başına "önce stoğu iade et, sonra iptal et" sırası bunu çözüyor:
+  // görev nerede kesilirse kesilsin, iptal edilmiş her siparişin stoğu geri
+  // verilmiş oluyor. Yarıda kalanlar PENDING kaldığı için bir sonraki koşuda
+  // yeniden ele alınıyorlar.
+  //
+  // Tek bir siparişin hatası görevin tamamını düşürmesin diye her adım ayrı
+  // try/catch içinde.
+  let iptalEdilen = 0
 
   for (const o of stale) {
-    await restoreStock(o.id, 'ödeme tamamlanmadı')
-    await appendOrderNote(o.id, 'Ödeme tamamlanmadığı için otomatik iptal edildi.')
+    try {
+      // ÖNCE stok — sıra önemli, yukarıdaki açıklamaya bakın.
+      await restoreStock(o.id, 'ödeme tamamlanmadı')
+
+      // Koşullu güncelleme: arada müşteri ödemeyi tamamladıysa (`paid`) ya da
+      // siparişi kendisi iptal ettiyse burada 0 satır güncellenir ve siparişe
+      // dokunulmaz.
+      const sonuc = await prisma.order.updateMany({
+        where: { id: o.id, status: 'PENDING', paymentStatus: { not: 'paid' } },
+        data: { status: 'CANCELLED', paymentStatus: 'failed', paymentToken: null },
+      })
+
+      if (sonuc.count > 0) {
+        iptalEdilen += 1
+        await appendOrderNote(o.id, 'Ödeme tamamlanmadığı için otomatik iptal edildi.')
+      }
+    } catch (error) {
+      console.error('[sipariş] otomatik iptal başarısız:', o.id, error)
+    }
   }
 
-  return stale.length
+  return iptalEdilen
 }

@@ -141,18 +141,20 @@ export default function Footer() {
             {/* COL 3 — Kurumsal + Yasal */}
             <div>
               <h3 className="text-white font-semibold text-base mb-5">Kurumsal</h3>
-              <ul className="flex flex-col gap-3 mb-6">
+              {/* Dokunma hedefi: bağlantılar 44 px yüksekliğe çıkarıldı (WCAG 2.5.5).
+                  Aralık `gap` yerine dolgudan geliyor, yoksa liste iki katına çıkardı. */}
+              <ul className="flex flex-col mb-6">
                 {GRUP_LINKS.map((l) => (
                   <li key={l.href}>
                     <Link href={l.href}
-                      className="text-gray-400 hover:text-white transition-colors text-sm">
+                      className="inline-flex items-center min-h-[44px] py-1 text-gray-400 hover:text-white transition-colors text-sm">
                       {l.label}
                     </Link>
                   </li>
                 ))}
               </ul>
               <h3 className="text-white font-semibold text-sm mb-3 mt-2">Yasal</h3>
-              <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col">
                 {YASAL_LINKS.map((l) => (
                   <li key={l.href}>
                     <Link href={l.href}
@@ -174,7 +176,7 @@ export default function Footer() {
                   </svg>
                   <div>
                     <p className="text-gray-500 text-xs mb-1">ALB Tarım</p>
-                    <a href={`tel:${telefonArama(BRANDS['alb-tarim'].telefon)}`} className="text-gray-400 hover:text-white transition-colors text-sm">
+                    <a href={`tel:${telefonArama(BRANDS['alb-tarim'].telefon)}`} className="inline-flex items-center min-h-[44px] py-1 text-gray-400 hover:text-white transition-colors text-sm">
                       {telefonGoster(BRANDS['alb-tarim'].telefon)}
                     </a>
                   </div>
@@ -185,7 +187,7 @@ export default function Footer() {
                   </svg>
                   <div>
                     <p className="text-gray-500 text-xs mb-1">Alb Su Teknolojileri</p>
-                    <a href={`tel:${telefonArama(BRANDS['alb-su-aritma'].telefon)}`} className="text-gray-400 hover:text-white transition-colors text-sm">
+                    <a href={`tel:${telefonArama(BRANDS['alb-su-aritma'].telefon)}`} className="inline-flex items-center min-h-[44px] py-1 text-gray-400 hover:text-white transition-colors text-sm">
                       {telefonGoster(BRANDS['alb-su-aritma'].telefon)}
                     </a>
                   </div>

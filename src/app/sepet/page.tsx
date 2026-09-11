@@ -230,7 +230,7 @@ export default function SepetPage() {
                         <p className="text-sm font-medium text-brand-600 mt-1">
                           {formatPrice(price)}
                           {item.product.salePrice && (
-                            <span className="ml-2 text-xs text-gray-400 line-through font-normal">
+                            <span className="ml-2 text-xs text-gray-500 line-through font-normal">
                               {formatPrice(item.product.price)}
                             </span>
                           )}

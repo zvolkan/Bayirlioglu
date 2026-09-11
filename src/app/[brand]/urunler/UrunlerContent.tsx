@@ -776,7 +776,7 @@ function ProductGrid({
                       {displayPrice.toLocaleString('tr-TR')} ₺
                     </p>
                     {product.salePrice && (
-                      <p className="text-gray-400 text-xs line-through mb-0.5">
+                      <p className="text-gray-500 text-xs line-through mb-0.5">
                         {product.price.toLocaleString('tr-TR')} ₺
                       </p>
                     )}

@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useCartStore } from '@/store/cartStore'
+import { getFreshCartData } from '@/app/actions/cart'
+import toast from 'react-hot-toast'
 import Icon from '@/components/ui/Icon'
-import { KARGO_LIMIT, TESLIMAT_SURESI, calculateTotals } from '@/lib/checkout'
+import { KARGO_LIMIT, TESLIMAT_SURESI, calculateTotals, etkinBirimFiyat } from '@/lib/checkout'
 import { ON_BILGILENDIRME, MESAFELI_SATIS, CAYMA_HAKKI } from '@/lib/legal'
 
 type SavedAddress = {
@@ -33,11 +35,61 @@ function formatPrice(n: number) {
 export default function CheckoutClient({ addresses }: Props) {
   const items = useCartStore((s: { items: import('@/lib/types').CartItem[] }) => s.items)
   const cartHydrated = useCartStore((s: { hasHydrated: boolean }) => s.hasHydrated)
+  const sepetiEsitle = useCartStore.getState().syncWithServer
+  const esitlendiRef = useRef(false)
+
+  // ── Ödeme ekranı da sepeti sunucuyla tazeliyor ───────────────────────────
+  //
+  // `/sepet` açılışta bunu yapıyordu, `/odeme` yapmıyordu: doğrudan
+  // localStorage'daki kopyadan okuyordu. Sepet kalıcı olduğu için müşteri
+  // ürünü haftalar önce eklemiş olabilir; o arada fiyat değişmiş, ürün
+  // yayından kalkmış ya da stok tükenmiş olabilir. Müşteri ödeme ekranında
+  // eski tutarı görüp devam ediyor, sunucu doğru tutarı hesaplıyor veya
+  // 409 döndürüyordu — ekranla tahsilat ayrışıyordu.
+  //
+  // Sepet sayfasından geçilse bile ödeme ekranı ayrıca kontrol ediyor: iki
+  // ekran arasında geçen süre de yeterince uzun olabilir.
+  useEffect(() => {
+    if (!cartHydrated || esitlendiRef.current) return
+
+    const ids = useCartStore.getState().items.map((i) => i.product.id)
+    if (ids.length === 0) return
+
+    esitlendiRef.current = true
+
+    getFreshCartData(ids)
+      .then((fresh) => {
+        if (fresh.length === 0) return
+        const { removed, priceChanged } = sepetiEsitle(fresh)
+
+        if (removed.length > 0) {
+          toast.error(
+            removed.length === 1
+              ? `${removed[0]} artık satışta değil, sepetinizden çıkarıldı.`
+              : `${removed.length} ürün artık satışta değil, sepetinizden çıkarıldı.`,
+            { duration: 7000 },
+          )
+        }
+        if (priceChanged.length > 0) {
+          toast(
+            priceChanged.length === 1
+              ? `${priceChanged[0]} ürününün fiyatı güncellendi. Yeni tutarı onaylayın.`
+              : `${priceChanged.length} üründe fiyat güncellendi. Yeni tutarı onaylayın.`,
+            { icon: 'ℹ️', duration: 7000 },
+          )
+        }
+      })
+      .catch(() => {
+        /* sessiz geç — sunucu zaten ödeme anında doğruluyor */
+      })
+  }, [cartHydrated, sepetiEsitle])
   // Sepet, ödeme başarılı sayfasında temizlenir (ClearCart bileşeni)
 
   const subtotalRaw = items.reduce(
     (sum: number, item: import('@/lib/types').CartItem) =>
-      sum + (item.product.salePrice ?? item.product.price) * item.quantity,
+      // `??` yerine ortak kural: sıfır indirimli fiyat geçerli sayılmamalı.
+      // Aksi hâlde ekranda 0 TL görünüp sunucu tam fiyatı tahsil ediyordu.
+      sum + etkinBirimFiyat(item.product.price, item.product.salePrice) * item.quantity,
     0
   )
   // Sepet, ödeme ve sunucu aynı hesabı kullanır

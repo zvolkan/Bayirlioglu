@@ -145,9 +145,15 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderResult> {
   }
 
   // Ödeme alınmamış (PENDING) sipariş — doğrudan iptal
+  //
+  // `paymentToken: null` ŞART. Token duruyorsa iptal edilmiş siparişin iyzico
+  // ödeme formu hâlâ geçerli kalıyor: müşteri formu ayrı sekmede açık
+  // bırakıp burada iptal ederse, sonra o sekmede ödemeyi tamamlayabiliyordu.
+  // Para çekiliyor, callback geliyor, ama sipariş zaten iptal olduğu için
+  // iyzico'ya hiç sorulmuyordu — tahsilat sistemde hiçbir iz bırakmıyordu.
   await prisma.order.update({
     where: { id: orderId },
-    data: { status: 'CANCELLED', paymentStatus: 'cancelled' },
+    data: { status: 'CANCELLED', paymentStatus: 'cancelled', paymentToken: null },
   })
 
   // Sipariş oluşturulurken rezerve edilen stoğu serbest bırak. Stok artık

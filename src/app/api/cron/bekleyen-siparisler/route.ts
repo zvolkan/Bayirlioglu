@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { timingSafeEqualHash } from '@/lib/admin-auth'
 import { cancelAllStalePendingOrders } from '@/lib/stale-orders'
 
 /**
@@ -28,16 +29,26 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET?.trim()
 
+  // Sır tanımlı değilse HİÇBİR ortamda çalışmıyor.
+  //
+  // Eskiden bu kontrol yalnızca `NODE_ENV === 'production'` ise 503 dönüyor,
+  // değilse akış aşağı devam ediyordu — yani `return` yoktu. Sonuç: sırrın
+  // tanımlanmadığı her önizleme (preview) ya da hazırlık (staging) dağıtımında
+  // kimliksiz tek bir GET isteği yüzlerce bekleyen siparişi iptal edip
+  // stoklarını serbest bırakabiliyordu. Önizleme adresleri tahmin edilebilir
+  // olduğu için bu teorik bir risk değil.
   if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      console.error('[cron] CRON_SECRET tanımlı değil; temizlik çalıştırılmadı.')
-      return NextResponse.json({ error: 'Yapılandırma eksik.' }, { status: 503 })
-    }
-  } else {
-    const header = request.headers.get('authorization') ?? ''
-    if (header !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: 'Yetkisiz.' }, { status: 401 })
-    }
+    console.error('[cron] CRON_SECRET tanımlı değil; görev çalıştırılmadı.')
+    return NextResponse.json({ error: 'Yapılandırma eksik.' }, { status: 503 })
+  }
+
+  // Sabit zamanlı karşılaştırma: `!==` ilk farklı karakterde durduğu için
+  // sırrın ne kadarının doğru tahmin edildiğini zamanlamayla sızdırıyordu.
+  const header = request.headers.get('authorization') ?? ''
+  const onek = 'Bearer '
+  const gelen = header.startsWith(onek) ? header.slice(onek.length) : ''
+  if (!(await timingSafeEqualHash(gelen, secret))) {
+    return NextResponse.json({ error: 'Yetkisiz.' }, { status: 401 })
   }
 
   try {

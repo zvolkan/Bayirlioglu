@@ -142,7 +142,7 @@ export default async function FavorilerimPage() {
                               {formatPrice(price)}
                             </span>
                             {hasDiscount && (
-                              <span className="text-xs text-gray-400 line-through">
+                              <span className="text-xs text-gray-500 line-through">
                                 {formatPrice(product.price)}
                               </span>
                             )}

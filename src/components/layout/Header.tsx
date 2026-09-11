@@ -93,6 +93,41 @@ export default function Header() {
     if (dropdownTimerRef.current) clearTimeout(dropdownTimerRef.current)
   }
 
+  // ── Klavye erişimi ────────────────────────────────────────────────────────
+  //
+  // Dropdown'lar yalnızca `onMouseEnter` ile açılıyordu: fare kullanmayan
+  // hiç kimse alt menülere ulaşamıyordu. Daha kötüsü, paneller kapalıyken
+  // DOM'da `opacity-0 pointer-events-none` ile duruyordu — yani görünmez ama
+  // ODAKLANILABİLİR haldeydiler. Tab'la gezen kullanıcı, ekranda hiçbir şey
+  // yokken görünmez bağlantıların içinden geçiyor ve odağı kaybediyordu.
+  //
+  // Çözüm iki parçalı: (1) odak menü grubuna girince panel açılıyor, gruptan
+  // çıkınca kapanıyor; (2) kapalı panel `invisible` oluyor — `visibility:
+  // hidden` içindeki her şeyi sekme sırasından da çıkarır, `opacity-0` çıkarmaz.
+  const grubaOdaklanildi = (label: string) => openDropdown(label)
+
+  // Odak aynı menü grubunun İÇİNDE başka bir öğeye geçtiyse kapatma.
+  // `relatedTarget` odağın gittiği öğedir; null ise (pencere değişimi gibi)
+  // kapatmak doğru davranış.
+  const gruptanCikildi = (e: React.FocusEvent<HTMLDivElement>) => {
+    const gidilen = e.relatedTarget as Node | null
+    if (gidilen && e.currentTarget.contains(gidilen)) return
+    setActiveDropdown(null)
+  }
+
+  // Esc menüyü kapatıp odağı tetikleyen bağlantıda bırakır.
+  const menuKlavye = (e: React.KeyboardEvent<HTMLDivElement>, label: string) => {
+    if (e.key === 'Escape') {
+      setActiveDropdown(null)
+      return
+    }
+    // Aşağı ok, fare kullanıcısının "üzerine gelme" hareketinin karşılığı.
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      openDropdown(label)
+    }
+  }
+
   useEffect(() => () => {
     if (dropdownTimerRef.current) clearTimeout(dropdownTimerRef.current)
   }, [])
@@ -218,7 +253,10 @@ export default function Header() {
                   <button
                     key={tab.key}
                     onClick={() => handleBrandSwitch(tab.key)}
-                    className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
+                    // Marka değiştirici 40×28 px ölçülüyordu; parmakla isabetli
+                    // tıklanamıyor. WCAG 2.5.5 ve iki platformun arayüz kılavuzu
+                    // da 44×44 istiyor. Yükseklik `min-h` ile garantileniyor.
+                    className={`flex items-center justify-center gap-1.5 min-h-[44px] px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                       activeBrandKey === tab.key
                         ? ACTIVE_TAB_CLASS
                         : 'text-white/60 hover:text-white hover:bg-white/10'
@@ -245,12 +283,29 @@ export default function Header() {
                   </svg>
                 </button>
 
-                <Link href="/sepet" className="relative text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200">
+                {/*
+                  aria-label ŞART: bağlantının içinde yalnızca bir <svg> var,
+                  metin yok. Ekran okuyucu bu bağlantıyı sadece "link" diye
+                  okuyordu. Aynı dosyadaki arama ve hamburger düğmelerine
+                  etiket doğru verilmiş, sepet atlanmıştı — muhtemelen bir
+                  <button> değil <Link> olduğu için gözden kaçmış.
+
+                  Etiket sepetteki ürün sayısını da söylüyor; rozetteki sayı
+                  görsel bir bilgi ve ekran okuyucuya başka türlü ulaşmıyor.
+                */}
+                <Link
+                  href="/sepet"
+                  aria-label={cartCount > 0 ? `Sepetim, ${cartCount} ürün` : 'Sepetim (boş)'}
+                  className="relative text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200"
+                >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                   {cartCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold px-1">
+                    <span
+                      aria-hidden="true"
+                      className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold px-1"
+                    >
                       {cartCount > 9 ? '9+' : cartCount}
                     </span>
                   )}
@@ -291,10 +346,15 @@ export default function Header() {
                     className="relative"
                     onMouseEnter={() => openDropdown(item.label)}
                     onMouseLeave={scheduleClose}
+                    onFocus={() => item.children && grubaOdaklanildi(item.label)}
+                    onBlur={gruptanCikildi}
+                    onKeyDown={(e) => item.children && menuKlavye(e, item.label)}
                   >
                     <Link
                       href={item.href}
                       data-active={pathname === item.href}
+                      aria-haspopup={item.children ? 'true' : undefined}
+                      aria-expanded={item.children ? activeDropdown === item.label : undefined}
                       className={`link-underline text-white/70 ${navHover} text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 hover:bg-white/8 whitespace-nowrap`}
                     >
                       {item.label}
@@ -315,8 +375,11 @@ export default function Header() {
                       <div
                         className={`absolute top-full left-0 z-50 pt-2 min-w-[13rem] transition-all duration-300 ${
                           activeDropdown === item.label
-                            ? 'opacity-100 pointer-events-auto'
-                            : 'opacity-0 pointer-events-none'
+                            ? 'visible opacity-100 pointer-events-auto'
+                            : // `invisible` şart: opacity-0 öğeyi görünmez yapar
+                              // ama sekme sırasında bırakır. visibility:hidden
+                              // içindeki bağlantıları odaklanılamaz kılıyor.
+                              'invisible opacity-0 pointer-events-none'
                         }`}
                         onMouseEnter={cancelClose}
                         onMouseLeave={scheduleClose}

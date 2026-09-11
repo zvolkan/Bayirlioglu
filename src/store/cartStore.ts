@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Product, CartItem } from '@/lib/types'
+import { etkinBirimFiyat } from '@/lib/checkout'
 
 /**
  * Bir ürünün sepete eklenebilecek azami adedi.
@@ -58,8 +59,11 @@ export const useCartStore = create<CartState>()(
               return []
             }
 
-            const oldPrice = item.product.salePrice ?? item.product.price
-            const newPrice = server.salePrice ?? server.price
+            // Ortak kural (bkz. lib/checkout.ts): sıfır indirimli fiyat
+            // geçerli sayılmıyor. Burada `??` kullanılıyordu ve aynı ürün için
+            // sepet deposunun iki ayrı yeri farklı fiyat hesaplıyordu.
+            const oldPrice = etkinBirimFiyat(item.product.price, item.product.salePrice)
+            const newPrice = etkinBirimFiyat(server.price, server.salePrice)
             if (Math.abs(oldPrice - newPrice) > 0.001) priceChanged.push(item.product.name)
 
             return [
@@ -138,9 +142,7 @@ export const useCartStore = create<CartState>()(
         // indirimsiz hesaplanıyor ve iki rakam tutmuyordu.
         return get().items.reduce((sum, item) => {
           const unitPrice =
-            typeof item.product.salePrice === 'number' && item.product.salePrice > 0
-              ? item.product.salePrice
-              : item.product.price
+            etkinBirimFiyat(item.product.price, item.product.salePrice)
           return sum + unitPrice * item.quantity
         }, 0)
       },

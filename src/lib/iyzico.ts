@@ -173,6 +173,86 @@ export function initializeCheckoutForm(request: Record<string, unknown>): Promis
   return iyzicoPost('/payment/iyzipos/checkoutform/initialize/auth/ecom', request)
 }
 
+/**
+ * Ödeme sonucunu üç kovaya ayırır: BAŞARILI, KESİN RET, BELİRSİZ.
+ *
+ * ── Neden gerekli ───────────────────────────────────────────────────────────
+ *
+ * iyzico hatalarını da HTTP 200 ile, gövdede `status: "failure"` olarak
+ * döndürüyor. `iyzicoPost` yalnızca HTTP 500 ve üzerinde hata fırlattığı için,
+ * callback tarafında "başarılı değilse başarısızdır" diye tek bir ayrım vardı
+ * ve başarılı olmayan HER durum siparişi koşulsuz CANCELLED yapıyordu.
+ *
+ * Oysa "başarılı değil" ile "başarısız" aynı şey değil. Aradaki fark para:
+ * 3DS tamamlanmış, banka tutarı çekmiş, ama iyzico o an geçici bir sistem
+ * hatası ya da hız sınırı döndürmüşse, müşteriye "ödeme başarısız" denip
+ * sipariş iptal ediliyordu. Müşteri büyük ihtimalle ikinci kez ödüyor ve
+ * birinci tahsilatın sistemde hiçbir izi kalmıyordu.
+ *
+ * ── Sınıflandırma kuralı ────────────────────────────────────────────────────
+ *
+ * KESİN RET yalnızca ELİMİZDE KANIT VARSA verilir: ya `paymentStatus`
+ * doğrudan FAILURE'dır, ya da errorCode bilinen bir kart reddidir (limit
+ * yetersiz, kart kapalı, hatalı CVC gibi). Bunların hiçbirinde para çekilmez.
+ *
+ * Geri kalan her şey — bilinmeyen hata kodu, 3DS ara durumları, boş yanıt,
+ * sistem hatası — BELİRSİZ sayılır. Belirsizde sipariş iptal EDİLMEZ: PENDING
+ * kalır, not düşülür, müşteriye "doğrulanıyor" gösterilir.
+ *
+ * Bedeli şu: gerçekten ödenmemiş bazı siparişler bir süre PENDING'de bekler.
+ * Bekleyen sipariş temizliği onları zaten belirli bir süre sonra iptal edip
+ * stoğu geri veriyor. Yani belirsizi beklemeye almanın maliyeti gecikme;
+ * yanlış iptal etmenin maliyeti müşterinin parası.
+ */
+export type OdemeSonucu = 'basarili' | 'kesin-ret' | 'belirsiz'
+
+/**
+ * Kart reddi anlamına gelen iyzico hata kodları. Hepsinde işlem bankada
+ * reddedilmiştir; tahsilat OLMAZ, dolayısıyla iptal güvenlidir.
+ *
+ * Liste bilinçli olarak dar tutuldu: bir kod burada yoksa belirsiz sayılıyor
+ * ve sipariş beklemeye alınıyor. Yanlış tarafa düşmenin bedeli asimetrik —
+ * fazladan bekleyen sipariş zararsız, yanlış iptal edilen ödeme değil.
+ */
+const KART_REDDI_KODLARI = new Set([
+  '10051', // Yetersiz bakiye
+  '10005', // İşlem onaylanmadı (do not honour)
+  '10012', // Geçersiz işlem
+  '10041', // Karta el koy
+  '10043', // Çalıntı kart
+  '10054', // Vadesi dolmuş kart
+  '10084', // CVC hatalı
+  '10093', // Kart kapalı / kullanıma kapalı
+  '10201', // Kart limiti yetersiz
+  '10202', // Kart sahibi doğrulanamadı
+  '10207', // Karta işlem izni yok
+  '10211', // Kart sahibi 3DS doğrulamasını tamamlamadı
+  '10051-3D',
+])
+
+export function odemeSonucunuSiniflandir(result: unknown): OdemeSonucu {
+  const r = (result ?? {}) as {
+    status?: unknown
+    paymentStatus?: unknown
+    errorCode?: unknown
+  }
+
+  const status = String(r.status ?? '')
+  const paymentStatus = String(r.paymentStatus ?? '')
+  const errorCode = String(r.errorCode ?? '')
+
+  if (status === 'success' && paymentStatus === 'SUCCESS') return 'basarili'
+
+  // iyzico "sorgu başarılı" diyor ve ödeme durumunu FAILURE olarak bildiriyor:
+  // bu kesin bilgi.
+  if (status === 'success' && paymentStatus === 'FAILURE') return 'kesin-ret'
+
+  // Sorgu başarısız; yalnızca bilinen bir kart reddiyse kesin sayıyoruz.
+  if (status === 'failure' && KART_REDDI_KODLARI.has(errorCode)) return 'kesin-ret'
+
+  return 'belirsiz'
+}
+
 export function retrieveCheckoutForm(token: string, conversationId: string): Promise<any> {
   return iyzicoPost('/payment/iyzipos/checkoutform/auth/ecom/detail', {
     locale: 'tr',

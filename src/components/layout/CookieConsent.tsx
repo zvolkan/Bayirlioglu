@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 const STORAGE_KEY = 'bayirlioglu-cookie-consent'
@@ -29,6 +29,7 @@ export function hasAnalyticsConsent(): boolean {
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false)
+  const bandRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     try {
@@ -44,6 +45,46 @@ export default function CookieConsent() {
       setVisible(true)
     }
   }, [])
+
+  // ── Bandın altında kalan içeriği kurtar ───────────────────────────────────
+  //
+  // Bant sabit konumlu (`fixed`) olduğu için sayfa akışında yer kaplamıyor ve
+  // altındaki her şeyin ÜZERİNE biniyordu. Bileşenin kendisi doğru yazılmıştı;
+  // sorun ancak sayfayla birlikte görülüyor: mobilde bant görünümün yaklaşık
+  // %40'ını kaplıyor ve ana sayfada iki marka kartını, iletişim sayfasında
+  // e-posta ile telefon alanlarını, 404 sayfasında "Ana Sayfaya Dön" butonunu
+  // örtüyordu. Yeni ziyaretçinin gördüğü ilk ekran, eylem çağrısının üstüne
+  // oturmuş bir onay kutusuydu.
+  //
+  // Çözüm: bant durduğu sürece gövdeye kendi yüksekliği kadar alt boşluk
+  // ekleniyor, böylece sayfanın sonu bandın üstünde bitiyor. Yükseklik sabit
+  // yazılmıyor — metin kırılım noktasına göre bir ya da iki satıra düştüğü
+  // için ölçülerek alınıyor; pencere yeniden boyutlandığında yeniden ölçülüyor.
+  useEffect(() => {
+    if (!visible) return
+
+    const govde = document.body
+    const oncekiPadding = govde.style.paddingBottom
+
+    const olc = () => {
+      const yukseklik = bandRef.current?.offsetHeight ?? 0
+      govde.style.paddingBottom = yukseklik ? `${yukseklik}px` : oncekiPadding
+    }
+
+    olc()
+    window.addEventListener('resize', olc)
+
+    // Yazı tipi geç yüklendiğinde metin sarması değişip bandın yüksekliği
+    // artabiliyor; o durumda ölçü kendiliğinden güncelleniyor.
+    const gozlemci = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(olc) : null
+    if (gozlemci && bandRef.current) gozlemci.observe(bandRef.current)
+
+    return () => {
+      window.removeEventListener('resize', olc)
+      gozlemci?.disconnect()
+      govde.style.paddingBottom = oncekiPadding
+    }
+  }, [visible])
 
   const decide = (value: ConsentValue) => {
     try {
@@ -61,6 +102,7 @@ export default function CookieConsent() {
 
   return (
     <div
+      ref={bandRef}
       role="dialog"
       aria-live="polite"
       aria-label="Çerez tercihleri"
@@ -71,9 +113,15 @@ export default function CookieConsent() {
           <div className="flex-1">
             <p className="font-semibold text-gray-900 text-sm mb-1">Çerez Kullanımı</p>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Sitemizin çalışması için zorunlu çerezleri kullanıyoruz. İzin vermeniz
-              hâlinde deneyimi iyileştirmek ve kullanım istatistikleri toplamak için
-              analitik çerezler de kullanılır. Detaylar için{' '}
+              {/* Mobilde bant ne kadar kısa olursa o kadar az yer kaplıyor;
+                  ayrıntı zaten aşağıdaki iki bağlantının arkasında. */}
+              <span className="hidden sm:inline">
+                Sitemizin çalışması için zorunlu çerezleri kullanıyoruz. İzin vermeniz
+                hâlinde deneyimi iyileştirmek ve kullanım istatistikleri toplamak için
+                analitik çerezler de kullanılır.{' '}
+              </span>
+              <span className="sm:hidden">Zorunlu çerezleri kullanıyoruz. </span>
+              Detaylar için{' '}
               <Link
                 href="/gizlilik"
                 className="underline font-medium text-gray-800 hover:text-gray-900"

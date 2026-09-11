@@ -32,12 +32,33 @@ const AYARLAR: sanitizeHtml.IOptions = {
     // allowedAttributes filtresi listede olmayanı siliyor.
     a: ['href', 'title', 'target', 'rel'],
     img: ['src', 'alt', 'title', 'width', 'height', 'loading'],
-    // `class` yalnızca bu ikisinde: yazı içi biçimlendirme için yeterli,
-    // `style` ise hiç kabul edilmiyor (CSS üzerinden tıklama hırsızlığı olur).
+    // `class` SERBEST BIRAKILMIYOR, beyaz listeyle sınırlandırıldı.
+    //
+    // `style` zaten kabul edilmiyordu, ama Tailwind kullanan bir sitede serbest
+    // `class` neredeyse aynı güce sahip: yazıya `<div class="fixed inset-0
+    // z-50">` koyan biri, sayfanın tamamını kaplayan görünmez bir katman
+    // oluşturup altındaki her tıklamayı yakalayabilir (tıklama hırsızlığı).
+    // Blog yazarları yönetici olsa bile, hesabı ele geçirilen bir yazar bunu
+    // yapabilir; ayrıca içerik veritabanından geliyor.
+    //
+    // İzin verilen sınıflar aşağıda `allowedClasses` ile tek tek sayılıyor.
     span: ['class'],
     div: ['class'],
     th: ['colspan', 'rowspan'],
     td: ['colspan', 'rowspan'],
+  },
+  /**
+   * İzin verilen sınıf adları. Konumlandırma, boyut ve z-index içeren hiçbir
+   * sınıf listede yok; yalnızca metin biçimlendirme.
+   */
+  allowedClasses: {
+    span: [
+      'font-bold', 'font-semibold', 'italic', 'underline',
+      'text-sm', 'text-base', 'text-lg',
+      'text-gray-500', 'text-gray-600', 'text-gray-700',
+      'highlight', 'vurgu',
+    ],
+    div: ['not-prose', 'tablo-sarmal', 'uyari', 'bilgi'],
   },
   // Yalnızca güvenli şemalar. `javascript:`, `data:` ve `vbscript:` dışarıda.
   allowedSchemes: ['http', 'https', 'mailto', 'tel'],
@@ -50,12 +71,29 @@ const AYARLAR: sanitizeHtml.IOptions = {
     a: (tagName, attribs) => {
       const href = attribs.href ?? ''
       const disLink = /^https?:\/\//i.test(href)
-      return {
-        tagName,
-        attribs: disLink
-          ? { ...attribs, target: '_blank', rel: 'noopener noreferrer nofollow' }
-          : attribs,
+
+      if (disLink) {
+        return {
+          tagName,
+          attribs: { ...attribs, target: '_blank', rel: 'noopener noreferrer nofollow' },
+        }
       }
+
+      // SİTE İÇİ bağlantılar da denetleniyor.
+      //
+      // Eskiden site içi bağlantılar olduğu gibi geçiyordu. Yazar kendi
+      // `target="_blank"` etiketini yazdığında bağlantı yeni sekmede açılıyor
+      // ama `rel` almıyordu — açılan sayfa `window.opener` üzerinden bizim
+      // sekmemizi başka bir adrese yönlendirebiliyor (tabnabbing). Site içi
+      // bağlantıda bile bu, saldırganın yazıya koyduğu bir adres olabilir.
+      if (attribs.target) {
+        return {
+          tagName,
+          attribs: { ...attribs, rel: attribs.rel || 'noopener noreferrer' },
+        }
+      }
+
+      return { tagName, attribs }
     },
   },
 }

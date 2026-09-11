@@ -55,6 +55,9 @@ export async function getPublishedPost(brandKey: string, slug: string) {
       coverImage: true,
       author: true,
       publishedAt: true,
+      // Yapısal veride `dateModified` için gerekiyor: Google güncellenmiş
+      // yazıyı ayırt edebilsin.
+      updatedAt: true,
     },
   })
 }

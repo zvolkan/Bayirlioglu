@@ -4,6 +4,10 @@ import GrupLogo from '@/components/ui/GrupLogo'
 import { signUp, signInWithGoogle } from '@/app/actions/auth'
 
 export const metadata: Metadata = {
+  // Giriş/kayıt sayfalarının arama sonuçlarında hiçbir işi yok ve
+  // robots.txt tek başına yetmiyor: o yalnızca TARAMAYI engelliyor,
+  // dışarıdan bağlantı verilen bir sayfa yine dizine girebiliyor.
+  robots: { index: false, follow: false },
   title: 'Kayıt Ol',
 }
 

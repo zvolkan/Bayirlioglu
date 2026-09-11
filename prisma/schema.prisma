@@ -90,6 +90,21 @@ model Product {
   price            Decimal  @db.Decimal(10, 2)
   salePrice        Decimal? @map("sale_price") @db.Decimal(10, 2)
 
+  /// ETKİN FİYAT — VERİTABANI ÜRETİR, UYGULAMA YAZMAZ.
+  ///
+  /// `COALESCE(sale_price, price)` değerini tutan bir "generated column".
+  /// Varlık sebebi: ürünlerin %41'inde indirimli fiyat dolu, ama fiyat
+  /// sıralaması ve fiyat aralığı filtresi `price` üzerinden çalışıyordu.
+  /// Müşteri "ucuzdan pahalıya" sıraladığında liste fiyatına göre sıralanmış
+  /// ama indirimli fiyatlar yazan bir liste görüyordu; "0–500 TL" filtresi de
+  /// liste fiyatı 600, satış fiyatı 450 olan ürünü eliyordu.
+  ///
+  /// DİKKAT: Bu sütun `sql/arama-ve-fiyat-indeksleri.sql` ile yaratılıyor.
+  /// `prisma db push` bunu NORMAL bir sütuna çevirmeye kalkar ve üretilen
+  /// değeri kaybeder. Şema değişikliklerini migration ile yapın; `db push`
+  /// kullanacaksanız önce bu sütunu ve indekslerini gözden geçirin.
+  effectivePrice   Decimal? @map("effective_price") @db.Decimal(10, 2)
+
   // Stok
   stockQuantity    Int      @default(0) @map("stock_quantity")
   minStockLevel    Int      @default(5) @map("min_stock_level")

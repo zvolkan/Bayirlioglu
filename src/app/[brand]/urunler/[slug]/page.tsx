@@ -14,6 +14,7 @@ import Reveal from '@/components/ui/Reveal'
 import RevealGroup from '@/components/ui/RevealGroup'
 import { KARGO_LIMIT, KARGO_UCRETI, TESLIMAT_SURESI } from '@/lib/checkout'
 import { jsonLdScript } from '@/lib/sanitize'
+import { getSiteUrl } from '@/lib/site-url'
 
 interface Props {
   params: Promise<{ brand: string; slug: string }>
@@ -98,11 +99,48 @@ export default async function ProductDetailPage({ params }: Props) {
     },
   }
 
+  // ── Breadcrumb yapısal verisi ──────────────────────────────────────────
+  //
+  // Sayfada görsel olarak breadcrumb var ama karşılığı JSON-LD yoktu. Google
+  // arama sonucunda adres yolunu ("bayirlioglu.com › ALB Tarım › Gübreler")
+  // ancak bu işaretlemeyle gösteriyor; aksi hâlde ham URL yazıyor. Sıra
+  // ekrandaki breadcrumb ile birebir aynı olmalı, yoksa işaretleme yok sayılır.
+  const siteUrl = getSiteUrl()
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: cfg.name, item: `${siteUrl}/${brandKey}` },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Ürünler',
+        item: `${siteUrl}/${brandKey}/urunler`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: product.category.name,
+        item: `${siteUrl}/${brandKey}/urunler?kategori=${product.category.slug}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 4,
+        name: product.name,
+        item: `${siteUrl}/${brandKey}/urunler/${slug}`,
+      },
+    ],
+  }
+
   return (
     <>
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd) }}
+    />
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbJsonLd) }}
     />
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
@@ -186,7 +224,7 @@ export default async function ProductDetailPage({ params }: Props) {
                   {displayPrice.toLocaleString('tr-TR')} ₺
                 </p>
                 {product.salePrice && (
-                  <p className="text-gray-400 text-lg line-through mb-1">
+                  <p className="text-gray-500 text-lg line-through mb-1">
                     {product.price.toLocaleString('tr-TR')} ₺
                   </p>
                 )}

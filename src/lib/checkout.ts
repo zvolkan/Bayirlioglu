@@ -22,7 +22,42 @@ export const TESLIMAT_SURESI = '2-5 iş günü'
 
 /** Fiyatları 2 haneye yuvarla — kayan nokta artıklarını temizler */
 export function money(value: number): number {
+  // NaN/Infinity burada 0'a çekiliyor. Eskiden `money(NaN)` NaN döndürüyor,
+  // NaN de her karşılaştırmada false verdiği için `if (total <= 0)` gibi
+  // korumaların hepsinden sessizce geçiyordu — yani geçersiz bir tutar
+  // "geçerli" muamelesi görüyordu. Sıfıra çekmek, o korumaların devreye
+  // girmesini sağlıyor.
+  if (!Number.isFinite(value)) return 0
   return Math.round((value + Number.EPSILON) * 100) / 100
+}
+
+/**
+ * Müşterinin ödeyeceği birim fiyat — TEK KAYNAK.
+ *
+ * ── Neden bir fonksiyon ─────────────────────────────────────────────────────
+ *
+ * Aynı karar dört yerde, üç farklı kuralla veriliyordu:
+ *   · sepet deposu (`cartStore`)   → `salePrice > 0 ? salePrice : price`
+ *   · sepet deposunun eşitlemesi   → `salePrice ?? price`
+ *   · ödeme ekranı (`CheckoutClient`) → `salePrice ?? price`
+ *   · sunucu (`odeme/initialize`)  → `salePrice > 0 ? salePrice : price`
+ *
+ * Fark sadece üslupta değil: `??` sıfırı GEÇERLİ bir fiyat sayar. Veritabanına
+ * `sale_price = 0` düşen bir ürün — ki yönetim panelinde alanı boş bırakmak
+ * yerine sıfır yazmak kolay bir hata — ödeme ekranında 0 TL görünüyor, ama
+ * sunucu `> 0` kuralıyla tam fiyatı tahsil ediyordu. Müşteri ekranda gördüğü
+ * tutardan farklı bir tutar ödüyordu.
+ *
+ * Kural: indirimli fiyat ancak POZİTİF ve geçerli bir sayıysa kullanılır.
+ */
+export function etkinBirimFiyat(
+  price: number | string,
+  salePrice?: number | string | null,
+): number {
+  const liste = Number(price)
+  const indirim = Number(salePrice)
+  if (Number.isFinite(indirim) && indirim > 0) return indirim
+  return Number.isFinite(liste) ? liste : 0
 }
 
 export function calculateShipping(subtotal: number): number {

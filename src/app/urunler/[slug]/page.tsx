@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
-import { ACTIVE_BRAND_KEY } from '@/lib/constants'
 
 /**
  * Eski (marka öncesi) ürün detay rotası.
@@ -21,9 +20,17 @@ export default async function EskiUrunDetayPage({
     select: { brand: { select: { key: true } } },
   })
 
-  if (!product) {
-    redirect(`/${ACTIVE_BRAND_KEY}/urunler`)
-  }
+  // ── Olmayan ürün 404 DÖNMELİ, listeye yönlendirilmemeli ─────────────────
+  //
+  // Burada eskiden ürün listesine yönlendirme vardı. Ziyaretçi açısından
+  // nazik görünüyor, ama arama motoru açısından "soft 404": adres geçerli
+  // sayılıyor, yönlendirmenin ucundaki sayfa HTTP 200 dönüyor ve Google
+  // olmayan ürünü dizininde tutmaya devam ediyor. Kırık bağlantı tarayan
+  // araçlar da hiçbir şey görmüyor. Bir kaynak yoksa doğru cevap 404.
+  if (!product) notFound()
 
-  redirect(`/${product.brand.key}/urunler/${slug}`)
+  // `permanentRedirect` 308 döndürüyor; `redirect` 307 (geçici) döndürüyordu.
+  // Bu rota marka öncesi döneme ait KALICI bir taşınma: arama motorunun eski
+  // adresi bırakıp yenisine geçmesi için kalıcı olduğunu söylemek gerekiyor.
+  permanentRedirect(`/${product.brand.key}/urunler/${slug}`)
 }

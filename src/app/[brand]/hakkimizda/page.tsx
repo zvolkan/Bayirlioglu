@@ -19,8 +19,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!VALID_BRANDS.includes(brand as BrandKey)) return {}
   const cfg = BRANDS[brand as BrandKey]
   return {
-    title: 'Hakkımızda',
+    title: `Hakkımızda — ${cfg.name}`,
     description: `${cfg.name} hakkında: tarihçemiz, ekibimiz ve değerlerimiz.`,
+    // Kök /hakkimizda grup anlatısını, bu sayfa markayı anlatıyor. İkisi de
+    // kendi adresini canonical bildiriyor ki arama motoru hangisinin asıl
+    // olduğunu tahmin etmeye çalışmasın.
+    alternates: { canonical: `/${brand}/hakkimizda` },
   }
 }
 

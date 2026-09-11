@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ProductImage from './ProductImage'
 import type { ProductImage as ProductImageType } from '@/lib/types'
 import type { IconName } from '@/components/ui/Icon'
@@ -34,14 +34,72 @@ export default function ProductGallery({ images, productName, fallback = 'paket'
     setIndex((current) => (current + delta + count) % count)
   }
 
-  // Büyütme açıkken klavye ile gezinme
+  // Büyütülmüş görünüm açılınca odağın kaçtığı yeri hatırla
+  const acilistanOncekiOdak = useRef<HTMLElement | null>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  // ── Büyütme açıkken klavye: gezinme + ODAK TUZAĞI ────────────────────────
+  //
+  // Pencere `aria-modal="true"` beyan ediyordu ama odak hiç içeri taşınmıyordu.
+  // Ekran okuyucuya "bu bir kalıcı pencere, arkası kapalı" deniyor, gerçekte
+  // ise Tab tuşu arkadaki sayfada dolaşmaya devam ediyordu — yani beyan ile
+  // davranış çelişiyordu. Klavye kullanıcısı pencereyi kapatamadan arka
+  // plandaki bağlantılara gidiyordu.
+  //
+  // Üç parça: (1) açılışta odak pencereye taşınıyor, (2) Tab ve Shift+Tab
+  // pencerenin ilk/son öğesi arasında dönüyor, (3) kapanışta odak, pencereyi
+  // açan öğeye geri dönüyor. Üçüncüsü olmadan pencere kapanınca odak sayfanın
+  // en başına düşer ve kullanıcı yerini kaybeder.
   useEffect(() => {
     if (!zoomed) return
 
+    acilistanOncekiOdak.current = document.activeElement as HTMLElement | null
+
+    /** Pencere içindeki odaklanılabilir öğeler — DOM sırasıyla. */
+    const odaklanabilirler = (): HTMLElement[] => {
+      const kok = modalRef.current
+      if (!kok) return []
+      return Array.from(
+        kok.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => !el.hasAttribute('disabled'))
+    }
+
+    // Açılışta odağı içeri al.
+    odaklanabilirler()[0]?.focus()
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setZoomed(false)
-      else if (e.key === 'ArrowRight') go(1)
-      else if (e.key === 'ArrowLeft') go(-1)
+      if (e.key === 'Escape') {
+        setZoomed(false)
+        return
+      }
+      if (e.key === 'ArrowRight') {
+        go(1)
+        return
+      }
+      if (e.key === 'ArrowLeft') {
+        go(-1)
+        return
+      }
+      if (e.key !== 'Tab') return
+
+      const oge = odaklanabilirler()
+      if (oge.length === 0) return
+
+      const ilk = oge[0]
+      const son = oge[oge.length - 1]
+      const simdiki = document.activeElement
+
+      // Sondan ileri → başa; baştan geri → sona. Odak pencerenin dışına
+      // çıkmışsa (arka plana kaçmışsa) da içeri geri çekiliyor.
+      if (e.shiftKey && (simdiki === ilk || !modalRef.current?.contains(simdiki))) {
+        e.preventDefault()
+        son.focus()
+      } else if (!e.shiftKey && (simdiki === son || !modalRef.current?.contains(simdiki))) {
+        e.preventDefault()
+        ilk.focus()
+      }
     }
 
     document.addEventListener('keydown', onKey)
@@ -51,6 +109,7 @@ export default function ProductGallery({ images, productName, fallback = 'paket'
     return () => {
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = previousOverflow
+      acilistanOncekiOdak.current?.focus?.()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoomed, count])
@@ -147,6 +206,7 @@ export default function ProductGallery({ images, productName, fallback = 'paket'
       {/* Büyütülmüş görünüm */}
       {zoomed && active?.url && (
         <div
+          ref={modalRef}
           className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setZoomed(false)}
           role="dialog"

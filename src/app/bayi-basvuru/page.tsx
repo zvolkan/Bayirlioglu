@@ -173,21 +173,21 @@ export default function BayiBasvuruPage() {
                   {/* Company */}
                   <div>
                     <label htmlFor="bayi-companyName" className="form-label">Firma / İşletme Adı *</label>
-                    <input {...register('companyName')} id="bayi-companyName" className="form-input" placeholder="Yılmaz Ticaret Ltd. Şti." />
-                    {errors.companyName && <p className="form-error">{errors.companyName.message}</p>}
+                    <input {...register('companyName')} id="bayi-companyName" aria-invalid={!!errors.companyName} aria-describedby={errors.companyName ? 'bayi-companyName-hata' : undefined} className="form-input" placeholder="Yılmaz Ticaret Ltd. Şti." />
+                    {errors.companyName && <p id="bayi-companyName-hata" role="alert" className="form-error">{errors.companyName.message}</p>}
                   </div>
 
                   {/* Name */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="bayi-firstName" className="form-label">Ad *</label>
-                      <input {...register('firstName')} id="bayi-firstName" className="form-input" placeholder="Ahmet" />
-                      {errors.firstName && <p className="form-error">{errors.firstName.message}</p>}
+                      <input {...register('firstName')} id="bayi-firstName" aria-invalid={!!errors.firstName} aria-describedby={errors.firstName ? 'bayi-firstName-hata' : undefined} className="form-input" placeholder="Ahmet" />
+                      {errors.firstName && <p id="bayi-firstName-hata" role="alert" className="form-error">{errors.firstName.message}</p>}
                     </div>
                     <div>
                       <label htmlFor="bayi-lastName" className="form-label">Soyad *</label>
-                      <input {...register('lastName')} id="bayi-lastName" className="form-input" placeholder="Yılmaz" />
-                      {errors.lastName && <p className="form-error">{errors.lastName.message}</p>}
+                      <input {...register('lastName')} id="bayi-lastName" aria-invalid={!!errors.lastName} aria-describedby={errors.lastName ? 'bayi-lastName-hata' : undefined} className="form-input" placeholder="Yılmaz" />
+                      {errors.lastName && <p id="bayi-lastName-hata" role="alert" className="form-error">{errors.lastName.message}</p>}
                     </div>
                   </div>
 
@@ -195,13 +195,13 @@ export default function BayiBasvuruPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="bayi-email" className="form-label">E-posta *</label>
-                      <input {...register('email')} id="bayi-email" type="email" className="form-input" placeholder="ahmet@firma.com" />
-                      {errors.email && <p className="form-error">{errors.email.message}</p>}
+                      <input {...register('email')} id="bayi-email" aria-invalid={!!errors.email} aria-describedby={errors.email ? 'bayi-email-hata' : undefined} type="email" className="form-input" placeholder="ahmet@firma.com" />
+                      {errors.email && <p id="bayi-email-hata" role="alert" className="form-error">{errors.email.message}</p>}
                     </div>
                     <div>
                       <label htmlFor="bayi-phone" className="form-label">Telefon *</label>
-                      <input {...register('phone')} id="bayi-phone" type="tel" className="form-input" placeholder="0532 000 00 00" />
-                      {errors.phone && <p className="form-error">{errors.phone.message}</p>}
+                      <input {...register('phone')} id="bayi-phone" aria-invalid={!!errors.phone} aria-describedby={errors.phone ? 'bayi-phone-hata' : undefined} type="tel" className="form-input" placeholder="0532 000 00 00" />
+                      {errors.phone && <p id="bayi-phone-hata" role="alert" className="form-error">{errors.phone.message}</p>}
                     </div>
                   </div>
 
@@ -209,46 +209,46 @@ export default function BayiBasvuruPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="bayi-city" className="form-label">İl *</label>
-                      <select {...register('city')} id="bayi-city" className="form-input">
+                      <select {...register('city')} id="bayi-city" aria-invalid={!!errors.city} aria-describedby={errors.city ? 'bayi-city-hata' : undefined} className="form-input">
                         <option value="">İl seçin</option>
                         {TURKISH_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
                       </select>
-                      {errors.city && <p className="form-error">{errors.city.message}</p>}
+                      {errors.city && <p id="bayi-city-hata" role="alert" className="form-error">{errors.city.message}</p>}
                     </div>
                     <div>
                       <label htmlFor="bayi-district" className="form-label">İlçe *</label>
-                      <input {...register('district')} id="bayi-district" className="form-input" placeholder="İlçe" />
-                      {errors.district && <p className="form-error">{errors.district.message}</p>}
+                      <input {...register('district')} id="bayi-district" aria-invalid={!!errors.district} aria-describedby={errors.district ? 'bayi-district-hata' : undefined} className="form-input" placeholder="İlçe" />
+                      {errors.district && <p id="bayi-district-hata" role="alert" className="form-error">{errors.district.message}</p>}
                     </div>
                   </div>
 
                   {/* Marka Seçimi */}
                   <div>
                     <label htmlFor="bayi-brand" className="form-label">Hangi Marka İçin Başvuruyorsunuz? *</label>
-                    <select {...register('brand')} id="bayi-brand" className="form-input">
+                    <select {...register('brand')} id="bayi-brand" aria-invalid={!!errors.brand} aria-describedby={errors.brand ? 'bayi-brand-hata' : undefined} className="form-input">
                       <option value="">Seçin</option>
                       {BRAND_OPTIONS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
                     </select>
-                    {errors.brand && <p className="form-error">{errors.brand.message}</p>}
+                    {errors.brand && <p id="bayi-brand-hata" role="alert" className="form-error">{errors.brand.message}</p>}
                   </div>
 
                   {/* Business */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="bayi-businessType" className="form-label">İşletme Türü *</label>
-                      <select {...register('businessType')} id="bayi-businessType" className="form-input">
+                      <select {...register('businessType')} id="bayi-businessType" aria-invalid={!!errors.businessType} aria-describedby={errors.businessType ? 'bayi-businessType-hata' : undefined} className="form-input">
                         <option value="">Seçin</option>
                         {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                       </select>
-                      {errors.businessType && <p className="form-error">{errors.businessType.message}</p>}
+                      {errors.businessType && <p id="bayi-businessType-hata" role="alert" className="form-error">{errors.businessType.message}</p>}
                     </div>
                     <div>
                       <label htmlFor="bayi-annualRevenue" className="form-label">Yıllık Ciro *</label>
-                      <select {...register('annualRevenue')} id="bayi-annualRevenue" className="form-input">
+                      <select {...register('annualRevenue')} id="bayi-annualRevenue" aria-invalid={!!errors.annualRevenue} aria-describedby={errors.annualRevenue ? 'bayi-annualRevenue-hata' : undefined} className="form-input">
                         <option value="">Seçin</option>
                         {REVENUE_RANGES.map((r) => <option key={r} value={r}>{r}</option>)}
                       </select>
-                      {errors.annualRevenue && <p className="form-error">{errors.annualRevenue.message}</p>}
+                      {errors.annualRevenue && <p id="bayi-annualRevenue-hata" role="alert" className="form-error">{errors.annualRevenue.message}</p>}
                     </div>
                   </div>
 
@@ -256,7 +256,7 @@ export default function BayiBasvuruPage() {
                   <div>
                     <label htmlFor="bayi-message" className="form-label">Ek Notlar (İsteğe Bağlı)</label>
                     <textarea
-                      {...register('message')} id="bayi-message"
+                      {...register('message')} id="bayi-message" aria-invalid={!!errors.message} aria-describedby={errors.message ? 'bayi-message-hata' : undefined}
                       rows={4}
                       className="form-input resize-none"
                       placeholder="Bize işletmeniz hakkında daha fazla bilgi verin..."

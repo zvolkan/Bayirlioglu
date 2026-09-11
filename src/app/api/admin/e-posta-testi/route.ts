@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
+import { rateLimit, clientIp } from '@/lib/rate-limit'
 import { verifyAdminToken } from '@/lib/admin-auth'
 import { sendEmail } from '@/lib/email/send'
 import { deploymentTag } from '@/lib/deployment'
@@ -25,15 +26,40 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 })
   }
 
+  // ── Hız sınırı ──────────────────────────────────────────────────────────
+  //
+  // Uç yönetici girişi ardındaydı ama sınırsızdı: oturumu ele geçirilmiş bir
+  // yönetici çerezi ya da açık bırakılmış bir panel, bu adresi istediği
+  // adrese e-posta gönderen bir araca çevirebiliyordu. Resend kotası da
+  // tükenip gerçek sipariş e-postalarını durdururdu.
+  const sinir = await rateLimit('eposta-testi', clientIp(await headers()), 5, 60 * 60 * 1000)
+  if (!sinir.ok) {
+    return NextResponse.json(
+      { error: 'Çok fazla test e-postası gönderildi. Bir süre sonra tekrar deneyin.' },
+      { status: 429 },
+    )
+  }
+
   const url = new URL(request.url)
   const to = (url.searchParams.get('to') ?? '').trim()
+
+  // ── Alıcı adresi doğrulanıyor ───────────────────────────────────────────
+  //
+  // `?to=` hiç kontrol edilmiyordu; adres neyse Resend'e o gidiyordu.
+  if (to && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+    return NextResponse.json({ error: 'Geçersiz e-posta adresi.' }, { status: 400 })
+  }
 
   const apiKey = process.env.RESEND_API_KEY?.trim()
   const from = process.env.EMAIL_FROM?.trim()
   const adminNotify = process.env.ADMIN_NOTIFY_EMAIL?.trim()
 
   const config = {
-    RESEND_API_KEY: apiKey ? `tanımlı (${apiKey.slice(0, 6)}…)` : 'TANIMLI DEĞİL',
+    // Anahtarın İLK 6 KARAKTERİ artık gösterilmiyor. Sırrın hiçbir parçası
+    // bir HTTP yanıtına yazılmamalı: yanıtlar tarayıcı geçmişine, vekil
+    // sunucu kayıtlarına ve ekran görüntülerine düşüyor. "Tanımlı mı?"
+    // sorusunun cevabı için uzunluk zaten yeterli.
+    RESEND_API_KEY: apiKey ? `tanımlı (${apiKey.length} karakter)` : 'TANIMLI DEĞİL',
     EMAIL_FROM: from ?? 'TANIMLI DEĞİL',
     ADMIN_NOTIFY_EMAIL: adminNotify ?? 'tanımlı değil (yönetici bildirimi kapalı)',
   }

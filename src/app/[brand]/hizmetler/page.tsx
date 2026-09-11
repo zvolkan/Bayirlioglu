@@ -19,8 +19,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!VALID_BRANDS.includes(brand as BrandKey)) return {}
   const cfg = BRANDS[brand as BrandKey]
   return {
-    title: 'Hizmetler',
+    title: `Hizmetler — ${cfg.name}`,
     description: `${cfg.name} hizmetleri: teknik destek, danışmanlık ve daha fazlası.`,
+    alternates: { canonical: `/${brand}/hizmetler` },
   }
 }
 

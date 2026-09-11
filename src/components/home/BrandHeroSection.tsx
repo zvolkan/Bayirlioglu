@@ -10,18 +10,58 @@ interface Props {
   brandKey: BrandKey
 }
 
+/**
+ * Marka hero bölümü.
+ *
+ * ── Giriş animasyonu neden state'te DEĞİL ───────────────────────────────────
+ *
+ * Başlık, alt başlık, açıklama ve butonlar eskiden `loaded` adlı bir React
+ * state'ine bağlıydı: sunucudan `opacity-0` geliyor, tarayıcıda 100 ms'lik bir
+ * `setTimeout` çalışınca görünür oluyorlardı. Yani hero'nun tamamı JavaScript'e
+ * bağımlıydı. Hidrasyon gecikirse, bir hata sınırı devreye girerse ya da JS hiç
+ * çalışmazsa sayfa tamamen boş kalıyordu — görsel QA'da `/alb-tarim` sayfasının
+ * "soluk" render olmasının sebebi buydu.
+ *
+ * Artık giriş animasyonu saf CSS (`anim-fade-up`, animations.css). `both` dolgu
+ * kipiyle tanımlı olduğu için animasyon bittiğinde öğe görünür kalıyor ve
+ * JavaScript hiç çalışmasa bile içerik okunuyor. "Hareketi azalt" ayarı da
+ * aynı dosyadaki blokla kendiliğinden destekleniyor.
+ */
 export default function BrandHeroSection({ brandKey }: Props) {
   const cfg = BRANDS[brandKey]
   const isAlbSu = brandKey === 'alb-su-aritma'
 
-  const [loaded, setLoaded]         = useState(false)
   const [videoSrc, setVideoSrc]     = useState<string | null>(null)
   const [videoReady, setVideoReady] = useState(false)
   const [videoError, setVideoError] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  // Mobil / masaüstü video kaynağını belirle; kaynak değişince hazır bayrağını sıfırla
+  // ── Video kaynağı — ve videoyu hiç yüklememe kararı ──────────────────────
+  //
+  // Masaüstü videosu 11 MB, mobil sürüm 5,5 MB. `autoPlay` ile bu dosya her
+  // ziyarette, kullanıcı istemeden iniyor. Mobil veride bu tek başına kabul
+  // edilemez bir maliyet ve hero'nun okunması için gerekli DEĞİL — altındaki
+  // gradyan zaten tasarımın parçası ve tek başına düzgün görünüyor.
+  //
+  // İki durumda video hiç yüklenmiyor:
+  //   • "Hareketi azalt" ayarı açıksa (erişilebilirlik tercihi; otomatik
+  //     oynayan tam ekran video bu tercihin tam olarak dışladığı şey).
+  //   • Tarayıcı "veri tasarrufu" bildiriyorsa (Save-Data).
+  //
+  // Video dosyalarının kendisi de sıkıştırılmalı (720p, 1–1,5 MB hedefi) —
+  // o iş bu dosyanın dışında.
   useEffect(() => {
+    const hareketAzalt = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+
+    // `connection` henüz her tarayıcıda standart değil; tipini burada daraltıyoruz.
+    const baglanti = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
+    const veriTasarrufu = baglanti?.saveData === true
+
+    if (hareketAzalt || veriTasarrufu) {
+      setVideoSrc(null)
+      return
+    }
+
     const src = window.innerWidth < 768 && cfg.videoMobile
       ? cfg.videoMobile
       : cfg.video
@@ -29,12 +69,6 @@ export default function BrandHeroSection({ brandKey }: Props) {
     setVideoReady(false)
     setVideoError(false)
   }, [cfg.video, cfg.videoMobile])
-
-  // Giriş animasyonunu tetikle
-  useEffect(() => {
-    const t = setTimeout(() => setLoaded(true), 100)
-    return () => clearTimeout(t)
-  }, [])
 
   // Video yüklendi → fade in
   const handleVideoCanPlay = () => setVideoReady(true)
@@ -72,6 +106,10 @@ export default function BrandHeroSection({ brandKey }: Props) {
             muted
             loop
             playsInline
+            // `preload="none"`: tarayıcı videoyu ancak oynatma başlayınca
+            // indirmeye başlasın. Varsayılan davranış meta veriyi (bazı
+            // tarayıcılarda daha fazlasını) sayfa açılır açılmaz çekiyordu.
+            preload="none"
             poster={cfg.poster}
             onCanPlay={handleVideoCanPlay}
             onError={() => setVideoError(true)}
@@ -105,8 +143,7 @@ export default function BrandHeroSection({ brandKey }: Props) {
               className={[
                 'inline-flex items-center gap-2 border rounded-full px-4 py-2 text-sm font-medium mb-6',
                 badgeBg,
-                'transition-all duration-700',
-                loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4',
+                'anim-fade-up',
               ].join(' ')}
             >
               <span className="w-2 h-2 rounded-full bg-current opacity-80 animate-pulse" />
@@ -117,8 +154,7 @@ export default function BrandHeroSection({ brandKey }: Props) {
             <p
               className={[
                 'text-sm sm:text-base font-semibold text-white/55 uppercase tracking-[0.18em] mb-4',
-                'transition-all duration-700 delay-100',
-                loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4',
+                'anim-fade-up anim-delay-150',
               ].join(' ')}
             >
               {cfg.subtitle}
@@ -128,8 +164,7 @@ export default function BrandHeroSection({ brandKey }: Props) {
             <h1
               className={[
                 'text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[1.02] tracking-tight mb-6',
-                'transition-all duration-700 delay-150',
-                loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5',
+                'anim-fade-up anim-delay-200',
               ].join(' ')}
             >
               {taglineLines.map((line, i) => (
@@ -146,8 +181,7 @@ export default function BrandHeroSection({ brandKey }: Props) {
             <p
               className={[
                 'text-base sm:text-lg lg:text-xl text-white/70 leading-relaxed max-w-2xl mb-10',
-                'transition-all duration-700 delay-200',
-                loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4',
+                'anim-fade-up anim-delay-300',
               ].join(' ')}
             >
               {cfg.description}
@@ -157,8 +191,7 @@ export default function BrandHeroSection({ brandKey }: Props) {
             <div
               className={[
                 'flex flex-col sm:flex-row gap-3 sm:gap-4 mb-16',
-                'transition-all duration-700 delay-300',
-                loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4',
+                'anim-fade-up anim-delay-400',
               ].join(' ')}
             >
               {isAlbSu ? (
@@ -203,8 +236,7 @@ export default function BrandHeroSection({ brandKey }: Props) {
             <div
               className={[
                 'flex flex-wrap items-center gap-x-8 gap-y-4',
-                'transition-all duration-700 delay-500',
-                loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4',
+                'anim-fade-up anim-delay-500',
               ].join(' ')}
             >
               {cfg.stats.map((stat, i) => (
@@ -229,8 +261,7 @@ export default function BrandHeroSection({ brandKey }: Props) {
       <div
         className={[
           'relative z-10 flex flex-col items-center gap-2 pb-10',
-          'transition-all duration-1000 delay-700',
-          loaded ? 'opacity-100' : 'opacity-0',
+          'anim-fade-up anim-delay-500',
         ].join(' ')}
         aria-hidden="true"
       >

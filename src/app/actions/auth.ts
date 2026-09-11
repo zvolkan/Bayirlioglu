@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
 import { headers } from 'next/headers'
 import { safeInternalPath } from '@/lib/safe-redirect'
+import { rateLimit, rateLimitReset, clientIp } from '@/lib/rate-limit'
 
 // ─── Hata mesajı çevirisi ────────────────────────────────────────────────────
 
@@ -129,10 +130,37 @@ export async function signUp(formData: FormData) {
 
 // ─── E-posta / Şifre ile Giriş ───────────────────────────────────────────────
 
+/**
+ * Müşteri girişi hız sınırı.
+ *
+ * Yönetici girişi örnek biçimde korunmuştu (IP başına 5 + global 20 / 15 dk),
+ * müşteri girişi ise yalnızca Supabase'in kendi varsayılanlarına bağlıydı.
+ * Oysa deneme yanılma saldırısının hedefi çoğu zaman müşteri hesapları olur:
+ * içlerinde adres, telefon ve sipariş geçmişi var.
+ *
+ * Anahtar IP; e-posta DEĞİL. E-postayı saldırgan yazıyor ve her denemede
+ * değiştirerek sınırı atlayabilirdi. IP ile sınırlamak aynı ağdaki birden çok
+ * kullanıcıyı da etkiliyor — bu yüzden pencere kısa ve sınır cömert tutuldu:
+ * gerçek kullanıcı parolasını üç kez yanlış yazsa bile takılmıyor.
+ */
+const GIRIS_MAX = 8
+const GIRIS_PENCERE_MS = 10 * 60 * 1000
+
 export async function signIn(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const redirectTo = safeInternalPath(formData.get('redirect') as string, '/hesabim')
+
+  const ip = clientIp(await headers())
+  const sinir = await rateLimit('musteri-girisi', ip, GIRIS_MAX, GIRIS_PENCERE_MS)
+  if (!sinir.ok) {
+    const dakika = Math.max(1, Math.ceil(sinir.kalanMs / 60000))
+    redirect(
+      `/giris?error=${encodeURIComponent(
+        `Çok fazla giriş denemesi yapıldı. ${dakika} dakika sonra tekrar deneyin.`,
+      )}`,
+    )
+  }
 
   const supabase = await createClient()
 
@@ -142,6 +170,11 @@ export async function signIn(formData: FormData) {
     console.error('[auth] signIn hatası:', error.message)
     redirect(`/giris?error=${encodeURIComponent(mapAuthError(error.message))}`)
   }
+
+  // Başarılı girişte sayaç sıfırlanıyor; yoksa parolasını bir kez yanlış yazıp
+  // sonra doğru giren kullanıcı, bir sonraki gerçek denemesinde sınıra
+  // yaklaşmış oluyordu.
+  await rateLimitReset('musteri-girisi', ip)
 
   redirect(redirectTo)
 }
@@ -193,6 +226,16 @@ export async function requestPasswordReset(formData: FormData) {
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     redirect(`/sifremi-unuttum?error=${encodeURIComponent('Geçerli bir e-posta adresi girin.')}`)
+  }
+
+  // Sıfırlama e-postası isteği de sınırlı: aksi hâlde bu uç, başkalarının
+  // adresine e-posta yağdırmak için kullanılabilir bir araca dönüşüyor.
+  // Yanıt her durumda aynı olduğu için (hesap var mı yok mu söylemiyoruz)
+  // sınıra takılmak da hesap varlığını ele vermiyor.
+  const ip = clientIp(await headers())
+  const sinir = await rateLimit('sifre-sifirlama', ip, 3, 15 * 60 * 1000)
+  if (!sinir.ok) {
+    redirect('/sifremi-unuttum?gonderildi=1')
   }
 
   const supabase = await createClient()

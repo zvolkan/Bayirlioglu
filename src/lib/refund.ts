@@ -311,9 +311,25 @@ export async function processRefund(options: RefundOptions): Promise<RefundOutco
 
   try {
     await prisma.$transaction(async (tx: TransactionClient) => {
+      // ── `stockReduced` İŞLEM İÇİNDE yeniden okunuyor ────────────────────
+      //
+      // Yukarıdaki `order` nesnesi, iyzico'ya yapılan ağ çağrılarından ÖNCE
+      // okunmuştu. O çağrılar saniyeler sürebiliyor ve arada müşteri siparişi
+      // iptal edip stoğu geri yükletmiş olabilir. Bayat anlık görüntüyle
+      // devam edilirse stok ikinci kez artıyor — yani envanterde olmayan mal
+      // görünüyor ve satılamayacak ürün satılıyor.
+      //
+      // Kalan yarış aralığı yalnızca bu işlemin süresi kadar; tam kilit için
+      // satır kilidi (SELECT ... FOR UPDATE) gerekir, o da ham SQL demek.
+      // Buradaki kazanç/karmaşıklık dengesi bu okumadan yana.
+      const guncel = await tx.order.findUnique({
+        where: { id: order.id },
+        select: { stockReduced: true },
+      })
+
       // Stok yalnızca İADE EDİLEN kalemler için geri yükleniyor. Eskiden
       // koşulsuz olarak siparişin bütün kalemleri artırılıyordu.
-      if (order.stockReduced) {
+      if (guncel?.stockReduced) {
         for (const item of iadeKalemleri) {
           await tx.product.updateMany({
             where: { id: item.productId },
@@ -330,7 +346,7 @@ export async function processRefund(options: RefundOptions): Promise<RefundOutco
               // kalemler var, sipariş "iade edildi" görünmemeli.
               paymentStatus: KISMI_IADE_DURUMU,
               // Kalan kalemlerin stoğu hâlâ düşülmüş durumda
-              stockReduced: order.stockReduced,
+              stockReduced: guncel?.stockReduced ?? order.stockReduced,
             }
           : {
               status: 'REFUNDED',

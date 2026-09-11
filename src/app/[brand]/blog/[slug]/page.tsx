@@ -7,7 +7,7 @@ import { getPublishedPost, getPublishedPosts, readingMinutes } from '@/lib/blog'
 import BrandArtwork from '@/components/ui/BrandArtwork'
 import Icon from '@/components/ui/Icon'
 import type { BrandKey } from '@/lib/types'
-import { sanitizeBlogHtml } from '@/lib/sanitize'
+import { sanitizeBlogHtml, jsonLdScript } from '@/lib/sanitize'
 
 interface Props {
   params: Promise<{ brand: string; slug: string }>
@@ -47,8 +47,52 @@ export default async function BlogPostPage({ params }: Props) {
     .filter((p) => p.slug !== slug)
     .slice(0, 3)
 
+  // ── BlogPosting + BreadcrumbList yapısal verisi ────────────────────────
+  //
+  // Blog yazılarında hiç yapılandırılmış veri yoktu. `BlogPosting` arama
+  // sonucunda yazar, tarih ve başlığın doğru okunmasını sağlıyor; breadcrumb
+  // da ham URL yerine adres yolunu gösteriyor.
+  //
+  // `dateModified` bilerek `updatedAt`ten geliyor: Google güncellenmiş
+  // içeriği ayırt edebilsin diye. Yoksa yayın tarihi kullanılıyor.
+  const siteUrl = getSiteUrl()
+  const yaziAdresi = `${siteUrl}/${brandKey}/blog/${slug}`
+  const yayinTarihi = (post.publishedAt ?? new Date()).toISOString()
+
+  const blogJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt || post.title,
+    ...(post.coverImage ? { image: [post.coverImage] } : {}),
+    datePublished: yayinTarihi,
+    dateModified: (post.updatedAt ?? post.publishedAt ?? new Date()).toISOString(),
+    author: { '@type': 'Person', name: post.author || 'Bayırlıoğlu' },
+    publisher: { '@type': 'Organization', name: 'Bayırlıoğlu' },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': yaziAdresi },
+    ...(post.category ? { articleSection: post.category } : {}),
+  }
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: cfg.name, item: `${siteUrl}/${brandKey}` },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${siteUrl}/${brandKey}/blog` },
+      { '@type': 'ListItem', position: 3, name: post.title, item: yaziAdresi },
+    ],
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(blogJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbJsonLd) }}
+      />
       {/* Hero */}
       <div className="brand-surface py-16">
         <div className="container-main max-w-3xl">

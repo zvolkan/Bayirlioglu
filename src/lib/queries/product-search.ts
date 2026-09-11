@@ -166,10 +166,14 @@ async function collectDescendantIds(rootSlug: string, brandKey: string): Promise
 
 function buildOrderBy(sort: SortOption) {
   switch (sort) {
+    // Sıralama ETKİN fiyata göre: indirimli fiyat varsa o, yoksa liste fiyatı.
+    // Eskiden `price` kullanılıyordu ve müşteri "ucuzdan pahalıya" seçtiğinde
+    // ekranda indirimli fiyatlar yazan ama liste fiyatına göre sıralanmış bir
+    // liste görüyordu — kartların üzerindeki rakamlar sırasız görünüyordu.
     case 'price-asc':
-      return [{ price: 'asc' as const }]
+      return [{ effectivePrice: 'asc' as const }]
     case 'price-desc':
-      return [{ price: 'desc' as const }]
+      return [{ effectivePrice: 'desc' as const }]
     case 'newest':
       return [{ createdAt: 'desc' as const }]
     case 'name':
@@ -226,7 +230,10 @@ export async function searchProducts(
   }
 
   if (typeof minPrice === 'number' || typeof maxPrice === 'number') {
-    where.price = {
+    // Filtre de etkin fiyata bakıyor. `price` ile çalışırken, liste fiyatı
+    // 600 TL / satış fiyatı 450 TL olan bir ürün "0–500 TL" aralığında
+    // görünmüyordu; müşterinin ödeyeceği tutar aralığa giriyor olmasına rağmen.
+    where.effectivePrice = {
       ...(typeof minPrice === 'number' ? { gte: minPrice } : {}),
       ...(typeof maxPrice === 'number' ? { lte: maxPrice } : {}),
     }
@@ -263,8 +270,10 @@ export async function searchProducts(
     }),
     prisma.product.aggregate({
       where: { brand: { key: brandKey }, isActive: true },
-      _min: { price: true },
-      _max: { price: true },
+      // Kaydırıcının alt ve üst sınırı da etkin fiyattan; aksi hâlde alt sınır
+      // gerçekte satılan en ucuz üründen yüksek çıkıyordu.
+      _min: { effectivePrice: true },
+      _max: { effectivePrice: true },
     }),
   ])
 
@@ -279,8 +288,8 @@ export async function searchProducts(
         .filter((v: string | null): v is string => Boolean(v))
         .sort((a: string, b: string) => a.localeCompare(b, 'tr')),
       priceRange: {
-        min: Math.floor(Number(priceAgg._min.price ?? 0)),
-        max: Math.ceil(Number(priceAgg._max.price ?? 0)),
+        min: Math.floor(Number(priceAgg._min.effectivePrice ?? 0)),
+        max: Math.ceil(Number(priceAgg._max.effectivePrice ?? 0)),
       },
     },
   }

@@ -79,6 +79,8 @@ function ContactForm() {
           <input
             {...register('firstName')}
             id="iletisim-firstName"
+            aria-invalid={!!errors.firstName}
+            aria-describedby={errors.firstName ? 'iletisim-firstName-hata' : undefined}
             type="text"
             placeholder="Adınız"
             className={cn(
@@ -89,7 +91,7 @@ function ContactForm() {
             )}
           />
           {errors.firstName && (
-            <p className="mt-1 text-xs text-red-500">{errors.firstName.message}</p>
+            <p id="iletisim-firstName-hata" role="alert" className="mt-1 text-xs text-red-500">{errors.firstName.message}</p>
           )}
         </div>
         <div>
@@ -99,6 +101,8 @@ function ContactForm() {
           <input
             {...register('lastName')}
             id="iletisim-lastName"
+            aria-invalid={!!errors.lastName}
+            aria-describedby={errors.lastName ? 'iletisim-lastName-hata' : undefined}
             type="text"
             placeholder="Soyadınız"
             className={cn(
@@ -109,7 +113,7 @@ function ContactForm() {
             )}
           />
           {errors.lastName && (
-            <p className="mt-1 text-xs text-red-500">{errors.lastName.message}</p>
+            <p id="iletisim-lastName-hata" role="alert" className="mt-1 text-xs text-red-500">{errors.lastName.message}</p>
           )}
         </div>
       </div>
@@ -121,6 +125,8 @@ function ContactForm() {
         <input
           {...register('email')}
           id="iletisim-email"
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? 'iletisim-email-hata' : undefined}
           type="email"
           placeholder="ornek@email.com"
           className={cn(
@@ -131,7 +137,7 @@ function ContactForm() {
           )}
         />
         {errors.email && (
-          <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+          <p id="iletisim-email-hata" role="alert" className="mt-1 text-xs text-red-500">{errors.email.message}</p>
         )}
       </div>
 
@@ -142,6 +148,8 @@ function ContactForm() {
         <input
           {...register('phone')}
           id="iletisim-phone"
+          aria-invalid={!!errors.phone}
+          aria-describedby={errors.phone ? 'iletisim-phone-hata' : undefined}
           type="tel"
           placeholder="05XX XXX XX XX"
           className={cn(
@@ -152,7 +160,7 @@ function ContactForm() {
           )}
         />
         {errors.phone && (
-          <p className="mt-1 text-xs text-red-500">{errors.phone.message}</p>
+          <p id="iletisim-phone-hata" role="alert" className="mt-1 text-xs text-red-500">{errors.phone.message}</p>
         )}
       </div>
 
@@ -164,6 +172,8 @@ function ContactForm() {
           <select
             {...register('subject')}
             id="iletisim-subject"
+            aria-invalid={!!errors.subject}
+            aria-describedby={errors.subject ? 'iletisim-subject-hata' : undefined}
             className={cn(
               'w-full px-4 py-2.5 rounded-lg border bg-white text-gray-900 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 appearance-none pr-10',
               errors.subject
@@ -181,7 +191,7 @@ function ContactForm() {
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
         {errors.subject && (
-          <p className="mt-1 text-xs text-red-500">{errors.subject.message}</p>
+          <p id="iletisim-subject-hata" role="alert" className="mt-1 text-xs text-red-500">{errors.subject.message}</p>
         )}
       </div>
 
@@ -192,6 +202,8 @@ function ContactForm() {
         <textarea
           {...register('message')}
           id="iletisim-message"
+          aria-invalid={!!errors.message}
+          aria-describedby={errors.message ? 'iletisim-message-hata' : undefined}
           rows={5}
           placeholder="Mesajınızı buraya yazınız..."
           className={cn(
@@ -202,7 +214,7 @@ function ContactForm() {
           )}
         />
         {errors.message && (
-          <p className="mt-1 text-xs text-red-500">{errors.message.message}</p>
+          <p id="iletisim-message-hata" role="alert" className="mt-1 text-xs text-red-500">{errors.message.message}</p>
         )}
       </div>
 

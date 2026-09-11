@@ -1,6 +1,8 @@
 'use server'
 
 import { z } from 'zod'
+import { headers } from 'next/headers'
+import { rateLimit, clientIp } from '@/lib/rate-limit'
 import { prisma } from '@/lib/db'
 import { notifyContactMessage, notifyDealerApplication } from '@/lib/email/form-notify'
 
@@ -14,23 +16,30 @@ import { notifyContactMessage, notifyDealerApplication } from '@/lib/email/form-
 
 export type FormResult = { ok: true } | { ok: false; error: string }
 
-// ─── Basit hız sınırı ────────────────────────────────────────────────────────
-// Sunucusuz ortamda örnek başına tutulur; bot spam'ini tamamen engellemez ama
-// aynı oturumdan arka arkaya gönderimi belirgin şekilde zorlaştırır.
+// ─── Hız sınırı ──────────────────────────────────────────────────────────────
+//
+// Burada eskiden süreç-içi bir `Map` vardı ve Cloudflare Workers'ta HİÇ
+// çalışmıyordu: her istek ayrı bir izolat (isolate) içinde koşuyor, izolatlar
+// kısa ömürlü ve birbirinden habersiz. Yani sayaç her istekte sıfırdan
+// başlıyordu — sınır fiilen yoktu.
+//
+// İkinci ve daha sinsi sorun anahtardaydı: `contact:${data.email}`. E-posta
+// adresini saldırgan yazıyor; her gönderimde farklı bir adres yazarak sınırı
+// zaten atlıyordu. Anahtar, kullanıcının SEÇEMEYECEĞİ bir şeye dayanmalı.
+//
+// Proje bu sorunu `lib/rate-limit.ts` içinde Durable Object ile çözmüştü ve
+// yönetici girişinde kullanıyordu; bu dosya güncellenmemişti.
+const FORM_PENCERE_MS = 60 * 1000
+const FORM_MAX = 3
 
-const RATE_WINDOW_MS = 60 * 1000
-const RATE_MAX = 3
-const submissions = new Map<string, { count: number; firstAt: number }>()
-
-function allowSubmission(key: string): boolean {
-  const now = Date.now()
-  const record = submissions.get(key)
-  if (!record || now - record.firstAt > RATE_WINDOW_MS) {
-    submissions.set(key, { count: 1, firstAt: now })
-    return true
-  }
-  record.count += 1
-  return record.count <= RATE_MAX
+/**
+ * IP başına sınır. E-posta ikincil anahtar olarak KULLANILMIYOR; saldırganın
+ * kontrolündeki bir değerle sınırlamak, sınırı kendi eline vermek olur.
+ */
+async function formSiniri(kova: string): Promise<boolean> {
+  const ip = clientIp(await headers())
+  const sonuc = await rateLimit(kova, ip, FORM_MAX, FORM_PENCERE_MS)
+  return sonuc.ok
 }
 
 // ─── İletişim formu ──────────────────────────────────────────────────────────
@@ -61,7 +70,7 @@ export async function submitContactMessage(input: ContactInput): Promise<FormRes
   // Honeypot doluysa sessizce başarılı gibi dön (bota ipucu verme)
   if (data.website) return { ok: true }
 
-  if (!allowSubmission(`contact:${data.email}`)) {
+  if (!(await formSiniri('iletisim-formu'))) {
     return { ok: false, error: 'Çok fazla mesaj gönderdiniz. Lütfen birkaç dakika sonra deneyin.' }
   }
 
@@ -130,7 +139,7 @@ export async function submitDealerApplication(input: DealerInput): Promise<FormR
 
   if (data.website) return { ok: true }
 
-  if (!allowSubmission(`dealer:${data.email}`)) {
+  if (!(await formSiniri('bayi-basvurusu'))) {
     return { ok: false, error: 'Çok fazla başvuru gönderdiniz. Lütfen birkaç dakika sonra deneyin.' }
   }
 

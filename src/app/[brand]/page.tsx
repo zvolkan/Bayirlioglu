@@ -264,7 +264,7 @@ export default async function BrandHomePage({ params }: Props) {
                           {displayPrice.toLocaleString('tr-TR')} ₺
                         </p>
                         {product.salePrice && (
-                          <p className="text-gray-400 text-[10px] line-through">
+                          <p className="text-gray-500 text-[10px] line-through">
                             {product.price.toLocaleString('tr-TR')} ₺
                           </p>
                         )}

@@ -11,6 +11,7 @@ import type { BrandKey } from '@/lib/types'
 import { carrierTrackingUrl } from '@/lib/carrier'
 import { remainingReturnDays } from '@/lib/returns'
 import ReturnRequestPanel from '../_components/ReturnRequestPanel'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
   title: 'Sipariş Detayı',
@@ -280,7 +281,16 @@ export default async function SiparisDetayPage({ params }: Props) {
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden border border-gray-100">
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={img} alt={item.product.name} className="w-full h-full object-contain p-1" />
+                      <Image
+                        src={img}
+                        alt={item.product.name}
+                        width={64}
+                        height={64}
+                        // Boyut verilmesi ŞART: ham <img> yükleninceye kadar
+                        // yer kaplamıyor ve görsel geldiğinde altındaki her şey
+                        // aşağı kayıyordu (düzen kayması).
+                        className="w-full h-full object-contain p-1"
+                      />
                     ) : (
                       <Icon name="paket" className="w-6 h-6 text-gray-300" />
                     )}

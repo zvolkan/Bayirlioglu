@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { prisma, type TransactionClient } from '@/lib/db'
 import { verifyAdminToken } from '@/lib/admin-auth'
 import { processRefund } from '@/lib/refund'
+import { restoreStock } from '@/lib/stock'
 import { approveDeliveredOrder } from '@/lib/iyzico-delivery'
 import {
   notifyOrderShipped,
@@ -12,6 +13,7 @@ import {
   notifyOrderCancelled,
 } from '@/lib/email/notify'
 import { clientIp } from '@/lib/rate-limit'
+import { appendOrderNote } from '@/lib/order-note'
 
 /**
  * Admin sipariş yönetimi.
@@ -64,6 +66,58 @@ const MANUAL_STATUSES: OrderStatus[] = [
   'DELIVERED',
   'CANCELLED',
 ]
+
+/**
+ * DURUM GEÇİŞ MATRİSİ — hangi durumdan hangisine gidilebilir?
+ *
+ * ── Neden gerekli ───────────────────────────────────────────────────────────
+ *
+ * Doğrulama eskiden yalnızca HEDEF durumu kontrol ediyordu: "CONFIRMED geçerli
+ * bir durum mu?" Evet. Ama nereden gelindiği hiç sorulmuyordu. Sonuç: iptal
+ * edilmiş bir sipariş tek tıkla CONFIRMED yapılabiliyordu. O siparişin stoğu
+ * iptalde geri verilmiş olduğu için, artık rezerve edilmemiş bir mal kargoya
+ * çıkıyordu. Aynı şekilde teslim edilmiş bir sipariş PENDING'e döndürülebiliyor,
+ * iade edilmiş bir sipariş yeniden işleme alınabiliyordu.
+ *
+ * ── Kurallar ────────────────────────────────────────────────────────────────
+ *
+ * PENDING    → ödeme bekliyor. Onaylanabilir ya da iptal edilebilir.
+ * CONFIRMED  → ödeme alındı. Hazırlığa geçebilir, kargoya verilebilir ya da
+ *              iptal edilebilir (iptal = iade, `processRefund` devreye girer).
+ * PROCESSING → hazırlanıyor. Kargoya verilebilir ya da iptal edilebilir.
+ * SHIPPED    → yola çıktı. Yalnızca teslim edilebilir. İptal artık yönetici
+ *              işi değil; iade süreci var.
+ * DELIVERED  → SON DURUM. Sonrası iade sürecinden geçer.
+ * CANCELLED  → SON DURUM. Yeniden canlandırılamaz; müşteri yeni sipariş verir.
+ * REFUNDED   → SON DURUM.
+ *
+ * Aynı duruma geçiş (CONFIRMED → CONFIRMED) serbest: yönetici listede yanlışlıkla
+ * aynı seçeneği seçtiğinde hata görmesin, hiçbir şey değişmesin.
+ */
+const GECERLI_GECISLER: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ['CONFIRMED', 'CANCELLED'],
+  CONFIRMED: ['PROCESSING', 'SHIPPED', 'CANCELLED'],
+  PROCESSING: ['SHIPPED', 'CANCELLED'],
+  SHIPPED: ['DELIVERED'],
+  DELIVERED: [],
+  CANCELLED: [],
+  REFUNDED: [],
+}
+
+const DURUM_ADI: Record<OrderStatus, string> = {
+  PENDING: 'Ödeme Bekliyor',
+  CONFIRMED: 'Onaylandı',
+  PROCESSING: 'Hazırlanıyor',
+  SHIPPED: 'Kargoda',
+  DELIVERED: 'Teslim Edildi',
+  CANCELLED: 'İptal Edildi',
+  REFUNDED: 'İade Edildi',
+}
+
+function gecisGecerliMi(kaynak: OrderStatus, hedef: OrderStatus): boolean {
+  if (kaynak === hedef) return true
+  return GECERLI_GECISLER[kaynak]?.includes(hedef) ?? false
+}
 
 // ─── Listeleme ───────────────────────────────────────────────────────────────
 
@@ -156,11 +210,35 @@ export async function updateOrderStatus(
     }
   }
 
+  // Buradan sonra `status` gerçekten bir OrderStatus; yukarıdaki kontrol bunu
+  // garanti ediyor ama tip sistemi bilmiyor. Daraltma tek yerde yapılıyor ki
+  // aşağıda her kullanımda `as` tekrarlanmasın.
+  const hedefDurum = status as OrderStatus
+
   const existing = await prisma.order.findUnique({
     where: { id: orderId },
     select: { paymentStatus: true, status: true },
   })
   if (!existing) return { ok: false, error: 'Sipariş bulunamadı.' }
+
+  // ── Geçiş geçerli mi? ────────────────────────────────────────────────────
+  //
+  // Yalnızca hedef durumun geçerliliği kontrol ediliyordu, kaynak durum değil.
+  // Gerekçe ve matris için bkz. GECERLI_GECISLER.
+  const mevcutDurum = existing.status as OrderStatus
+  if (!gecisGecerliMi(mevcutDurum, hedefDurum)) {
+    const izinli = GECERLI_GECISLER[mevcutDurum]
+    return {
+      ok: false,
+      error:
+        izinli.length === 0
+          ? `Bu sipariş "${DURUM_ADI[mevcutDurum]}" durumunda ve bu son bir durum; ` +
+            `durumu değiştirilemez.`
+          : `"${DURUM_ADI[mevcutDurum]}" durumundaki bir sipariş "${DURUM_ADI[hedefDurum]}" ` +
+            `yapılamaz. Buradan yalnızca şuraya geçilebilir: ` +
+            `${izinli.map((d) => DURUM_ADI[d]).join(', ')}.`,
+    }
+  }
 
   // ── Ödemesi alınmış siparişin iptali = iade ──────────────────────────────
   //
@@ -175,8 +253,11 @@ export async function updateOrderStatus(
   // iadeyi (refund) deniyor; stokları geri yüklüyor ve müşteriye e-posta
   // atıyor. Gateway başarısız olursa sipariş iade edilmiş sayılmıyor.
   if (status === 'CANCELLED' && existing.paymentStatus === 'paid') {
-    const headerList = await headers()
-    const ip = (headerList.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
+    // Projenin kendi `clientIp()` yardımcısı kullanılıyor: `cf-connecting-ip`
+    // başlığını tercih ediyor ve zincirin SON öğesini alıyor. Buradaki eski
+    // kod `x-forwarded-for` zincirinin İLK öğesini alıyordu — o öğeyi istemci
+    // yazabilir, yani iade kaydındaki IP kanıtı sahtelenebilirdi.
+    const ip = clientIp(await headers())
 
     const result = await processRefund({
       orderId,
@@ -215,6 +296,24 @@ revalidatePath('/admin/alb-su-aritma/siparisler')
   // Durum geçişlerinde tarih damgaları
   if (status === 'SHIPPED') data.shippedAt = new Date()
   if (status === 'DELIVERED') data.deliveredAt = new Date()
+
+  // ÖDEMESİZ siparişin yönetici iptali.
+  //
+  // Yukarıdaki dal yalnızca `paymentStatus === 'paid'` durumunu ele alıyor;
+  // ödemesi alınmamış bir siparişi yönetici iptal ettiğinde buraya düşülüyordu
+  // ve stok geri verilmiyordu. Müşteri tarafındaki `cancelOrder` aynı durumda
+  // `restoreStock` çağırıyor — yani iki taraf farklı davranıyordu.
+  //
+  // Kaybın kalıcı olmasının sebebi: iptal edilen sipariş artık PENDING
+  // olmadığı için bekleyen sipariş temizliği de onu bir daha görmüyor. Stok
+  // sonsuza kadar rezerve kalıyor, satılabilir ürün "tükendi" görünüyor.
+  //
+  // `restoreStock` `stockReduced` bayrağıyla idempotent; iki kez çağrılsa da
+  // stoğu iki kez artırmıyor.
+  if (status === 'CANCELLED' && existing.status !== 'CANCELLED') {
+    data.paymentToken = null
+    await restoreStock(orderId, 'yönetici iptali')
+  }
 
   await prisma.order.update({ where: { id: orderId }, data })
 
@@ -480,19 +579,9 @@ revalidatePath('/admin/alb-su-aritma/bayi-basvurulari')
   revalidatePath('/admin/belirtilmemis/bayi-basvurulari')
 }
 
-/** Var olan yönetici notunu ezmeden sonuna ekler */
-async function appendOrderNote(orderId: string, note: string): Promise<void> {
-  try {
-    const current = await prisma.order.findUnique({
-      where: { id: orderId },
-      select: { adminNote: true },
-    })
-    const merged = [current?.adminNote, note].filter(Boolean).join('\n')
-    await prisma.order.update({
-      where: { id: orderId },
-      data: { adminNote: merged.slice(-2000) },
-    })
-  } catch (error) {
-    console.error('[sipariş] yönetici notu yazılamadı:', orderId, error)
-  }
-}
+// NOT: Buradaki yerel `appendOrderNote` kopyası KALDIRILDI.
+//
+// İki sürüm vardı: bu kopya notu 2000 karaktere kırpıyor ve tarih damgası
+// koymuyordu; `lib/order-note.ts` içindeki asıl sürüm 4000 karakter tutuyor ve
+// her nota damga atıyor. Aynı siparişin notu, hangi koddan geçtiğine göre iki
+// farklı biçimde yazılıyordu. Artık tek kaynak: lib/order-note.ts

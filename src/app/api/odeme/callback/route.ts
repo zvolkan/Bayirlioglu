@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { retrieveCheckoutForm } from '@/lib/iyzico'
+import { retrieveCheckoutForm, odemeSonucunuSiniflandir } from '@/lib/iyzico'
 import { prisma } from '@/lib/db'
 import { getSiteUrl } from '@/lib/site-url'
 import { notifyOrderConfirmed } from '@/lib/email/notify'
@@ -105,10 +105,20 @@ export async function POST(req: NextRequest) {
     // conversationId ödeme başlatılırken sipariş numarasıyla gönderilmişti
     const result = await retrieveCheckoutForm(token, order.orderNumber ?? order.id)
 
-    const success = result?.status === 'success' && result?.paymentStatus === 'SUCCESS'
+    // ── Sonuç üç kovaya ayrılıyor ────────────────────────────────────────
+    //
+    // Eskiden burada tek bir ayrım vardı: "başarılı değilse başarısızdır" ve
+    // sipariş koşulsuz iptal ediliyordu. Ama iyzico geçici sistem hatalarını,
+    // hız sınırını ve 3DS ara durumlarını da HTTP 200 + status:"failure" ile
+    // döndürüyor. 3DS tamamlanmış, banka parayı çekmişken böyle bir yanıt
+    // gelirse müşteriye "ödeme başarısız" deniyor, muhtemelen ikinci kez ödüyor
+    // ve birinci tahsilatın sistemde hiçbir izi kalmıyordu.
+    //
+    // Sınıflandırma kuralı `src/lib/iyzico.ts` içinde açıklandı.
+    const sonuc = odemeSonucunuSiniflandir(result)
 
-    if (!success) {
-      console.warn('[callback] ödeme başarısız:', order.id, result?.errorCode, result?.errorMessage)
+    if (sonuc === 'kesin-ret') {
+      console.warn('[callback] ödeme reddedildi:', order.id, result?.errorCode, result?.errorMessage)
       await prisma.order
         .update({
           where: { id: order.id },
@@ -117,8 +127,26 @@ export async function POST(req: NextRequest) {
         })
         .catch((e) => console.error('[callback] iptal kaydedilemedi:', order!.id, e))
       // Sipariş oluşturulurken rezerve edilen stoğu serbest bırak
-      await restoreStock(order.id, 'ödeme başarısız')
+      await restoreStock(order.id, 'ödeme reddedildi')
       return redirectGet(`${siteUrl}/odeme/basarisiz?hata=odeme`)
+    }
+
+    if (sonuc === 'belirsiz') {
+      // Para çekilmiş OLABİLİR. Sipariş PENDING kalıyor, stok rezerve kalıyor,
+      // müşteriye "doğrulanıyor" gösteriliyor. Aşağıdaki catch bloğu da aynı
+      // davranışı uyguluyor — ikisi bilerek aynı.
+      console.error(
+        `[callback] BELİRSİZ ÖDEME SONUCU sipariş=${order.id} ` +
+          `status=${result?.status} paymentStatus=${result?.paymentStatus} ` +
+          `errorCode=${result?.errorCode} errorMessage=${result?.errorMessage}`,
+      )
+      await appendOrderNote(
+        order.id,
+        `Ödeme sonucu belirsiz (errorCode: ${result?.errorCode ?? 'yok'}, ` +
+          `durum: ${result?.paymentStatus ?? 'yok'}). Sipariş iptal EDİLMEDİ; ` +
+          `para çekilmiş olabilir. iyzico panelinden bu siparişi kontrol edin.`,
+      )
+      return redirectGet(`${siteUrl}/odeme/beklemede?siparis=${order.id}`)
     }
 
     // ── Tahsil edilen tutar sipariş tutarıyla uyuşuyor mu? ────────────────

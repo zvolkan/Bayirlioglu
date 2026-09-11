@@ -44,7 +44,16 @@ const ZORUNLU_PUBLIC_DEGISKENLER = [
   'NEXT_PUBLIC_SITE_URL',
 ] as const;
 
-if (process.env.NODE_ENV === 'production' && !process.env.SKIP_ENV_CHECK) {
+// Kontrol YALNIZCA gerçek üretim derlemesinde çalışıyor.
+//
+// Koşul eskiden `NODE_ENV === 'production'` idi ve bu, derleme dışındaki
+// komutlarda da doğru oluyordu: `next lint` bu yüzden hiç lint çalıştıramadan
+// hata verip duruyordu. `NEXT_PHASE` değişkenini Next.js yalnızca derleme
+// aşamasında `phase-production-build` yapıyor — aradığımız sinyal tam olarak bu.
+if (
+  process.env.NEXT_PHASE === 'phase-production-build' &&
+  !process.env.SKIP_ENV_CHECK
+) {
   const eksik = ZORUNLU_PUBLIC_DEGISKENLER.filter((ad) => !process.env[ad]?.trim());
 
   if (eksik.length > 0) {
@@ -61,6 +70,11 @@ if (process.env.NODE_ENV === 'production' && !process.env.SKIP_ENV_CHECK) {
 }
 
 const nextConfig: NextConfig = {
+  // Sürüm parmak izini gizle. Next.js varsayılan olarak her yanıta
+  // `X-Powered-By: Next.js` ekliyor; bu başlık hiçbir işe yaramıyor ama
+  // saldırgana hangi çatıyı taradığını söylüyor.
+  poweredByHeader: false,
+
   // NOT: `serverExternalPackages: ['iyzipay']` kaldırıldı. iyzipay paketi
   // Workers'ta çalışamadığı için (kurulumunda fs.readdirSync + hesaplanan
   // yollu require var) kaldırıldı; iyzico artık src/lib/iyzico.ts içinde

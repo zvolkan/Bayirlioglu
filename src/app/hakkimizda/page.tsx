@@ -5,9 +5,20 @@ import BrandLogo from '@/components/ui/BrandLogo'
 import type { BrandKey } from '@/lib/types'
 import { KURULUS_ANLATIM, SITE_CONFIG } from '@/lib/constants'
 
+// KENDİNE REFERANS VEREN CANONICAL — neden gerekli
+//
+// Aynı konunun üç adresi var: bu kök sayfa (grup anlatısı) ve iki marka
+// sürümü. İçerikleri gerçekten farklı, ama canonical yokken arama motoru
+// bunu kendi kararıyla çözmeye çalışıyor ve çoğu zaman yanlış olanı seçip
+// diğerlerini "kopya" sayarak dizinden düşürüyor. Her sayfanın kendi adresini
+// canonical olarak bildirmesi bu belirsizliği ortadan kaldırıyor.
+//
+// Adres göreli yazılıyor; kök layout'taki `metadataBase` başına alan adını
+// ekliyor. Mutlak yazmak, alan adı değiştiğinde burayı unutmak demek olurdu.
 export const metadata: Metadata = {
-  title: 'Hakkımızda',
+  title: 'Hakkımızda — Bayırlıoğlu',
   description: `${KURULUS_ANLATIM} tarım alanında faaliyet gösteren Bayırlıoğlu hakkında bilgi edinin.`,
+  alternates: { canonical: '/hakkimizda' },
 }
 
 // Doğrulanamayan rakamlar kaldırıldı. Gerçek değerleriniz olduğunda buraya

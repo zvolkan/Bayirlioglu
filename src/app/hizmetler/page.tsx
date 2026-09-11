@@ -5,9 +5,11 @@ import { SITE_CONFIG } from '@/lib/constants'
 import Icon, { type IconName } from '@/components/ui/Icon'
 import BrandLogo from '@/components/ui/BrandLogo'
 
+// Canonical gerekçesi için bkz. src/app/hakkimizda/page.tsx
 export const metadata: Metadata = {
-  title: 'Hizmetler',
+  title: 'Hizmetler — Bayırlıoğlu',
   description: 'ALB Tarım ve Alb Su Teknolojileri markalarımızın sunduğu profesyonel hizmetler.',
+  alternates: { canonical: '/hizmetler' },
 }
 
 const processSteps: { step: string; title: string; description: string; icon: IconName }[] = [
