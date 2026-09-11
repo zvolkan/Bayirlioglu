@@ -39,15 +39,21 @@ export function buildCsp(nonce: string, isDev: boolean): string {
     // düşük riskli.
     `style-src 'self' 'unsafe-inline'`,
 
-    `img-src 'self' data: blob: https://*.supabase.co https://aosmith.com.tr`,
+    // googleusercontent: Google giriş penceresindeki hesap avatarları.
+    `img-src 'self' data: blob: https://*.supabase.co https://aosmith.com.tr https://*.googleusercontent.com`,
     `font-src 'self' data:`,
     `media-src 'self'`,
 
     // Supabase auth/storage çağrıları. Geliştirmede HMR websocket'i eklenir.
-    `connect-src 'self' https://*.supabase.co${isDev ? ' ws: wss:' : ''}`,
+    // accounts.google.com: Google ile giriş, kimlik jetonunu almak için
+    // kendi uçlarına istek atıyor.
+    `connect-src 'self' https://*.supabase.co https://accounts.google.com${isDev ? ' ws: wss:' : ''}`,
 
-    // iyzico 3D Secure akışı çerçeve içinde açılabiliyor
-    `frame-src 'self' https://*.iyzipay.com https://*.iyzico.com`,
+    // iyzico 3D Secure akışı çerçeve içinde açılabiliyor.
+    // accounts.google.com ŞART: Google'ın giriş penceresi bir iframe
+    // içinde açılıyor ve bu satır olmadan sessizce hiç açılmıyor —
+    // konsolda da belirgin bir hata görünmüyor.
+    `frame-src 'self' https://*.iyzipay.com https://*.iyzico.com https://accounts.google.com`,
 
     // Formlar yalnızca kendi sitemize ve iyzico'ya gönderilebilir
     `form-action 'self' https://*.iyzipay.com https://*.iyzico.com`,

@@ -38,6 +38,12 @@ if (process.env.NODE_ENV === 'development') {
  * Cloudflare'de bunlar şuraya girilir:
  *   Workers & Pages → proje → Settings → Build → Variables and Secrets
  */
+// NOT: `NEXT_PUBLIC_GOOGLE_CLIENT_ID` bilerek bu listede DEĞİL.
+//
+// Tanımlı değilse Google giriş bileşeni eski yönlendirmeli düğmeye düşüyor;
+// kullanıcı yine giriş yapabiliyor, yalnızca onay ekranında `supabase.co`
+// yazıyor. Yani eksikliği bir aksaklık, arıza değil — derlemeyi durdurmak
+// orantısız olurdu.
 const ZORUNLU_PUBLIC_DEGISKENLER = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
