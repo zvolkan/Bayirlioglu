@@ -14,7 +14,25 @@ import { SITE_CONFIG } from '@/lib/constants'
  * gerçek verilerden üretiliyor.
  */
 
-export const revalidate = 3600 // saatte bir yenile
+/**
+ * ── Site haritası İSTEK ANINDA üretiliyor ───────────────────────────────────
+ *
+ * Burada `revalidate = 3600` yazıyordu. Bu, dosyayı "derlemede üret, sonra
+ * saatte bir tazele" moduna sokuyor — yani site haritası DERLEME sırasında bir
+ * kez oluşturuluyordu. Derleme ortamında ise veritabanı yok: Hyperdrive bağlantısı
+ * yalnızca çalışan Worker içinde var, derleme makinesinde değil.
+ *
+ * Bu, hatayı yutmayı bırakıp fırlatmaya başlayınca ortaya çıktı: eskiden derleme
+ * sırasındaki veritabanı hatası sessizce geçiliyor ve ÜRÜNSÜZ bir site haritası
+ * derlemenin içine gömülüyordu. Yani Google'a haftalarca boş harita sunulmasının
+ * asıl sebebi de buymuş — çalışma anındaki bir kesinti değil, her derlemede
+ * tekrarlanan bir durum.
+ *
+ * `force-dynamic` ile harita her istekte, Worker içinde, veritabanı erişilebilirken
+ * üretiliyor. Maliyeti önemsiz: site haritasını yalnızca arama motorları çekiyor,
+ * günde birkaç kez.
+ */
+export const dynamic = 'force-dynamic'
 
 const BRAND_KEYS = ['alb-tarim', 'alb-su-aritma'] as const
 
