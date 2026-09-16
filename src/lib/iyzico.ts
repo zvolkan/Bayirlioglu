@@ -42,6 +42,14 @@ const CLIENT_VERSION = 'iyzipay-node-2.0.69'
 let sandboxWarned = false
 
 /**
+ * Geçici iyzico hatası — yeniden denemeye değer.
+ *
+ * Kalıcı hatalardan (imza hatası, geçersiz istek) ayırmak için ayrı bir tip:
+ * imza yanlışsa yüz kez denemek de düzeltmez, boşuna müşteriyi bekletir.
+ */
+class GeciciIyzicoHatasi extends Error {}
+
+/**
  * iyzico API adresi.
  *
  * Eskiden varsayılan sandbox'tı: IYZICO_BASE_URL üretimde tanımlanmazsa
@@ -111,66 +119,157 @@ function randomString(): string {
  *
  * `path` yalnızca yol kısmıdır ve imzaya birebir bu değer girer.
  */
-async function iyzicoPost(path: string, body: Record<string, unknown>): Promise<any> {
+/**
+ * Geçici sunucu hatalarında kaç kez tekrar denenecek.
+ *
+ * iyzico'nun canlı uçları Cloudflare arkasında duruyor ve Cloudflare ile
+ * iyzico'nun kendi sunucuları arasındaki TLS el sıkışması zaman zaman
+ * başarısız oluyor — bize HTTP 525 ve JSON yerine düz metin bir hata sayfası
+ * dönüyor. Bizim tarafımızda düzeltilecek bir şey yok; dakikalar içinde
+ * kendiliğinden geçiyor. Ama o dakikalarda müşteri "ödeme sistemi
+ * kullanılamıyor" görüp gidiyordu.
+ */
+const TEKRAR_SAYISI = 2
+const TEKRAR_BEKLEME_MS = [400, 1200]
+
+/** Geçici sayılan durumlar: ağ kopması ve 5xx (525 dahil). */
+function geciciMi(durum: number | null): boolean {
+  return durum === null || durum >= 500
+}
+
+const bekle = (ms: number) => new Promise((c) => setTimeout(c, ms))
+
+interface IstekSecenekleri {
+  /**
+   * İstek güvenle tekrarlanabilir mi?
+   *
+   * `true` yalnızca sonucu değiştirmeyen çağrılarda: ödeme formu başlatma
+   * (kullanılmayan ikinci bir jeton zararsız) ve sorgulama (salt okunur).
+   *
+   * İADE ve İPTAL için ASLA true olmamalı. Orada "cevap gelmedi" ile "işlem
+   * yapılmadı" aynı şey değil: istek iyzico'ya ulaşıp para iade edilmiş ama
+   * cevap yolda kaybolmuş olabilir. Tekrar denemek ikinci bir iade demektir.
+   */
+  tekrarDenenebilir?: boolean
+}
+
+async function iyzicoPost(
+  path: string,
+  body: Record<string, unknown>,
+  secenekler: IstekSecenekleri = {},
+): Promise<any> {
   const { apiKey, secretKey } = getKeys()
-  const rnd = randomString()
 
   // Gövde TEK KEZ metne çevriliyor: imzalanan metinle gönderilen metin
   // birebir aynı olmak zorunda.
   const payload = JSON.stringify(body)
 
-  const signature = await hmacSha256Hex(secretKey, rnd + path + payload)
-  const authorization =
-    'IYZWSv2 ' +
-    toBase64(`apiKey:${apiKey}&randomKey:${rnd}&signature:${signature}`)
+  /** Tek bir istek denemesi. Geçici hatalarda `GeciciIyzicoHatasi` fırlatır. */
+  async function tekDeneme(): Promise<any> {
+    // Rastgele değer ve imza HER DENEMEDE yeniden üretiliyor.
+    //
+    // İlk hâlinde döngünün dışındaydılar. iyzico `x-iyzi-rnd` başlığına tekrar
+    // koruması uyguluyorsa aynı değerle yapılan ikinci deneme baştan
+    // reddedilirdi — yani tekrar deneme mekanizması hiç işe yaramazdı.
+    // Fazladan bir HMAC hesabı bu riski tamamen ortadan kaldırıyor.
+    const rnd = randomString()
+    const signature = await hmacSha256Hex(secretKey, rnd + path + payload)
+    const authorization =
+      'IYZWSv2 ' + toBase64(`apiKey:${apiKey}&randomKey:${rnd}&signature:${signature}`)
 
-  let res: Response
-  try {
-    res = await fetch(resolveUri() + path, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: authorization,
-        'x-iyzi-rnd': rnd,
-        'x-iyzi-client-version': CLIENT_VERSION,
-      },
-      body: payload,
-    })
-  } catch (error) {
-    // Ağ hatası — çağıranlar bunu yakalayıp siparişi askıda bırakıyor
-    throw new Error(`iyzico'ya ulaşılamadı (${path}): ${String(error).slice(0, 200)}`)
+    let res: Response
+    try {
+      res = await fetch(resolveUri() + path, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: authorization,
+          'x-iyzi-rnd': rnd,
+          'x-iyzi-client-version': CLIENT_VERSION,
+        },
+        body: payload,
+      })
+    } catch (error) {
+      // Ağ hatası — geçici sayılıyor.
+      throw new GeciciIyzicoHatasi(
+        `iyzico'ya ulaşılamadı (${path}): ${String(error).slice(0, 200)}`,
+      )
+    }
+
+    const text = await res.text()
+
+    let parsed: any
+    try {
+      parsed = JSON.parse(text)
+    } catch {
+      // ── Yanıt JSON değil ─────────────────────────────────────────────────
+      //
+      // Cloudflare'in 5xx hata sayfaları JSON değil düz metin geliyor. Bu
+      // durumda hatanın KİMDEN geldiğini bilmek kritik: yanıt iyzico'nun kendi
+      // sunucusundan mı, yoksa araya giren bir vekilden mi?
+      //
+      // `cf-ray` başlığı bunu kesin olarak söylüyor — varsa yanıtı Cloudflare
+      // üretmiş demektir ve o kimlik, iyzico'nun kendi Cloudflare kayıtlarında
+      // isteği bulmasını sağlıyor. Destek hattına "bir sorun var" demekle
+      // "şu ray kimliğine bakın" demek arasında günler fark var.
+      const kimden = [
+        `server=${res.headers.get('server') ?? 'yok'}`,
+        `cf-ray=${res.headers.get('cf-ray') ?? 'yok'}`,
+        `cf-cache=${res.headers.get('cf-cache-status') ?? 'yok'}`,
+        `content-type=${res.headers.get('content-type') ?? 'yok'}`,
+      ].join(' ')
+      console.error(`[iyzico] JSON olmayan yanıt (${path}, HTTP ${res.status}) — ${kimden}`)
+
+      const mesaj =
+        `iyzico beklenmeyen yanıt verdi (${path}, HTTP ${res.status}): ` + text.slice(0, 300)
+      throw geciciMi(res.status) ? new GeciciIyzicoHatasi(mesaj) : new Error(mesaj)
+    }
+
+    // iyzico hataları da HTTP 200 ile döner ve gövdede `status: "failure"` olur.
+    // Bu yüzden HTTP durumuna göre hata FIRLATMIYORUZ — çağıran kod zaten
+    // `result.status` kontrolü yapıyor ve `errorMessage` alanını okuyor.
+    // Yalnızca 5xx'te fırlatıyoruz; orada gövde anlamlı olmayabilir.
+    if (res.status >= 500) {
+      throw new GeciciIyzicoHatasi(
+        `iyzico sunucu hatası (${path}, HTTP ${res.status}): ` +
+          `${parsed?.errorMessage ?? text.slice(0, 200)}`,
+      )
+    }
+
+    return parsed
   }
 
-  const text = await res.text()
+  const enFazla = secenekler.tekrarDenenebilir ? TEKRAR_SAYISI : 0
+  let sonHata: Error | null = null
 
-  let parsed: any
-  try {
-    parsed = JSON.parse(text)
-  } catch {
-    throw new Error(
-      `iyzico beklenmeyen yanıt verdi (${path}, HTTP ${res.status}): ${text.slice(0, 300)}`,
-    )
+  for (let deneme = 0; deneme <= enFazla; deneme += 1) {
+    if (deneme > 0) {
+      await bekle(TEKRAR_BEKLEME_MS[deneme - 1] ?? 1200)
+      console.warn(`[iyzico] ${path} yeniden deneniyor (${deneme}/${enFazla})`)
+    }
+
+    try {
+      return await tekDeneme()
+    } catch (error) {
+      sonHata = error instanceof Error ? error : new Error(String(error))
+      // Kalıcı hatada (imza, doğrulama) tekrar denemek anlamsız; hemen çık.
+      if (!(error instanceof GeciciIyzicoHatasi)) throw sonHata
+    }
   }
 
-  // iyzico hataları da HTTP 200 ile döner ve gövdede `status: "failure"` olur.
-  // Bu yüzden HTTP durumuna göre hata FIRLATMIYORUZ — çağıran kod zaten
-  // `result.status` kontrolü yapıyor ve `errorMessage` alanını okuyor.
-  // Yalnızca 5xx'te fırlatıyoruz; orada gövde anlamlı olmayabilir.
-  if (res.status >= 500) {
-    throw new Error(
-      `iyzico sunucu hatası (${path}, HTTP ${res.status}): ` +
-        `${parsed?.errorMessage ?? text.slice(0, 200)}`,
-    )
-  }
-
-  return parsed
+  throw sonHata ?? new Error(`iyzico isteği başarısız (${path})`)
 }
 
 // ─── Uç noktalar ─────────────────────────────────────────────────────────────
 // Yollar iyzipay paketinin resources/ klasöründen birebir alındı.
 
 export function initializeCheckoutForm(request: Record<string, unknown>): Promise<any> {
-  return iyzicoPost('/payment/iyzipos/checkoutform/initialize/auth/ecom', request)
+  // Tekrar denenebilir: başarısız bir başlatmanın yan etkisi yok, başarılı ama
+  // cevabı kaybolmuş bir başlatma da yalnızca kullanılmayan bir ödeme formu
+  // jetonu bırakır. Para hareketi bu çağrıda olmuyor.
+  return iyzicoPost('/payment/iyzipos/checkoutform/initialize/auth/ecom', request, {
+    tekrarDenenebilir: true,
+  })
 }
 
 /**
@@ -254,11 +353,14 @@ export function odemeSonucunuSiniflandir(result: unknown): OdemeSonucu {
 }
 
 export function retrieveCheckoutForm(token: string, conversationId: string): Promise<any> {
-  return iyzicoPost('/payment/iyzipos/checkoutform/auth/ecom/detail', {
-    locale: 'tr',
-    conversationId,
-    token,
-  })
+  // Salt okunur sorgu; tekrar denemek güvenli. Üstelik burada ısrar etmek
+  // önemli: bu çağrı başarısız olursa ödeme sonucu "belirsiz" sayılıyor ve
+  // sipariş elle incelenmek üzere askıda kalıyor.
+  return iyzicoPost(
+    '/payment/iyzipos/checkoutform/auth/ecom/detail',
+    { locale: 'tr', conversationId, token },
+    { tekrarDenenebilir: true },
+  )
 }
 
 /**
