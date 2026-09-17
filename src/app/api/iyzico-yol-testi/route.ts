@@ -67,6 +67,21 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Yetkisiz.' }, { status: 401 })
   }
 
+  // ── Çıkış IP'si ─────────────────────────────────────────────────────────
+  //
+  // Cloudflare Workers'ın sabit bir çıkış IP'si yok; istek, o anda çalıştığı
+  // veri merkezinin adresinden çıkıyor. Yine de iyzico'ya "şu IP'den geliyoruz"
+  // diyebilmek çok işe yarıyor: güvenlik duvarı kayıtlarında aratacakları
+  // somut bir değer oluyor.
+  //
+  // Yankı servisi bilerek Cloudflare DIŞINDAN seçildi (AWS). Cloudflare'in
+  // kendi uçlarına sorulsaydı ağın içinden görünen adres dönerdi, dışarıdan
+  // görünen değil.
+  const cikisIp = await fetch('https://checkip.amazonaws.com', { method: 'GET' })
+    .then((r) => r.text())
+    .then((t) => t.trim())
+    .catch((e) => `okunamadı: ${String(e).slice(0, 120)}`)
+
   const sonuclar = await Promise.all(
     HEDEFLER.map(async (hedef) => {
       const basladi = Date.now()
@@ -101,6 +116,8 @@ export async function GET(request: Request) {
   return NextResponse.json({
     // İsteğin hangi adresten geldiği — özel alan adı mı, workers.dev mi?
     istekAdresi: new URL(request.url).host,
+    // Dış dünyanın bizi gördüğü adres. iyzico'ya verilecek değer bu.
+    cikisIp,
     zaman: new Date().toISOString(),
     sonuclar,
   })
