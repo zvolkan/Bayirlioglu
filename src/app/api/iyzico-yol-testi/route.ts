@@ -67,20 +67,33 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Yetkisiz.' }, { status: 401 })
   }
 
-  // ── Çıkış IP'si ─────────────────────────────────────────────────────────
+  // ── Çıkış IP'si — İKİ AYRI ÖLÇÜM ────────────────────────────────────────
   //
   // Cloudflare Workers'ın sabit bir çıkış IP'si yok; istek, o anda çalıştığı
   // veri merkezinin adresinden çıkıyor. Yine de iyzico'ya "şu IP'den geliyoruz"
-  // diyebilmek çok işe yarıyor: güvenlik duvarı kayıtlarında aratacakları
-  // somut bir değer oluyor.
+  // diyebilmek işe yarıyor: güvenlik duvarı kayıtlarında aratacakları somut
+  // bir değer oluyor.
   //
-  // Yankı servisi bilerek Cloudflare DIŞINDAN seçildi (AWS). Cloudflare'in
-  // kendi uçlarına sorulsaydı ağın içinden görünen adres dönerdi, dışarıdan
-  // görünen değil.
-  const cikisIp = await fetch('https://checkip.amazonaws.com', { method: 'GET' })
-    .then((r) => r.text())
-    .then((t) => t.trim())
-    .catch((e) => `okunamadı: ${String(e).slice(0, 120)}`)
+  // İlk ölçümde yalnızca AWS'ye sorulmuştu ve IPv6 bir adres döndü. Yanıltıcı:
+  // o adres, hedefin IPv6 desteklediği durumda kullanılan çıkış. `iyzipay.com`
+  // alan adlarının AAAA kaydı YOK (nslookup ile doğrulandı), yani iyzico'ya
+  // bağlantı IPv4 üzerinden kuruluyor ve iyzico bizi bambaşka bir adresten
+  // görüyor.
+  //
+  // Bu yüzden iki ölçüm birden: `api4.ipify.org` yalnızca IPv4 üzerinden
+  // cevap veriyor, iyzico'nun gördüğü adres o. Diğeri karşılaştırma için.
+  // Yankı servisleri bilerek Cloudflare dışından seçildi; Cloudflare'in kendi
+  // uçlarına sorulsaydı ağın içinden görünen adres dönerdi.
+  const ipOlc = (url: string) =>
+    fetch(url, { method: 'GET' })
+      .then((r) => r.text())
+      .then((t) => t.trim().slice(0, 60))
+      .catch((e) => `okunamadı: ${String(e).slice(0, 100)}`)
+
+  const [cikisIpv4, cikisIpGenel] = await Promise.all([
+    ipOlc('https://api4.ipify.org'),
+    ipOlc('https://checkip.amazonaws.com'),
+  ])
 
   const sonuclar = await Promise.all(
     HEDEFLER.map(async (hedef) => {
@@ -116,8 +129,10 @@ export async function GET(request: Request) {
   return NextResponse.json({
     // İsteğin hangi adresten geldiği — özel alan adı mı, workers.dev mi?
     istekAdresi: new URL(request.url).host,
-    // Dış dünyanın bizi gördüğü adres. iyzico'ya verilecek değer bu.
-    cikisIp,
+    // iyzico'ya VERİLECEK değer bu: IPv4 çıkışı.
+    cikisIpv4,
+    // Hedef IPv6 destekliyorsa kullanılan çıkış. iyzico için geçerli değil.
+    cikisIpGenel,
     zaman: new Date().toISOString(),
     sonuclar,
   })
