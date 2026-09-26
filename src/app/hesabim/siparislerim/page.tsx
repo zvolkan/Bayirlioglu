@@ -7,6 +7,7 @@ import { formatOrderNo } from '@/lib/order-number'
 import { cancelStalePendingOrders } from '@/lib/stale-orders'
 import { signOut } from '@/app/actions/auth'
 import CancelOrderButton from './_components/CancelOrderButton'
+import { siparisIptalEdilebilir, iadeIsleniyorMu } from '@/lib/order-cancel'
 import RepeatOrderButton from '../_components/RepeatOrderButton'
 import Icon, { type IconName } from '@/components/ui/Icon'
 import BrandLogo from '@/components/ui/BrandLogo'
@@ -162,7 +163,12 @@ export default async function SiparislerimPage() {
                   // markadan birine daraltıyoruz.
                   const markaAnahtari: BrandKey = isAlbTarim ? 'alb-tarim' : 'alb-su-aritma'
                   const dotColor = isAlbTarim ? 'bg-green-400' : 'bg-blue-400'
-                  const cancellable = ['PENDING', 'CONFIRMED'].includes(order.status)
+                  // Karar `src/lib/order-cancel.ts`'te; sunucu aksiyonu da aynı
+                  // fonksiyonu kullanıyor. Burada ayrı bir kopya vardı ve
+                  // yalnızca `status`'a bakıyordu: iadesi sürmekte olan
+                  // siparişte düğme duruyordu.
+                  const cancellable = siparisIptalEdilebilir(order)
+                  const iadeIsleniyor = iadeIsleniyorMu(order.paymentStatus)
                   const shipped = ['SHIPPED', 'DELIVERED'].includes(order.status)
 
                   return (
@@ -205,6 +211,15 @@ export default async function SiparislerimPage() {
                         <div className="flex flex-wrap gap-2 items-center">
                           {cancellable && (
                             <CancelOrderButton orderId={order.id} isPaid={order.paymentStatus === 'paid'} />
+                          )}
+                          {/* Düğmenin kaybolması tek başına hiçbir şey
+                              anlatmıyor. İadesi işlenen siparişte müşteri ne
+                              olduğunu görmeli, yoksa tekrar denemeye çalışıyor. */}
+                          {iadeIsleniyor && (
+                            <span className="inline-flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                              İptal / iade işleniyor
+                            </span>
                           )}
                           {/* Takip numarası girilmemişse buton takip
                               bilgisi olmayan bir sayfaya götürüyordu. */}

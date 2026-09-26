@@ -26,6 +26,14 @@ export default function CancelOrderButton({
       if (!result.ok) {
         setError(result.error)
         setStep('idle')
+        // ── Başarısızlıkta da tazeliyoruz ───────────────────────────────────
+        //
+        // "İptal edilemedi" demek "hiçbir şey değişmedi" demek değil. İade
+        // süreci başlamış ve sonucu belirsiz kalmışsa sipariş sunucuda
+        // `refund_pending` oldu; sayfa tazelenmezse müşteri hem hata mesajını
+        // hem de hâlâ duran iptal düğmesini görüyor — tam olarak bildirilen
+        // belirti buydu.
+        router.refresh()
         return
       }
 
@@ -34,6 +42,10 @@ export default function CancelOrderButton({
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Bir hata oluştu.')
       setStep('idle')
+      // Sunucu aksiyonu istisna fırlattıysa (ör. iade e-postası gönderilemedi)
+      // veritabanı çoktan güncellenmiş olabilir. Tazeleme, ekranı gerçeğe
+      // döndürmenin tek yolu.
+      router.refresh()
     }
   }
 

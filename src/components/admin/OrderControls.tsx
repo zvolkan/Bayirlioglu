@@ -8,6 +8,7 @@ import {
   updateOrderShipping,
   updateOrderNote,
   refundOrder,
+  markOrderManuallyRefunded,
 } from '@/app/actions/admin-orders'
 
 const STATUS_OPTIONS = [
@@ -56,6 +57,8 @@ export default function OrderControls({
   const [trackingValue, setTrackingValue] = useState(trackingNumber ?? '')
   const [note, setNote] = useState(adminNote ?? '')
   const [confirmRefund, setConfirmRefund] = useState(false)
+  const [confirmElle, setConfirmElle] = useState(false)
+  const [elleSebep, setElleSebep] = useState('')
 
   const handleStatus = () => {
     // Ödemesi alınmış siparişi iptal etmek iyzico'ya iade isteği gönderiyor;
@@ -94,7 +97,7 @@ export default function OrderControls({
     startTransition(async () => {
       try {
         await updateOrderShipping(orderId, carrierValue, trackingValue)
-        toast.success('Kargo bilgisi kaydedildi, sipariş "Kargoda" olarak işaretlendi')
+        toast.success('Kargo bilgisi kaydedildi, sipariş "Kargoya Verildi" olarak işaretlendi')
         router.refresh()
       } catch {
         toast.error('Kargo bilgisi kaydedilemedi')
@@ -111,6 +114,32 @@ export default function OrderControls({
       } catch {
         toast.error('Not kaydedilemedi')
       }
+    })
+  }
+
+  /**
+   * "Parayı iyzico panelinden zaten iade ettim / iptal ettim" durumu.
+   *
+   * Sunucu aksiyonu (`markOrderManuallyRefunded`) baştan beri vardı ama
+   * arayüzde karşılığı yoktu. Sonuç: ödeme iyzico panelinden iptal edildiğinde
+   * sipariş sistemde CONFIRMED kalıyor, müşteri hesabında hâlâ "Onaylandı"
+   * görüyor, yönetici de düzeltemiyordu — durum menüsünden "İptal Edildi"
+   * seçmek iyzico'ya İKİNCİ bir iade isteği göndermeye çalışıp hata veriyordu.
+   *
+   * Bu düğme gateway'e hiç dokunmuyor: yalnızca kaydı gerçeğe uyduruyor,
+   * stokları geri yüklüyor ve müşteriye bildirim gönderiyor.
+   */
+  const handleElleIade = () => {
+    startTransition(async () => {
+      const result = await markOrderManuallyRefunded(orderId, elleSebep.trim() || undefined)
+      setConfirmElle(false)
+      if (!result.ok) {
+        toast.error(result.error)
+        return
+      }
+      setElleSebep('')
+      toast.success(result.message, { duration: 6000 })
+      router.refresh()
     })
   }
 
@@ -261,6 +290,59 @@ export default function OrderControls({
             >
               Siparişi İade Et
             </button>
+          )}
+
+          {/* ── iyzico panelinden yapılmış iade/iptali kaydet ──────────────
+              Yukarıdaki düğme iyzico'ya İSTEK GÖNDERİR. Bu ise göndermez:
+              para zaten iyzico panelinden iade edilmişse, sipariş kaydını
+              gerçeğe uydurur. İkisi bilinçli olarak ayrı. */}
+          {!confirmRefund && (
+            <div className="mt-4 pt-4 border-t border-red-100">
+              {confirmElle ? (
+                <>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Ödeme <strong>iyzico panelinden</strong> iade veya iptal edildiyse
+                    bunu kullanın. iyzico&apos;ya yeni bir istek gönderilmez; sipariş
+                    &quot;İade Edildi&quot; olarak işaretlenir, stoklar geri yüklenir ve
+                    müşteriye bilgi verilir.
+                  </p>
+                  <label htmlFor="elle-iade-sebep" className="block text-xs font-medium text-gray-600 mb-1">
+                    Açıklama (yönetici notuna yazılır)
+                  </label>
+                  <input
+                    id="elle-iade-sebep"
+                    type="text"
+                    value={elleSebep}
+                    onChange={(e) => setElleSebep(e.target.value)}
+                    placeholder="Örn. müşteri telefonla iptal istedi, iyzico panelinden iade edildi"
+                    className="w-full mb-3 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-200 focus:border-transparent"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleElleIade}
+                      disabled={isPending}
+                      className="btn-press flex-1 bg-gray-900 text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-gray-700 disabled:opacity-40"
+                    >
+                      {isPending ? 'İşleniyor…' : 'İade edildi olarak işaretle'}
+                    </button>
+                    <button
+                      onClick={() => setConfirmElle(false)}
+                      disabled={isPending}
+                      className="flex-1 border border-gray-300 text-gray-600 text-sm font-medium py-2.5 rounded-xl hover:bg-gray-50"
+                    >
+                      Vazgeç
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <button
+                  onClick={() => setConfirmElle(true)}
+                  className="w-full text-xs text-gray-500 hover:text-gray-800 underline underline-offset-2 py-1"
+                >
+                  iyzico panelinden iade/iptal ettim — kaydı güncelle
+                </button>
+              )}
+            </div>
           )}
         </section>
       )}

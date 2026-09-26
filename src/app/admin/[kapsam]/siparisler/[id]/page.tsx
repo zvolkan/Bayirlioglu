@@ -7,6 +7,7 @@ import { verifyAdminToken } from '@/lib/admin-auth'
 import { gecerliKapsam, markaMi } from '@/lib/admin-kapsam'
 import OrderControls from '@/components/admin/OrderControls'
 import InvoicePanel from '@/components/admin/InvoicePanel'
+import { odemeDurumAdi, iadeIsleniyorMu } from '@/lib/order-cancel'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,7 +15,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   PENDING: { label: 'Ödeme Bekliyor', color: 'bg-yellow-100 text-yellow-700' },
   CONFIRMED: { label: 'Onaylandı', color: 'bg-blue-100 text-blue-700' },
   PROCESSING: { label: 'Hazırlanıyor', color: 'bg-purple-100 text-purple-700' },
-  SHIPPED: { label: 'Kargoda', color: 'bg-indigo-100 text-indigo-700' },
+  SHIPPED: { label: 'Kargoya Verildi', color: 'bg-indigo-100 text-indigo-700' },
   DELIVERED: { label: 'Teslim Edildi', color: 'bg-green-100 text-green-700' },
   CANCELLED: { label: 'İptal', color: 'bg-red-100 text-red-700' },
   REFUNDED: { label: 'İade', color: 'bg-gray-100 text-gray-700' },
@@ -269,7 +270,7 @@ export default async function AdminSiparisDetayPage({
                 <br />
                 Sipariş: {formatDate(order.createdAt)}
                 <br />
-                Ödeme: {order.paymentStatus ?? '—'}
+                Ödeme: {odemeDurumAdi(order.paymentStatus)}
                 {order.shippedAt && (
                   <>
                     <br />
@@ -286,6 +287,42 @@ export default async function AdminSiparisDetayPage({
             </div>
           </section>
 
+          {/* ── Belirsiz kalan iade uyarısı ───────────────────────────────────
+              Sonucu öğrenilemeyen bir iade/iptal, panelde kendiliğinden göze
+              çarpmıyordu: sipariş hâlâ "Onaylandı" görünüyor, yalnızca ödeme
+              durumu satırındaki küçük yazı değişiyordu. Oysa bu, eli değmesi
+              gereken tek sipariş türü. */}
+          {iadeIsleniyorMu(order.paymentStatus) && (
+            <section className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5">
+              <h2 className="font-bold text-amber-900 text-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                İADE SONUCU BELİRSİZ
+              </h2>
+              <p className="text-xs text-amber-900 mt-2 leading-relaxed">
+                Bu sipariş için iyzico&apos;ya iptal/iade isteği gönderildi ama yanıt
+                alınamadı. <strong>Para iade edilmiş olabilir.</strong> Aşağıdaki
+                yönetici notunda iyzico sorgusunun özeti var.
+              </p>
+              <ol className="text-xs text-amber-900 mt-3 space-y-1.5 list-decimal list-inside leading-relaxed">
+                <li>
+                  iyzico panelinde bu ödemeyi arayın
+                  {order.paymentId ? (
+                    <> (ödeme kimliği: <code className="font-mono">{order.paymentId}</code>)</>
+                  ) : null}
+                  .
+                </li>
+                <li>
+                  <strong>İade görünüyorsa:</strong> aşağıdaki &laquo;iyzico panelinden
+                  iade/iptal ettim&raquo; bağlantısıyla kaydı kapatın.
+                </li>
+                <li>
+                  <strong>İade görünmüyorsa:</strong> &laquo;İade Et&raquo; ile iadeyi
+                  yeniden başlatın.
+                </li>
+              </ol>
+            </section>
+          )}
+
           <InvoicePanel
             orderId={order.id}
             dosyaAdi={order.invoiceFileName}
@@ -301,7 +338,14 @@ export default async function AdminSiparisDetayPage({
             carrier={order.carrier}
             trackingNumber={order.trackingNumber}
             adminNote={order.adminNote}
-            canRefund={order.paymentStatus === 'paid' && order.status !== 'REFUNDED'}
+            /* Askıda kalmış siparişlerde de iade araçları açık olmalı — tam da
+               onlarda gerek var. Eskiden yalnızca `paid` durumunda açıktı;
+               `refunding` veya `refund_pending` bir sipariş panelden ne iade
+               edilebiliyor ne elle kapatılabiliyordu. */
+            canRefund={
+              order.status !== 'REFUNDED' &&
+              (order.paymentStatus === 'paid' || iadeIsleniyorMu(order.paymentStatus))
+            }
           />
         </div>
       </div>

@@ -4,7 +4,8 @@ import { cookies, headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { prisma, type TransactionClient } from '@/lib/db'
 import { verifyAdminToken } from '@/lib/admin-auth'
-import { processRefund } from '@/lib/refund'
+import { processRefund, IADE_BELIRSIZ_DURUMU } from '@/lib/refund'
+import { IADE_INCELEME_FILTRESI } from '@/lib/order-cancel'
 import { restoreStock } from '@/lib/stock'
 import { approveDeliveredOrder } from '@/lib/iyzico-delivery'
 import {
@@ -25,6 +26,31 @@ import { appendOrderNote } from '@/lib/order-note'
  */
 
 const ADMIN_COOKIE = 'admin_session'
+
+/**
+ * Bir sipariş değiştiğinde tazelenecek BÜTÜN yollar.
+ *
+ * ── Neden tek yerde ─────────────────────────────────────────────────────────
+ *
+ * Bu liste altı ayrı aksiyonda elle tekrarlanıyordu ve hepsinde YALNIZCA
+ * yönetici sayfaları vardı. Müşterinin kendi sipariş sayfaları hiçbir zaman
+ * tazelenmiyordu: yönetici siparişi iptal ediyor, kargoya veriyor, iade
+ * ediyor — müşteri tarafında hiçbir şey değişmiyordu. Bildirilen "iptal
+ * edilmesine rağmen iptal düğmesi duruyor" belirtisinin ikinci kaynağı buydu.
+ *
+ * Marka bazlı panel yolları iki kez yazılıyor çünkü siparişin hangi markaya
+ * ait olduğu burada bilinmiyor; ikisini de tazelemek yanlış olanı aramaktan
+ * ucuz.
+ */
+async function siparisYollariniTazele(orderId: string): Promise<void> {
+  revalidatePath('/admin/alb-tarim/siparisler')
+  revalidatePath('/admin/alb-su-aritma/siparisler')
+  revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
+  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
+  revalidatePath('/hesabim/siparislerim')
+  revalidatePath(`/hesabim/siparislerim/${orderId}`)
+  revalidatePath('/hesabim')
+}
 
 async function requireAdmin(): Promise<void> {
   const cookieStore = await cookies()
@@ -108,7 +134,7 @@ const DURUM_ADI: Record<OrderStatus, string> = {
   PENDING: 'Ödeme Bekliyor',
   CONFIRMED: 'Onaylandı',
   PROCESSING: 'Hazırlanıyor',
-  SHIPPED: 'Kargoda',
+  SHIPPED: 'Kargoya Verildi',
   DELIVERED: 'Teslim Edildi',
   CANCELLED: 'İptal Edildi',
   REFUNDED: 'İade Edildi',
@@ -144,6 +170,16 @@ export async function getOrdersForAdmin(options?: {
 
   if (status && VALID_STATUSES.includes(status as OrderStatus)) {
     where.status = status
+  }
+
+  // ── "İade incelemesi" filtresi ─────────────────────────────────────────────
+  //
+  // Bu filtre sipariş DURUMUNA değil ÖDEME durumuna bakıyor, çünkü aranan şey
+  // bir sipariş durumu değil: iadesi başlamış ama sonuçlanmamış siparişler.
+  // Onların `status`'u hâlâ CONFIRMED olduğu için durum filtrelerinin hiçbiri
+  // göstermiyordu — panelde tamamen görünmezlerdi.
+  if (status === IADE_INCELEME_FILTRESI) {
+    where.paymentStatus = { in: ['refunding', IADE_BELIRSIZ_DURUMU] }
   }
 
   if (search) {
@@ -189,6 +225,16 @@ export async function getOrderCountsByStatus(brandKey?: string) {
   for (const row of grouped as Array<{ status: string; _count: { status: number } }>) {
     counts[row.status] = row._count.status
   }
+
+  // İade incelemesi bekleyenler `status`'a göre gruplanamıyor (hepsi hâlâ
+  // CONFIRMED görünüyor); ayrı sayılıp aynı tabloya ekleniyor.
+  counts[IADE_INCELEME_FILTRESI] = await prisma.order.count({
+    where: {
+      ...(brandKey ? { brand: { key: brandKey } } : {}),
+      paymentStatus: { in: ['refunding', IADE_BELIRSIZ_DURUMU] },
+    },
+  })
+
   return counts
 }
 
@@ -265,10 +311,7 @@ export async function updateOrderStatus(
       reason: 'Sipariş yönetici tarafından iptal edildi.',
     })
 
-    revalidatePath('/admin/alb-tarim/siparisler')
-revalidatePath('/admin/alb-su-aritma/siparisler')
-    revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
-  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
+    await siparisYollariniTazele(orderId)
 
     if (!result.ok) {
       return {
@@ -344,10 +387,7 @@ revalidatePath('/admin/alb-su-aritma/siparisler')
     }
   }
 
-  revalidatePath('/admin/alb-tarim/siparisler')
-revalidatePath('/admin/alb-su-aritma/siparisler')
-  revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
-  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
+  await siparisYollariniTazele(orderId)
 
   return { ok: true, message: `Sipariş durumu güncellendi.${extra}` }
 }
@@ -381,10 +421,7 @@ export async function updateOrderShipping(
   // Müşteriye takip numarasını gönder
   await notifyOrderShipped(orderId)
 
-  revalidatePath('/admin/alb-tarim/siparisler')
-revalidatePath('/admin/alb-su-aritma/siparisler')
-  revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
-  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
+  await siparisYollariniTazele(orderId)
 }
 
 // ─── Admin notu ──────────────────────────────────────────────────────────────
@@ -397,8 +434,7 @@ export async function updateOrderNote(orderId: string, note: string) {
     data: { adminNote: note.trim().slice(0, 2000) || null },
   })
 
-  revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
-  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
+  await siparisYollariniTazele(orderId)
 }
 
 // ─── İade ────────────────────────────────────────────────────────────────────
@@ -449,10 +485,7 @@ export async function refundOrder(
     returnRequestId,
   })
 
-  revalidatePath('/admin/alb-tarim/siparisler')
-revalidatePath('/admin/alb-su-aritma/siparisler')
-  revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
-  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
+  await siparisYollariniTazele(orderId)
 
   if (!result.ok) return { ok: false, error: result.error }
   return { ok: true, message: result.message }
@@ -481,13 +514,13 @@ export async function markOrderManuallyRefunded(
     orderId,
     ip,
     force: true,
+    // Yönetici ödemeyi iyzico panelinden zaten iade etti; buradan ikinci bir
+    // para hareketi isteği göndermenin hiçbir gerekçesi yok.
+    gatewayAtla: true,
     reason: reason ? `Elle iade: ${reason}` : 'iyzico panelinden elle iade edildi',
   })
 
-  revalidatePath('/admin/alb-tarim/siparisler')
-  revalidatePath('/admin/alb-su-aritma/siparisler')
-  revalidatePath(`/admin/alb-tarim/siparisler/${orderId}`)
-  revalidatePath(`/admin/alb-su-aritma/siparisler/${orderId}`)
+  await siparisYollariniTazele(orderId)
 
   if (!result.ok) return { ok: false, error: result.error }
   return { ok: true, message: result.message }

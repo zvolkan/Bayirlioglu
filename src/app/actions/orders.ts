@@ -7,6 +7,7 @@ import { prisma, type TransactionClient } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { processRefund } from '@/lib/refund'
 import { restoreStock } from '@/lib/stock'
+import { siparisIptalEdilebilir, iptalEngelSebebi } from '@/lib/order-cancel'
 
 // ─── Oturum kontrolü ─────────────────────────────────────────────────────────
 
@@ -107,11 +108,16 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderResult> {
 
   if (!order) return { ok: false, error: 'Sipariş bulunamadı.' }
 
-  const cancellable = ['PENDING', 'CONFIRMED']
-  if (!cancellable.includes(order.status)) {
+  // İptal edilebilirlik kararı ARTIK TEK YERDE (bkz. src/lib/order-cancel.ts).
+  // Burada, sipariş listesinde ve sipariş detayında üç ayrı kopya vardı ve
+  // üçü de yalnızca `status`'a bakıyordu: iadesi sürmekte olan sipariş
+  // "iptal edilebilir" sayılıyordu.
+  if (!siparisIptalEdilebilir(order)) {
     return {
       ok: false,
-      error: 'Bu sipariş hazırlanmaya başlandığı için artık iptal edilemiyor.',
+      error:
+        iptalEngelSebebi(order) ??
+        'Bu sipariş şu anda iptal edilemiyor. Lütfen bizimle iletişime geçin.',
     }
   }
 
@@ -126,10 +132,22 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderResult> {
       reason: 'Müşteri talebiyle iptal',
     })
 
+    // Sipariş DETAY sayfası da tazelenmeli. `revalidatePath('/hesabim/siparislerim')`
+    // yalnızca liste yolunu kapsıyor; `[id]` alt yolu ondan etkilenmiyor.
+    // Müşteri detay sayfasından iptal ettiğinde sayfa eski hâliyle duruyordu.
     revalidatePath('/hesabim/siparislerim')
+    revalidatePath(`/hesabim/siparislerim/${orderId}`)
     revalidatePath('/hesabim')
 
     if (!result.ok) {
+      // Belirsiz sonucu, kesin bir başarısızlık gibi anlatmıyoruz. "Tekrar
+      // deneyin" demek, parası çoktan dönmüş bir müşteriye ikinci bir iade
+      // tetikletmek olurdu; `processRefund` o isteği reddedecek ve müşteri
+      // aynı duvara tekrar çarpacaktı.
+      if (result.belirsiz) {
+        return { ok: false, error: result.error }
+      }
+
       return {
         ok: false,
         error:
@@ -162,6 +180,7 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderResult> {
   await restoreStock(orderId, 'müşteri iptali (ödemesiz)')
 
   revalidatePath('/hesabim/siparislerim')
+  revalidatePath(`/hesabim/siparislerim/${orderId}`)
   revalidatePath('/hesabim')
 
   return { ok: true, message: 'Siparişiniz iptal edildi.' }

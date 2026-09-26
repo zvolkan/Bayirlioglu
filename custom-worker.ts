@@ -45,6 +45,12 @@ const GOREVLER: Record<string, { yol: string; ad: string }> = {
   '0 3 * * *': { yol: '/api/cron/bekleyen-siparisler', ad: 'bekleyen sipariş temizliği' },
   // Her sabah 06:00 UTC (TR 09:00) — Supabase kota kontrolü
   '0 6 * * *': { yol: '/api/cron/kota', ad: 'Supabase kota kontrolü' },
+  // Her saat :30 — sonucu öğrenilemeyen iadelerin takibi.
+  //
+  // Saat başı değil 30. dakikada: Cloudflare'de :00 zamanlamaları kalabalık
+  // ve gecikmeli tetikleniyor. Sık çalışması gerekiyor çünkü bekleyen her
+  // dakika müşterinin parasının askıda kaldığı bir dakika.
+  '30 * * * *': { yol: '/api/cron/iade-mutabakati', ad: 'iade mutabakatı' },
 }
 
 export default {

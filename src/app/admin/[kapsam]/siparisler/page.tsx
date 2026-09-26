@@ -4,6 +4,7 @@ import { getOrdersForAdmin, getOrderCountsByStatus } from '@/app/actions/admin-o
 import { formatOrderNo } from '@/lib/order-number'
 import Icon from '@/components/ui/Icon'
 import { gecerliKapsam, kapsamAdi, markaMi } from '@/lib/admin-kapsam'
+import { iadeIsleniyorMu, odemeDurumAdi, IADE_INCELEME_FILTRESI } from '@/lib/order-cancel'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,7 +12,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   PENDING: { label: 'Ödeme Bekliyor', color: 'bg-yellow-100 text-yellow-700' },
   CONFIRMED: { label: 'Onaylandı', color: 'bg-blue-100 text-blue-700' },
   PROCESSING: { label: 'Hazırlanıyor', color: 'bg-purple-100 text-purple-700' },
-  SHIPPED: { label: 'Kargoda', color: 'bg-indigo-100 text-indigo-700' },
+  SHIPPED: { label: 'Kargoya Verildi', color: 'bg-indigo-100 text-indigo-700' },
   DELIVERED: { label: 'Teslim Edildi', color: 'bg-green-100 text-green-700' },
   CANCELLED: { label: 'İptal', color: 'bg-red-100 text-red-700' },
   REFUNDED: { label: 'İade', color: 'bg-gray-100 text-gray-700' },
@@ -21,11 +22,13 @@ const FILTERS = [
   { value: '', label: 'Tümü' },
   { value: 'CONFIRMED', label: 'Onaylandı' },
   { value: 'PROCESSING', label: 'Hazırlanıyor' },
-  { value: 'SHIPPED', label: 'Kargoda' },
+  { value: 'SHIPPED', label: 'Kargoya Verildi' },
   { value: 'DELIVERED', label: 'Teslim Edildi' },
   { value: 'PENDING', label: 'Ödeme Bekliyor' },
   { value: 'CANCELLED', label: 'İptal' },
   { value: 'REFUNDED', label: 'İade' },
+  // Sipariş durumu değil, ödeme durumu filtresi — bkz. IADE_INCELEME_FILTRESI.
+  { value: IADE_INCELEME_FILTRESI, label: 'İade incelemesi' },
 ]
 
 function formatPrice(value: unknown) {
@@ -79,6 +82,26 @@ export default async function KapsamSiparislerPage({
           {kapsamAdi(kapsam)} · {total} sipariş
         </p>
       </div>
+
+      {/* ── İade incelemesi uyarısı ─────────────────────────────────────────────
+          Bu siparişlerin `status`'u hâlâ CONFIRMED; listede diğerlerinden hiçbir
+          şekilde ayrılmıyorlardı. Oysa müşterinin parası askıda olan tek grup
+          bunlar ve gecikmenin bedeli doğrudan müşteriye yansıyor. */}
+      {(counts[IADE_INCELEME_FILTRESI] ?? 0) > 0 && (
+        <Link
+          href={buildHref({ durum: IADE_INCELEME_FILTRESI })}
+          className="block bg-amber-50 border-2 border-amber-300 rounded-2xl px-5 py-4 hover:bg-amber-100 transition-colors"
+        >
+          <p className="text-sm font-bold text-amber-900">
+            {counts[IADE_INCELEME_FILTRESI]} sipariş iade incelemesi bekliyor
+          </p>
+          <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+            Bu siparişlerde iyzico&apos;ya iade/iptal isteği gönderildi ama sonuç
+            öğrenilemedi. Para iade edilmiş olabilir; iyzico panelinden kontrol
+            edilmesi gerekiyor. Görmek için tıklayın.
+          </p>
+        </Link>
+      )}
 
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((filter) => {
@@ -171,6 +194,11 @@ export default async function KapsamSiparislerPage({
                         >
                           {meta.label}
                         </span>
+                        {iadeIsleniyorMu(order.paymentStatus) && (
+                          <p className="text-[11px] font-bold text-amber-700 mt-1">
+                            {odemeDurumAdi(order.paymentStatus)}
+                          </p>
+                        )}
                         {order.trackingNumber && (
                           <p className="text-[11px] text-gray-400 mt-1 font-mono">
                             {order.trackingNumber}

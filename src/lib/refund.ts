@@ -1,5 +1,11 @@
 import { prisma, type TransactionClient } from '@/lib/db'
-import { refundPayment, cancelPayment } from '@/lib/iyzico'
+import {
+  refundPayment,
+  cancelPayment,
+  retrievePayment,
+  iadeSonucunuSiniflandir,
+  type IadeSonucu,
+} from '@/lib/iyzico'
 import { notifyOrderRefunded } from '@/lib/email/notify'
 import {
   completeReturnRequestsForOrder,
@@ -21,13 +27,39 @@ import { appendOrderNote } from '@/lib/order-note'
 
 export type RefundOutcome =
   | { ok: true; message: string; gateway: 'cancel' | 'refund' }
-  | { ok: false; error: string; needsManualReview: boolean }
+  | {
+      ok: false
+      error: string
+      needsManualReview: boolean
+      /**
+       * Sonuç ÖĞRENİLEMEDİ — para iade edilmiş de olabilir.
+       *
+       * `needsManualReview`'dan ayrı bir bayrak: o, "yönetici bir baksın"
+       * demek ve kesin retlerde de doğru olabiliyor. Bu ise "iyzico'ya istek
+       * gitti, cevabı alamadık" demek. Çağıran kodun müşteriye söylediği şey
+       * bu ikisinde farklı olmak zorunda: kesin rette "iptal edilemedi, tekrar
+       * deneyin", belirsizde "işleniyor, tekrar denemeyin".
+       */
+      belirsiz?: boolean
+    }
+
+/** İade sonucu öğrenilemeyen siparişin ödeme durumu. */
+export const IADE_BELIRSIZ_DURUMU = 'refund_pending'
 
 interface RefundOptions {
   orderId: string
   ip?: string
   /** Gateway başarısız olsa bile siparişi REFUNDED yap (yalnızca admin, elle iade sonrası) */
   force?: boolean
+  /**
+   * iyzico'ya HİÇ DOKUNMA, yalnızca kaydı kapat.
+   *
+   * "iyzico panelinden elle iade ettim" için. `force` tek başına yetmiyordu:
+   * iptal ve iade çağrıları yine yapılıyor, yalnızca sonuçları yok sayılıyordu.
+   * Yöneticinin elle iade ettiği bir ödemeye ikinci bir para hareketi isteği
+   * göndermek, en iyi hâlde gereksiz — istemediğimiz bir şeyi istemek.
+   */
+  gatewayAtla?: boolean
   /** İade sebebi — admin notuna yazılır */
   reason?: string
   /**
@@ -63,24 +95,60 @@ function para(v: number): number {
 }
 
 export async function processRefund(options: RefundOptions): Promise<RefundOutcome> {
-  const { orderId, ip = '127.0.0.1', force = false, reason, returnRequestId } = options
+  const {
+    orderId,
+    ip = '127.0.0.1',
+    force = false,
+    gatewayAtla = false,
+    reason,
+    returnRequestId,
+  } = options
 
   // Kilitten önceki ödeme durumu — başarısızlıkta buraya geri dönülecek.
   const oncekiKayit = await prisma.order.findUnique({
     where: { id: orderId },
     select: { paymentStatus: true },
   })
-  const oncekiOdemeDurumu = oncekiKayit?.paymentStatus ?? 'paid'
+  // `refunding` ASLA geri dönülecek bir durum değil: o bir kilit, bir hâl
+  // değil. Yarıda kesilmiş bir denemeden kalmışsa oraya geri dönmek siparişi
+  // tekrar aynı kilide hapsetmek olur. Belirsiz durumuna alıyoruz — orası
+  // yöneticinin göreceği, çıkışı olan bir hâl.
+  const hamOncekiDurum = oncekiKayit?.paymentStatus ?? 'paid'
+  const oncekiOdemeDurumu = hamOncekiDurum === 'refunding' ? IADE_BELIRSIZ_DURUMU : hamOncekiDurum
 
   // ── Kilitle: yalnızca ödenmiş ve henüz iade edilmemiş siparişi işleme al ──
   // Bu koşullu güncelleme, iki sekmeden aynı anda basılan "İade Et" butonunun
   // çift iadeye ve çift stok artışına yol açmasını engeller.
+  //
+  // ── `force` neden daha geniş bir kapı açıyor ─────────────────────────────
+  //
+  // Elle iade (yönetici "iyzico panelinden iade ettim" diyor) askıda kalmış
+  // siparişleri KURTARMAK için var. Askıda kalma iki biçimde oluyor:
+  // `refunding` (işlem yarıda kesildi, kilit bırakılamadı) ve
+  // `refund_pending` (istek gitti, cevap gelmedi). Kapı yalnızca `paid`'e
+  // açıksa yönetici tam da bu iki durumda hiçbir şey yapamıyor — oysa
+  // kurtarılması gereken siparişler yalnızca bunlar.
+  //
+  // `refund_pending` NORMAL iadeye de açık: yönetici iyzico panelinde iade
+  // OLMADIĞINI görüp yeniden denemek isteyecek ve askıda kalmış siparişin tek
+  // çıkışı bu. Çift iade riski `iadeSonucunuSiniflandir` tarafından
+  // kapatılıyor: gerçekten iptal edilmiş bir ödemeye ikinci istek gidince
+  // iyzico "zaten iptal edilmiş" diyor ve biz bunu başarı sayıyoruz.
+  //
+  // `refunding` yalnızca `force` ile açık — o bir kilit, bir hâl değil; şu an
+  // gerçekten süren bir işlemin üstüne gitmek çift iade demek.
+  const kabulEdilenDurumlar = force
+    ? ['paid', KISMI_IADE_DURUMU, 'refunding', IADE_BELIRSIZ_DURUMU]
+    : returnRequestId
+      ? // Kısmi iade sonrası sipariş `partially_refunded` durumunda kalıyor;
+        // aynı siparişin ikinci bir kalemi de iade edilebilmeli.
+        ['paid', KISMI_IADE_DURUMU, IADE_BELIRSIZ_DURUMU]
+      : ['paid', IADE_BELIRSIZ_DURUMU]
+
   const claimed = await prisma.order.updateMany({
     where: {
       id: orderId,
-      // Kısmi iade sonrası sipariş `partially_refunded` durumunda kalıyor;
-      // aynı siparişin ikinci bir kalemi de iade edilebilmeli.
-      paymentStatus: returnRequestId ? { in: ['paid', KISMI_IADE_DURUMU] } : 'paid',
+      paymentStatus: { in: kabulEdilenDurumlar },
       status: { not: 'REFUNDED' },
     },
     data: { paymentStatus: 'refunding' },
@@ -240,8 +308,89 @@ export async function processRefund(options: RefundOptions): Promise<RefundOutco
   // ── Gateway ──────────────────────────────────────────────────────────────
   let gateway: 'cancel' | 'refund' | null = null
   let gatewayError = 'Ödeme sağlayıcısına ulaşılamadı.'
+  /** Sonucu öğrenilemeyen bir para hareketi denendi mi? */
+  let belirsizKaldi = false
 
-  if (!order.paymentId) {
+  /**
+   * İade sonucu belirsizken siparişi askıya al.
+   *
+   * ── Neden "geri al" değil ─────────────────────────────────────────────────
+   *
+   * Eskiden buradaki tek davranış `releaseLock()` idi: sipariş `paid`'e,
+   * durumu CONFIRMED'e dönüyor ve müşteriye "iptal edilemedi" deniyordu. Ama
+   * cevabın gelmemesi iyzico'nun işi yapmadığı anlamına gelmiyor. Gerçekte
+   * olan şuydu: iyzico ödemeyi iptal etti, cevap Cloudflare ile iyzico
+   * arasındaki TLS sorununda kayboldu, biz siparişi eski hâline döndürdük.
+   * İyzico panelinde sipariş iptal, sitede "Siparişi İptal Et" düğmesi duruyor.
+   *
+   * Doğru davranış üçüncü bir hâl: ne başarılı ne başarısız. Sipariş
+   * `refund_pending` oluyor — müşteri düğmeyi görmüyor ("işleniyor" yazısını
+   * görüyor), yönetici panelinde sipariş işaretli duruyor, mutabakat görevi
+   * her saat iyzico'ya gerçekte ne olduğunu soruyor
+   * (bkz. src/lib/refund-reconcile.ts).
+   */
+  async function askiyaAl(kanit: string): Promise<RefundOutcome> {
+    await prisma.order
+      .update({
+        where: { id: orderId },
+        data: { paymentStatus: IADE_BELIRSIZ_DURUMU },
+      })
+      .catch((e) => console.error('[iade] belirsiz durumu yazılamadı:', orderId, e))
+
+    await appendOrderNote(
+      orderId,
+      `İADE SONUCU BELİRSİZ (${new Date().toISOString()}): ${kanit} ` +
+        'Para iade edilmiş OLABİLİR. iyzico panelinden ödemeyi kontrol edin: ' +
+        'iade görünüyorsa "elle iade edildi" ile işaretleyin, görünmüyorsa iadeyi tekrar başlatın.',
+    )
+
+    console.error('[iade] sonuç belirsiz, sipariş askıya alındı:', orderId, kanit)
+
+    return {
+      ok: false,
+      error:
+        'İptal talebiniz alındı ancak ödeme sağlayıcısından onay henüz gelmedi. ' +
+        'Talebiniz işleme alındı; tekrar denemeyin. Sonuçlandığında sipariş durumunuz güncellenecek.',
+      needsManualReview: true,
+      belirsiz: true,
+    }
+  }
+
+  /**
+   * Belirsiz kalan bir para hareketinden sonra "gerçekte ne oldu" sorusu.
+   *
+   * `/payment/detail` salt okunur; çağırmanın hiçbir yan etkisi yok. Yanıtı
+   * olduğu gibi yorumlamaya ÇALIŞMIYORUZ — iyzico'nun iade alanlarının adları
+   * ve anlamları sürümler arasında değişiyor, yanlış okumak çift iadeden beter.
+   * Yaptığımız şey daha mütevazı ve daha sağlam: yanıtın özetini siparişin
+   * yönetici notuna yazıyoruz ki panelde bakan kişi tahmin etmek zorunda
+   * kalmasın.
+   */
+  async function detayiKanitOlarakTopla(paymentId: string): Promise<string> {
+    try {
+      const detay = await retrievePayment({
+        paymentId,
+        conversationId: order?.orderNumber ?? orderId,
+      })
+      const ozet = {
+        status: detay?.status,
+        errorCode: detay?.errorCode,
+        errorMessage: detay?.errorMessage,
+        paymentStatus: detay?.paymentStatus,
+        price: detay?.price,
+        paidPrice: detay?.paidPrice,
+      }
+      return `iyzico ödeme sorgusu: ${JSON.stringify(ozet)}.`
+    } catch (error) {
+      return `iyzico ödeme sorgusu da yapılamadı (${String(error).slice(0, 160)}).`
+    }
+  }
+
+  if (gatewayAtla) {
+    // Yönetici "ben iyzico'da hallettim" diyor. iyzico'ya hiçbir istek
+    // gitmiyor; aşağıdaki blok atlanıp doğrudan kaydın kapatılmasına geçiliyor.
+    console.log('[iade] gateway atlandı (elle iade):', orderId)
+  } else if (!order.paymentId) {
     if (!force) {
       await releaseLock(
         'İade denendi ancak siparişte ödeme kimliği (paymentId) yok. Ödeme iyzico panelinden elle iade edilmeli.',
@@ -257,42 +406,84 @@ export async function processRefund(options: RefundOptions): Promise<RefundOutco
     const amount = iadeTutari.toFixed(2)
 
     // Önce aynı gün iptali (komisyon iadesi de alınır), olmazsa iade.
+    /**
+     * Tek bir para hareketi çağrısını yapar ve ÜÇ KOVAYA ayırır.
+     *
+     * İstisna yakalanıp `null` olarak sınıflandırıcıya veriliyor: "yanıt yok"
+     * ile "yanıt var, ret" arasındaki fark, bu fonksiyonun bütün varlık sebebi.
+     */
+    async function dene(
+      etiket: string,
+      cagri: () => Promise<any>,
+    ): Promise<IadeSonucu> {
+      let yanit: unknown | null = null
+      try {
+        yanit = await cagri()
+      } catch (error) {
+        console.error(`[iade] ${etiket} çağrısı yanıt vermedi:`, orderId, error)
+        gatewayError = `${etiket}: yanıt alınamadı (${String(error).slice(0, 160)})`
+        return 'belirsiz'
+      }
+
+      const sonuc = iadeSonucunuSiniflandir(yanit)
+      const mesaj = (yanit as { errorMessage?: unknown })?.errorMessage
+      if (sonuc !== 'basarili' && mesaj) gatewayError = `${etiket}: ${String(mesaj)}`
+      return sonuc
+    }
+
+    // ── 1) Aynı gün iptali ───────────────────────────────────────────────────
     //
     // KISMİ İADEDE İPTAL DENENMİYOR: `cancelPayment` her zaman ödemenin
     // TAMAMINI iptal eder. Kısmi iadede kullanılırsa müşteriye tüm sipariş
     // tutarı geri gider — düzeltmeye çalıştığımız hatanın ta kendisi.
     if (!kismi) {
-      try {
-        const cancelled = await cancelPayment({
-          paymentId: order.paymentId,
-          conversationId: order.orderNumber ?? order.id,
+      const sonuc = await dene('iptal', () =>
+        cancelPayment({
+          paymentId: order!.paymentId!,
+          conversationId: order!.orderNumber ?? order!.id,
           ip,
-        })
-        if (cancelled?.status === 'success') gateway = 'cancel'
-        else if (cancelled?.errorMessage) gatewayError = String(cancelled.errorMessage)
-      } catch (error) {
-        // Ağ/istisna hatası iadeyi engellemesin — aşağıda refund denenir
-        console.error('[iade] iptal çağrısı başarısız:', orderId, error)
-      }
+        }),
+      )
+
+      if (sonuc === 'basarili') gateway = 'cancel'
+      else if (sonuc === 'belirsiz') belirsizKaldi = true
+      // 'kesin-ret' → iyzico cevap verip reddetti (ör. gün kapandı). Para
+      // hareket etmedi; aşağıda iade denenebilir.
     }
 
-    if (!gateway) {
-      try {
-        const refunded = await refundPayment({
-          paymentId: order.paymentId,
+    // ── 2) İade ──────────────────────────────────────────────────────────────
+    //
+    // ── Belirsizden sonra NEDEN İADE DENENMİYOR ──────────────────────────────
+    //
+    // Eskiden iptal çağrısı istisna fırlattığında akış olduğu gibi iadeye
+    // devam ediyordu. Oysa "iptal isteğinin cevabı gelmedi" demek, "iptal
+    // yapılmadı" demek değil. Yapılmışsa, arkasından iade göndermek aynı parayı
+    // ikinci kez geri vermek olur — ya da iyzico ikincisini reddedip bize
+    // "başarısız" dedirtir. İkisi de kötü. Belirsizde para hareketi durur.
+    if (!gateway && !belirsizKaldi) {
+      const sonuc = await dene('iade', () =>
+        refundPayment({
+          paymentId: order!.paymentId!,
           price: amount,
-          conversationId: order.orderNumber ?? order.id,
+          conversationId: order!.orderNumber ?? order!.id,
           ip,
-        })
-        if (refunded?.status === 'success') gateway = 'refund'
-        else if (refunded?.errorMessage) gatewayError = String(refunded.errorMessage)
-      } catch (error) {
-        console.error('[iade] iade çağrısı başarısız:', orderId, error)
-      }
+        }),
+      )
+
+      if (sonuc === 'basarili') gateway = 'refund'
+      else if (sonuc === 'belirsiz') belirsizKaldi = true
     }
 
+    // ── 3) Sonuç yoksa: belirsiz mi, kesin ret mi? ───────────────────────────
     if (!gateway && !force) {
-      await releaseLock(`İade başarısız: ${gatewayError} (${new Date().toISOString()})`)
+      if (belirsizKaldi) {
+        const kanit = await detayiKanitOlarakTopla(order.paymentId)
+        return await askiyaAl(`${gatewayError} ${kanit}`)
+      }
+
+      // iyzico cevap verip reddetti. Para hareket etmedi, siparişi güvenle
+      // eski durumuna döndürebiliriz.
+      await releaseLock(`İade reddedildi: ${gatewayError} (${new Date().toISOString()})`)
       return {
         ok: false,
         error: `Ödeme sağlayıcısı iadeyi reddetti: ${gatewayError}. Sipariş değiştirilmedi; iyzico panelinden kontrol edin.`,
@@ -365,29 +556,50 @@ export async function processRefund(options: RefundOptions): Promise<RefundOutco
     }
   }
 
-  // Yönetici notu — var olanı ezmeden
-  await appendOrderNote(
-    orderId,
+  // ── Bu noktadan sonrası İADEYİ GEÇERSİZ KILAMAZ ──────────────────────────
+  //
+  // Para iade edildi ve sipariş kaydı güncellendi; iş bitti. Aşağıdakiler yan
+  // işler: not yazmak, iade talebini kapatmak, müşteriye e-posta atmak. Biri
+  // patlarsa `processRefund` istisna fırlatıyordu ve çağıran kod bunu
+  // "iade başarısız" olarak yorumluyordu — oysa para çoktan dönmüştü. Müşteri
+  // ekranında hata görüyor, iptal düğmesi duruyor, tekrar deniyordu.
+  //
+  // Her biri ayrı ayrı yakalanıyor ki ilkinin hatası ikincisini engellemesin.
+  // Fonksiyon olarak tutuluyorlar, hazır Promise olarak değil: hepsi hemen
+  // başlatılsa, biri henüz `await` edilmeden reddedilirse workerd bunu
+  // "yakalanmamış ret" sayıp isteği düşürebilir.
+  const notMetni = [
+    kismi ? `KISMİ İADE: ${iadeTutari.toFixed(2)} TL` : `İADE: ${iadeTutari.toFixed(2)} TL`,
+    reason ? `Sebep: ${reason}` : null,
+    gatewayAciklamasi,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
+  const yanIsler: Array<[string, () => Promise<unknown>]> = [
+    // Yönetici notu — var olanı ezmeden
+    ['yönetici notu', () => appendOrderNote(orderId, notMetni)],
+    // Açık iade talebi varsa kapat — yönetici ayrıca kapatmak zorunda kalmasın.
+    // Kısmi iadede YALNIZCA işlenen talep kapatılır; siparişin diğer açık
+    // talepleri (varsa) dokunulmadan kalır.
     [
-      kismi ? `KISMİ İADE: ${iadeTutari.toFixed(2)} TL` : `İADE: ${iadeTutari.toFixed(2)} TL`,
-      reason ? `Sebep: ${reason}` : null,
-      gatewayAciklamasi,
-    ]
-      .filter(Boolean)
-      .join(' · '),
-  )
+      'iade talebi kapatma',
+      () =>
+        returnRequestId
+          ? completeSingleReturnRequest(returnRequestId)
+          : completeReturnRequestsForOrder(orderId),
+    ],
+    // Müşteriye iade bildirimi
+    ['iade bildirimi', () => notifyOrderRefunded(orderId, reason, iadeTutari)],
+  ]
 
-  // Açık iade talebi varsa kapat — yönetici ayrıca kapatmak zorunda kalmasın.
-  // Kısmi iadede YALNIZCA işlenen talep kapatılır; siparişin diğer açık
-  // talepleri (varsa) dokunulmadan kalır.
-  if (returnRequestId) {
-    await completeSingleReturnRequest(returnRequestId)
-  } else {
-    await completeReturnRequestsForOrder(orderId)
+  for (const [ad, is] of yanIsler) {
+    try {
+      await is()
+    } catch (error) {
+      console.error(`[iade] ${ad} başarısız (iade GEÇERLİ):`, orderId, error)
+    }
   }
-
-  // Müşteriye iade bildirimi — gönderilemezse iade yine de geçerli
-  await notifyOrderRefunded(orderId, reason, iadeTutari)
 
   const tutarMetni = `${iadeTutari.toFixed(2)} TL`
 

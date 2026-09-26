@@ -73,7 +73,9 @@
 	// Bekleyen sipariş temizliği — her gece 03:00 UTC (Türkiye saatiyle 06:00)
 	"triggers": {
 		"crons": [
-			"0 3 * * *"
+			"0 3 * * *",
+			"0 6 * * *",
+			"30 * * * *"
 		]
 	},
 	// Gizli OLMAYAN değerler burada durabilir.

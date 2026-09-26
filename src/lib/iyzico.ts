@@ -352,6 +352,72 @@ export function odemeSonucunuSiniflandir(result: unknown): OdemeSonucu {
   return 'belirsiz'
 }
 
+/* ─── İade / iptal sonucunun sınıflandırılması ────────────────────────────────
+ *
+ * Ödeme sonucu için yukarıda kurulan üç kovalı mantığın aynısı, bu kez para
+ * GERİ giderken. Fark, hatanın yönünde: ödemede yanlış karar müşterinin
+ * parasını sistemde izsiz bırakıyordu; iadede yanlış karar ÇİFT İADE demek —
+ * yani aynı parayı iki kez geri vermek.
+ *
+ * Bu yüzden `belirsiz` kovası burada çok daha ciddi. "Cevap gelmedi" ile
+ * "işlem yapılmadı" aynı şey değildir: istek iyzico'ya ulaşmış, para geri
+ * gönderilmiş, ama yanıt yolda kaybolmuş olabilir. Yaşanan olay tam olarak
+ * buydu. Belirsizde İKİNCİ BİR PARA HAREKETİ DENENMEZ; sipariş "iade sonucu
+ * belirsiz" durumuna alınıp yöneticiye bırakılır.
+ */
+export type IadeSonucu = 'basarili' | 'kesin-ret' | 'belirsiz'
+
+/**
+ * "Bu ödeme zaten iptal/iade edilmiş" anlamına gelen yanıtlar.
+ *
+ * Kayıp cevaptan sonra aynı iptal isteği tekrar gönderilirse iyzico bunu
+ * reddediyor — ama bu ret, aslında İŞİN YAPILDIĞININ kanıtı. Hata mesajını
+ * "başarısız" saymak, yapılmış bir iadeyi yapılmamış göstermek olur.
+ *
+ * Eşleştirme mesaj metnine bakıyor çünkü iyzico'nun bu durum için döndürdüğü
+ * hata kodu belgelenmiş değil ve sürümler arasında değişebiliyor. Kaçırırsak
+ * sonuç `belirsiz` olur — yani güvenli tarafa düşeriz, yöneticiye gider.
+ */
+function zatenIadeEdilmisMi(errorMessage: string): boolean {
+  const m = errorMessage.toLocaleLowerCase('tr')
+  const iadeSozu = m.includes('iptal') || m.includes('iade') || m.includes('refund') || m.includes('cancel')
+  const gecmisZaman =
+    m.includes('zaten') ||
+    m.includes('mevcut') ||
+    m.includes('edilmiş') ||
+    m.includes('edilmis') ||
+    m.includes('daha önce') ||
+    m.includes('already')
+  return iadeSozu && gecmisZaman
+}
+
+/**
+ * İade/iptal yanıtını sınıflandırır.
+ *
+ * @param result  iyzico'nun JSON yanıtı. `null` ise çağrı İSTİSNA fırlattı —
+ *                yani yanıt hiç alınamadı ve sonuç zorunlu olarak belirsizdir.
+ */
+export function iadeSonucunuSiniflandir(result: unknown | null): IadeSonucu {
+  // Yanıt yok: ağ kopması, 5xx, JSON olmayan hata sayfası. İstek iyzico'ya
+  // ulaşmış olabilir de olmayabilir de — bilmiyoruz.
+  if (result == null) return 'belirsiz'
+
+  const r = result as { status?: unknown; errorMessage?: unknown }
+  const status = String(r.status ?? '')
+  const errorMessage = String(r.errorMessage ?? '')
+
+  if (status === 'success') return 'basarili'
+
+  // iyzico cevap verdi ve "zaten yapılmış" dedi: iş bitmiş demektir.
+  if (status === 'failure' && zatenIadeEdilmisMi(errorMessage)) return 'basarili'
+
+  // iyzico cevap verip reddetti. Cevap ELİMİZDE olduğu için bu kesin bilgi:
+  // para hareket etmedi.
+  if (status === 'failure') return 'kesin-ret'
+
+  return 'belirsiz'
+}
+
 export function retrieveCheckoutForm(token: string, conversationId: string): Promise<any> {
   // Salt okunur sorgu; tekrar denemek güvenli. Üstelik burada ısrar etmek
   // önemli: bu çağrı başarısız olursa ödeme sonucu "belirsiz" sayılıyor ve
@@ -435,9 +501,16 @@ export function retrievePayment(params: {
   paymentId: string
   conversationId: string
 }): Promise<any> {
-  return iyzicoPost('/payment/detail', {
-    locale: 'tr',
-    conversationId: params.conversationId,
-    paymentId: params.paymentId,
-  })
+  // Salt okunur; tekrar denemek güvenli ve burada ısrar etmek önemli. Bu
+  // sorgu, iadesi belirsiz kalmış bir siparişte "gerçekte ne oldu" sorusunun
+  // tek cevabı. Tek denemede vazgeçilirse sipariş boşuna askıda kalıyor.
+  return iyzicoPost(
+    '/payment/detail',
+    {
+      locale: 'tr',
+      conversationId: params.conversationId,
+      paymentId: params.paymentId,
+    },
+    { tekrarDenenebilir: true },
+  )
 }

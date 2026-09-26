@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/db'
 import { formatOrderNo } from '@/lib/order-number'
 import CancelOrderButton from '../_components/CancelOrderButton'
+import { siparisIptalEdilebilir, iadeIsleniyorMu } from '@/lib/order-cancel'
 import RepeatOrderButton from '../../_components/RepeatOrderButton'
 import Icon, { type IconName } from '@/components/ui/Icon'
 import type { BrandKey } from '@/lib/types'
@@ -89,7 +90,10 @@ export default async function SiparisDetayPage({ params }: Props) {
 
   const status = STATUS_MAP[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-700 border-gray-200', icon: 'uyari' as IconName }
   const isAlbTarim = order.brand.key === 'alb-tarim'
-  const cancellable = ['PENDING', 'CONFIRMED'].includes(order.status)
+  // Karar `src/lib/order-cancel.ts`'te — liste sayfası ve `cancelOrder` da
+  // aynı fonksiyonu kullanıyor.
+  const cancellable = siparisIptalEdilebilir(order)
+  const iadeIsleniyor = iadeIsleniyorMu(order.paymentStatus)
   const shipped = ['SHIPPED', 'DELIVERED'].includes(order.status)
   const delivered = order.status === 'DELIVERED'
 
@@ -382,6 +386,23 @@ export default async function SiparisDetayPage({ params }: Props) {
             </div>
           </div>
         </div>
+
+        {/* İptal / iade işleniyor — düğme yerine durum açıklaması */}
+        {iadeIsleniyor && (
+          <div className="bg-amber-50 rounded-2xl border border-amber-200 p-4 sm:p-5">
+            <div className="flex items-start gap-3">
+              <span className="mt-1.5 w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-amber-900">İptal talebiniz işleniyor</p>
+                <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+                  Ödeme sağlayıcısından iade onayı bekleniyor. İşlem sonuçlandığında
+                  sipariş durumunuz otomatik güncellenecek ve size e-posta göndereceğiz.
+                  Tekrar iptal etmeye çalışmanıza gerek yok.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Cancel order */}
         {cancellable && (
