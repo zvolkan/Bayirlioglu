@@ -63,7 +63,17 @@ export const BRANDS: Record<BrandKey, BrandConfig> = {
     ],
     video: '/videos/tarim-hero-desktop.mp4',
     videoMobile: '/videos/tarim-hero-mobile.mp4',
-    poster: '/images/tarim-hero.jpg',
+    // ── Poster: videodan ÖNCE görünen kare ─────────────────────────────
+    //
+    // Bu alan `/images/tarim-hero.jpg` adresini gösteriyordu ama o dosya
+    // depoda hiç YOKTU — 404 dönüyordu. Video `preload="none"` olduğu için
+    // siteye giren herkes, video yüklenene kadar poster yerine boş degradeyi
+    // görüyordu.
+    //
+    // Yeni poster videonun BİRİNCİ KARESİ. Bilerek öyle: başka bir sahneden
+    // seçilseydi video başlarken görüntü sıçrardı. WebP, aynı kalitede
+    // JPEG'in yaklaşık yarısı kadar yer tutuyor (139 KB / 208 KB).
+    poster: '/images/tarim-hero.webp',
     colors: {
       primary: 'bg-green-600',
       primaryHover: 'hover:bg-green-500',
