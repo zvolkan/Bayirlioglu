@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 import { BRANDS } from '@/lib/constants'
 import { getPublishedPosts } from '@/lib/blog'
 import BrandArtwork from '@/components/ui/BrandArtwork'
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: 'Blog',
     description: `${cfg.name} blog yazıları, ipuçları ve sektör haberleri.`,
+    alternates: { canonical: `/${brand}/blog` },
   }
 }
 
@@ -47,11 +49,15 @@ export default async function BlogPage({ params }: Props) {
       {/* Hero */}
       <section className="brand-surface py-16">
         <div className="container-main text-center">
-          <nav className="text-sm text-white/50 mb-6">
-            <Link href={`/${brandKey}`} className="hover:text-white transition-colors">{cfg.name}</Link>
-            <span className="mx-2">/</span>
-            <span className="text-white/80">Blog</span>
-          </nav>
+          <Breadcrumb
+            koyu
+            className="mb-6 justify-center [&>ol]:justify-center"
+            adimlar={[
+              { label: 'Ana Sayfa', href: '/' },
+              { label: cfg.name, href: `/${brandKey}` },
+              { label: 'Blog' },
+            ]}
+          />
           <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-400">
             Blog
           </p>

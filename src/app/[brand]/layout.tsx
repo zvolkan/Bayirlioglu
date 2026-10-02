@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { BRANDS } from '@/lib/constants'
+import { paylasimMetadata } from '@/lib/seo'
 import type { BrandKey } from '@/lib/types'
 
 const VALID_BRANDS: BrandKey[] = ['alb-tarim', 'alb-su-aritma']
@@ -22,9 +23,21 @@ export async function generateMetadata({ params }: BrandLayoutProps): Promise<Me
     },
     description: cfg.description,
     keywords: [cfg.name, 'Bayırlıoğlu', ...cfg.nav.map((n) => n.label)],
-    openGraph: {
-      siteName: `${cfg.name} — Bayırlıoğlu`,
-    },
+    alternates: { canonical: `/${brand}` },
+    // ── Burada YALNIZCA `siteName` yazıyordu ve bu bir hataydı ──────────────
+    //
+    // Next.js `openGraph` nesnesini iç içe düzenler arasında BİRLEŞTİRMİYOR,
+    // tamamen DEĞİŞTİRİYOR. Kök düzende tanımlı `type`, `locale`, `title` ve
+    // `description` bu tek satır yüzünden `/[brand]` altındaki bütün
+    // sayfalardan siliniyordu: marka ana sayfası, hakkımızda, hizmetler,
+    // iletişim, referanslar, blog ve ürün listesi yalnızca bir siteName ile
+    // paylaşılıyordu.
+    ...paylasimMetadata({
+      title: cfg.name,
+      description: cfg.description,
+      url: `/${brand}`,
+      marka: brand as BrandKey,
+    }),
   }
 }
 

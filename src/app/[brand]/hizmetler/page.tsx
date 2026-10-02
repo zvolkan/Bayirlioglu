@@ -7,6 +7,9 @@ import type { BrandKey } from '@/lib/types'
 import Icon, { type IconName } from '@/components/ui/Icon'
 import Reveal from '@/components/ui/Reveal'
 import RevealGroup from '@/components/ui/RevealGroup'
+import SssBolumu from '@/components/ui/SssBolumu'
+import Breadcrumb from '@/components/ui/Breadcrumb'
+import { paylasimMetadata } from '@/lib/seo'
 
 const VALID_BRANDS: BrandKey[] = ['alb-tarim', 'alb-su-aritma']
 
@@ -18,10 +21,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { brand } = await params
   if (!VALID_BRANDS.includes(brand as BrandKey)) return {}
   const cfg = BRANDS[brand as BrandKey]
+  const baslik = 'Hizmetler'
+  const aciklama = `${cfg.name} hizmetleri: teknik destek, danışmanlık ve daha fazlası.`
   return {
-    title: `Hizmetler — ${cfg.name}`,
-    description: `${cfg.name} hizmetleri: teknik destek, danışmanlık ve daha fazlası.`,
+    // Marka adını `[brand]/layout.tsx` şablonu zaten ekliyor; burada tekrar
+    // yazmak başlığı "Hizmetler — ALB Tarım | ALB Tarım" yapıyordu.
+    title: baslik,
+    description: aciklama,
     alternates: { canonical: `/${brand}/hizmetler` },
+    ...paylasimMetadata({
+      title: `${baslik} — ${cfg.name}`,
+      description: aciklama,
+      url: `/${brand}/hizmetler`,
+      marka: brand as BrandKey,
+    }),
   }
 }
 
@@ -124,11 +137,15 @@ export default async function HizmetlerPage({ params }: Props) {
       {/* Hero */}
       <section className="brand-surface py-16">
         <div className="container-main text-center">
-          <nav className="text-sm text-white/50 mb-6">
-            <Link href={`/${brandKey}`} className="hover:text-white transition-colors">{cfg.name}</Link>
-            <span className="mx-2">/</span>
-            <span className="text-white/80">Hizmetler</span>
-          </nav>
+          <Breadcrumb
+            koyu
+            className="mb-6 justify-center [&>ol]:justify-center"
+            adimlar={[
+              { label: 'Ana Sayfa', href: '/' },
+              { label: cfg.name, href: `/${brandKey}` },
+              { label: 'Hizmetler' },
+            ]}
+          />
           <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-400">
             Hizmetlerimiz
           </p>
@@ -169,6 +186,9 @@ export default async function HizmetlerPage({ params }: Props) {
         </div>
       </section>
 
+      {/* SSS — marka sayfasında hiç yoktu; oysa servis sorusu burada soruluyor */}
+      <SssBolumu marka={brandKey} />
+
       {/* CTA */}
       <section className="py-16 brand-surface">
         <div className="container-main text-center">
@@ -199,6 +219,7 @@ export default async function HizmetlerPage({ params }: Props) {
           </div>
         </div>
       </section>
+
     </div>
   )
 }

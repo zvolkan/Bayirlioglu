@@ -73,7 +73,10 @@ export default function HomePage() {
             <div className="flex justify-center mb-6 anim-scale-in">
               <Image
                 src="/images/bayirlioglu-mark-beyaz.svg"
-                alt="Bayırlıoğlu"
+                /* Başlıkta ve altbilgide aynı logo zaten "Bayırlıoğlu" diye
+                   okunuyor; burada üçüncü kez okutmak ekran okuyucuda
+                   gereksiz tekrar yaratıyor. Görsel dekoratif. */
+                alt=""
                 width={2080}
                 height={780}
                 className="h-14 sm:h-20 w-auto object-contain opacity-90 float-soft"

@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 import ProductImage from '@/components/product/ProductImage'
 import ProductGallery from '@/components/product/ProductGallery'
 import Icon from '@/components/ui/Icon'
-import { BRANDS } from '@/lib/constants'
+import { BRANDS, SITE_CONFIG } from '@/lib/constants'
 import { getProductBySlug, getRelatedProducts } from '@/lib/queries/products'
 import { shouldShowRating } from '@/lib/reviews'
 import type { BrandKey } from '@/lib/types'
@@ -14,7 +15,6 @@ import Reveal from '@/components/ui/Reveal'
 import RevealGroup from '@/components/ui/RevealGroup'
 import { KARGO_LIMIT, KARGO_UCRETI, TESLIMAT_SURESI } from '@/lib/checkout'
 import { jsonLdScript } from '@/lib/sanitize'
-import { getSiteUrl } from '@/lib/site-url'
 
 interface Props {
   params: Promise<{ brand: string; slug: string }>
@@ -88,6 +88,10 @@ export default async function ProductDetailPage({ params }: Props) {
     ...(primaryImage ? { image: [primaryImage] } : {}),
     offers: {
       '@type': 'Offer',
+      // `url` eksikti. Google, tekliften ürün sayfasına dönecek adresi
+      // bulamayınca fiyat zengin sonucunu düşürüyor — fiyat ve stok verisi
+      // doğru olduğu hâlde arama sonucunda görünmüyordu.
+      url: new URL(`/${brandKey}/urunler/${slug}`, SITE_CONFIG.url).toString(),
       priceCurrency: 'TRY',
       price: (product.salePrice ?? product.price).toFixed(2),
       availability:
@@ -101,36 +105,18 @@ export default async function ProductDetailPage({ params }: Props) {
 
   // ── Breadcrumb yapısal verisi ──────────────────────────────────────────
   //
-  // Sayfada görsel olarak breadcrumb var ama karşılığı JSON-LD yoktu. Google
-  // arama sonucunda adres yolunu ("bayirlioglu.com › ALB Tarım › Gübreler")
-  // ancak bu işaretlemeyle gösteriyor; aksi hâlde ham URL yazıyor. Sıra
-  // ekrandaki breadcrumb ile birebir aynı olmalı, yoksa işaretleme yok sayılır.
-  const siteUrl = getSiteUrl()
-  const breadcrumbJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: cfg.name, item: `${siteUrl}/${brandKey}` },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Ürünler',
-        item: `${siteUrl}/${brandKey}/urunler`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: product.category.name,
-        item: `${siteUrl}/${brandKey}/urunler?kategori=${product.category.slug}`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 4,
-        name: product.name,
-        item: `${siteUrl}/${brandKey}/urunler/${slug}`,
-      },
-    ],
-  }
+  // Kırıntı yolu artık `<Breadcrumb>` bileşeninden: görünür yol ve yapısal
+  // veri aynı diziden üretiliyor, biri değişip diğeri unutulamıyor.
+  const kirintiAdimlari = [
+    { label: 'Ana Sayfa', href: '/' },
+    { label: cfg.name, href: `/${brandKey}` },
+    { label: 'Ürünler', href: `/${brandKey}/urunler` },
+    {
+      label: product.category.name,
+      href: `/${brandKey}/urunler?kategori=${product.category.slug}`,
+    },
+    { label: product.name },
+  ]
 
   return (
     <>
@@ -138,32 +124,11 @@ export default async function ProductDetailPage({ params }: Props) {
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd) }}
     />
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbJsonLd) }}
-    />
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-100 py-4">
         <div className="container-main">
-          <nav className="text-sm text-gray-500 flex items-center gap-2 flex-wrap">
-            <Link href={`/${brandKey}`} className="hover:text-gray-900">
-              {cfg.name}
-            </Link>
-            <span>/</span>
-            <Link href={`/${brandKey}/urunler`} className="hover:text-gray-900">
-              Ürünler
-            </Link>
-            <span>/</span>
-            <Link
-              href={`/${brandKey}/urunler?kategori=${product.category.slug}`}
-              className="hover:text-gray-900"
-            >
-              {product.category.name}
-            </Link>
-            <span>/</span>
-            <span className="text-gray-900 font-medium line-clamp-1">{product.name}</span>
-          </nav>
+          <Breadcrumb adimlar={kirintiAdimlari} className="[&_li:last-child>span]:line-clamp-1" />
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import toast from 'react-hot-toast'
+import { telHref } from '@/lib/tel'
 import { SITE_CONFIG, GROUP_WHATSAPP } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { Phone, Mail, MapPin, Clock, MessageCircle, Send, User, ChevronDown } from 'lucide-react'
@@ -248,11 +249,24 @@ function ContactForm() {
 }
 
 export default function IletisimPage() {
-  const contactCards = [
+  // ── `href` alanı neden eklendi ────────────────────────────────────────────
+  //
+  // Telefon, e-posta ve adres düz metin olarak basılıyordu. Telefonda numarayı
+  // görüp arayamamak, iletişim sayfasının tek işini yapamaması demek —
+  // kullanıcı numarayı elle tuşlamak zorunda kalıyor ve çoğu kalmıyor.
+  const contactCards: {
+    icon: typeof Phone
+    title: string
+    lines: string[]
+    href?: string
+    color: string
+    bg: string
+  }[] = [
     {
       icon: Phone,
       title: 'Telefon',
       lines: [SITE_CONFIG.phone],
+      href: telHref(SITE_CONFIG.phone),
       color: 'text-green-600',
       bg: 'bg-green-50',
     },
@@ -260,6 +274,7 @@ export default function IletisimPage() {
       icon: Mail,
       title: 'E-posta',
       lines: [SITE_CONFIG.email],
+      href: `mailto:${SITE_CONFIG.email}`,
       color: 'text-blue-600',
       bg: 'bg-blue-50',
     },
@@ -267,6 +282,7 @@ export default function IletisimPage() {
       icon: MapPin,
       title: 'Adres',
       lines: [SITE_CONFIG.address],
+      href: SITE_CONFIG.mapsUrl,
       color: 'text-red-600',
       bg: 'bg-red-50',
     },
@@ -322,11 +338,24 @@ export default function IletisimPage() {
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-0.5">
                         {card.title}
                       </p>
-                      {card.lines.map((line, i) => (
-                        <p key={i} className="text-sm text-gray-800 font-medium">
-                          {line}
-                        </p>
-                      ))}
+                      {card.lines.map((line, i) =>
+                        card.href ? (
+                          <a
+                            key={i}
+                            href={card.href}
+                            {...(card.href.startsWith('http')
+                              ? { target: '_blank', rel: 'noopener noreferrer' }
+                              : {})}
+                            className="block text-sm text-gray-800 font-medium hover:text-brand-600 transition-colors"
+                          >
+                            {line}
+                          </a>
+                        ) : (
+                          <p key={i} className="text-sm text-gray-800 font-medium">
+                            {line}
+                          </p>
+                        ),
+                      )}
                     </div>
                   </div>
                 )

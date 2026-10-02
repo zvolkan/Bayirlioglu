@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 import { BRANDS } from '@/lib/constants'
 import { telefonGoster, telefonArama } from '@/lib/utils'
 import type { BrandKey } from '@/lib/types'
@@ -38,6 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: 'Hizmet Alanlarımız',
     description: `${cfg.name} olarak sanayi, sağlık, eğitim, gıda ve konut alanlarında kurulum ve bakım hizmeti veriyoruz.`,
+    alternates: { canonical: `/${brand}/referanslar` },
   }
 }
 
@@ -73,13 +75,15 @@ export default async function ReferanslarPage({ params }: Props) {
       {/* ── HERO ── */}
       <section className="brand-surface py-20">
         <div className="container-main">
-          <nav className="text-sm text-white/50 mb-8">
-            <Link href={`/${brandKey}`} className="hover:text-white transition-colors">
-              {cfg.name}
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="text-white/80">Hizmet Alanlarımız</span>
-          </nav>
+          <Breadcrumb
+            koyu
+            className="mb-8"
+            adimlar={[
+              { label: 'Ana Sayfa', href: '/' },
+              { label: cfg.name, href: `/${brandKey}` },
+              { label: 'Hizmet Alanlarımız' },
+            ]}
+          />
           <div className="max-w-2xl">
             <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-400">
               Nerelerde Çalışıyoruz

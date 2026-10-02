@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import ProductImage from '@/components/product/ProductImage'
@@ -264,19 +265,22 @@ export default function UrunlerContent({
       {/* ─── Başlık + breadcrumb ─────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-100 py-6">
         <div className="container-main">
-          <nav className="text-sm text-gray-400 mb-2 flex items-center gap-1.5">
-            <Link href={`/${brandKey}`} className="hover:text-gray-700 transition-colors">
-              {cfg.name}
-            </Link>
-            <span>/</span>
-            <span className="text-gray-700 font-medium">Ürünler</span>
-            {activeCategoryLabel && (
-              <>
-                <span>/</span>
-                <span className={`font-semibold ${accentText}`}>{activeCategoryLabel}</span>
-              </>
-            )}
-          </nav>
+          {/* Kırıntı yolu bileşeni görünür yolla birlikte BreadcrumbList
+              yapısal verisini de basıyor; burada hiç yoktu. Seçili kategori
+              varsa son adım o oluyor. */}
+          <Breadcrumb
+            className="mb-2"
+            adimlar={[
+              { label: 'Ana Sayfa', href: '/' },
+              { label: cfg.name, href: `/${brandKey}` },
+              ...(activeCategoryLabel
+                ? [
+                    { label: 'Ürünler', href: `/${brandKey}/urunler` },
+                    { label: activeCategoryLabel },
+                  ]
+                : [{ label: 'Ürünler' }]),
+            ]}
+          />
           <div className="flex items-end justify-between gap-4">
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">
               {activeCategoryLabel ?? `${cfg.name} Ürünleri`}

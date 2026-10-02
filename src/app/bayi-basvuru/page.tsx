@@ -7,6 +7,9 @@ import { z } from 'zod'
 import toast from 'react-hot-toast'
 import { submitDealerApplication } from '@/app/actions/forms'
 import Link from 'next/link'
+import { GROUP_WHATSAPP } from '@/lib/constants'
+import { telHref } from '@/lib/tel'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 import { TURKISH_CITIES, SITE_CONFIG } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import Icon, { type IconName } from '@/components/ui/Icon'
@@ -119,11 +122,14 @@ export default function BayiBasvuruPage() {
       {/* Page Header */}
       <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-16 md:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl text-center">
-          <nav className="text-sm text-white/60 mb-4 flex items-center justify-center gap-2">
-            <Link href="/" className="hover:text-white transition-colors">Ana Sayfa</Link>
-            <span>/</span>
-            <span className="text-white">Bayi Başvurusu</span>
-          </nav>
+          <Breadcrumb
+            koyu
+            className="mb-4 justify-center [&>ol]:justify-center"
+            adimlar={[
+              { label: 'Ana Sayfa', href: '/' },
+              { label: 'Bayi Başvurusu' },
+            ]}
+          />
           <p className="text-gray-400 text-sm font-semibold uppercase tracking-widest mb-3">
             Bayırlıoğlu
           </p>
@@ -316,7 +322,12 @@ export default function BayiBasvuruPage() {
                   <Icon name="telefon" className="w-5 h-5 text-gray-500" />
                   <div>
                     <p className="font-medium text-gray-800">Bayi Destek Hattı</p>
-                    <p>{SITE_CONFIG.phone}</p>
+                    <a
+                      href={telHref(SITE_CONFIG.phone)}
+                      className="hover:text-brand-600 transition-colors"
+                    >
+                      {SITE_CONFIG.phone}
+                    </a>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -358,7 +369,12 @@ export default function BayiBasvuruPage() {
 
             {/* WhatsApp CTA */}
             <a
-              href="https://wa.me/905444142254?text=Merhaba!%20Bay%C4%B1rl%C4%B1o%C4%9Flu%20bayi%20ba%C5%9Fvurusu%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum"
+              /* Numara buraya gömülüydü: `NEXT_PUBLIC_WHATSAPP_GROUP`
+                 tanımlansa bile bu bağlantı eski numaraya gitmeye devam
+                 ederdi ve bunu kimse fark etmezdi. */
+              href={`https://wa.me/${GROUP_WHATSAPP.phone}?text=${encodeURIComponent(
+                'Merhaba! Bayırlıoğlu bayi başvurusu hakkında bilgi almak istiyorum',
+              )}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 w-full bg-green-500 hover:bg-green-600 text-white rounded-2xl p-4 transition-colors"

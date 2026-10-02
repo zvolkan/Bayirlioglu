@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 import { getSiteUrl } from '@/lib/site-url'
 import { BRANDS } from '@/lib/constants'
 import { getPublishedPost, getPublishedPosts, readingMinutes } from '@/lib/blog'
@@ -73,15 +74,13 @@ export default async function BlogPostPage({ params }: Props) {
     ...(post.category ? { articleSection: post.category } : {}),
   }
 
-  const breadcrumbJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: cfg.name, item: `${siteUrl}/${brandKey}` },
-      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${siteUrl}/${brandKey}/blog` },
-      { '@type': 'ListItem', position: 3, name: post.title, item: yaziAdresi },
-    ],
-  }
+  // Görünür yol ve yapısal veri tek diziden — bkz. components/ui/Breadcrumb
+  const kirintiAdimlari = [
+    { label: 'Ana Sayfa', href: '/' },
+    { label: cfg.name, href: `/${brandKey}` },
+    { label: 'Blog', href: `/${brandKey}/blog` },
+    { label: post.title },
+  ]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -89,20 +88,14 @@ export default async function BlogPostPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdScript(blogJsonLd) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbJsonLd) }}
-      />
       {/* Hero */}
       <div className="brand-surface py-16">
         <div className="container-main max-w-3xl">
-          <nav className="text-sm text-white/50 mb-6 flex flex-wrap gap-2 items-center">
-            <Link href={`/${brandKey}`} className="hover:text-white transition-colors">{cfg.name}</Link>
-            <span>/</span>
-            <Link href={`/${brandKey}/blog`} className="hover:text-white transition-colors">Blog</Link>
-            <span>/</span>
-            <span className="text-white/70 line-clamp-1">{post.title}</span>
-          </nav>
+          <Breadcrumb
+            koyu
+            adimlar={kirintiAdimlari}
+            className="mb-6 [&_li:last-child>span]:line-clamp-1"
+          />
           {post.category && (
             <div className="flex flex-wrap gap-2 mb-5">
               <span className="inline-block text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full bg-brand-100 text-brand-700">

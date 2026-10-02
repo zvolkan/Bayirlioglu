@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'İptal ve İade Koşulları',
   description:
     'Bayırlıoğlu iptal, iade, cayma hakkı ve tüketici hakları koşulları. Mesafeli Sözleşmeler Yönetmeliği kapsamında hazırlanmıştır.',
+  alternates: { canonical: '/iade-politikasi' },
 }
 
 /**

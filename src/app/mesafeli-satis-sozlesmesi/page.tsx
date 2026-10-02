@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 import { ON_BILGILENDIRME, MESAFELI_SATIS, CAYMA_HAKKI, SATICI } from '@/lib/legal'
 
 export const metadata: Metadata = {
   title: 'Mesafeli Satış Sözleşmesi',
   description:
     'Ön Bilgilendirme Formu, Mesafeli Satış Sözleşmesi ve cayma hakkı koşulları.',
+  alternates: { canonical: '/mesafeli-satis-sozlesmesi' },
 }
 
 /**
@@ -30,13 +32,13 @@ export default function MesafeliSatisSozlesmesiPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <nav className="text-sm text-gray-500 mb-8">
-          <Link href="/" className="hover:text-gray-900">
-            Ana Sayfa
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-gray-900 font-medium">Mesafeli Satış Sözleşmesi</span>
-        </nav>
+        <Breadcrumb
+          className="mb-8"
+          adimlar={[
+            { label: 'Ana Sayfa', href: '/' },
+            { label: 'Mesafeli Satış Sözleşmesi' },
+          ]}
+        />
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 md:p-12">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Mesafeli Satış Sözleşmesi</h1>

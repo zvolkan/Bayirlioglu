@@ -1,5 +1,18 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BRAND } from '@/lib/constants'
+
+/**
+ * 404 sayfasının kendisi arama sonucunda çıkmamalı.
+ *
+ * Sayfa doğru durum kodunu (404) döndürse bile, `noindex` olmadan bazı
+ * tarayıcı ve toplayıcılar bu adresi dizine alabiliyor; sonuçta "Sayfa
+ * Bulunamadı" başlıklı bir kayıt siteyi temsil eder hâle geliyor.
+ */
+export const metadata: Metadata = {
+  title: 'Sayfa Bulunamadı',
+  robots: { index: false, follow: true },
+}
 
 export default function NotFound() {
   return (

@@ -4,12 +4,23 @@ import { MOCK_SERVICES_TARIM, MOCK_SERVICES_ALBSU } from '@/data/mock'
 import { SITE_CONFIG } from '@/lib/constants'
 import Icon, { type IconName } from '@/components/ui/Icon'
 import BrandLogo from '@/components/ui/BrandLogo'
+import SssBolumu from '@/components/ui/SssBolumu'
+import { paylasimMetadata } from '@/lib/seo'
+import { telHref } from '@/lib/tel'
 
 // Canonical gerekçesi için bkz. src/app/hakkimizda/page.tsx
+const BASLIK = 'Hizmetler'
+const ACIKLAMA =
+  'ALB Tarım ve Alb Su Teknolojileri markalarımızın sunduğu profesyonel hizmetler.'
+
 export const metadata: Metadata = {
-  title: 'Hizmetler — Bayırlıoğlu',
-  description: 'ALB Tarım ve Alb Su Teknolojileri markalarımızın sunduğu profesyonel hizmetler.',
+  // Başlıkta "— Bayırlıoğlu" yazıyordu; kök düzendeki `%s | Bayırlıoğlu`
+  // şablonuyla birleşince sekmede "Hizmetler — Bayırlıoğlu | Bayırlıoğlu"
+  // çıkıyordu. Marka adını şablon zaten ekliyor.
+  title: BASLIK,
+  description: ACIKLAMA,
   alternates: { canonical: '/hizmetler' },
+  ...paylasimMetadata({ title: BASLIK, description: ACIKLAMA, url: '/hizmetler' }),
 }
 
 const processSteps: { step: string; title: string; description: string; icon: IconName }[] = [
@@ -39,28 +50,6 @@ const processSteps: { step: string; title: string; description: string; icon: Ic
   },
 ]
 
-const faqItems = [
-  {
-    question: 'Hizmet bölgeniz neresidir?',
-    answer: 'Dükkânımız Anamur\'da. Ürünleri kargoyla Türkiye\'nin 81 iline gönderiyoruz. Yerinde montaj, bakım ve teknik servis ise Anamur ve çevresinde veriliyor; diğer illerde telefonla destek oluyoruz.',
-  },
-  {
-    question: 'Garanti süresi ne kadardır?',
-    answer: 'Kurulum ve montaj hizmetlerimizde minimum 1 yıl işçilik garantisi sunuyoruz. Ürün garantileri marka ve modele göre 2-5 yıl arasında değişmektedir.',
-  },
-  {
-    question: 'Randevu ne kadar sürede alınabilir?',
-    answer: 'Genellikle 24-48 saat içinde randevu planlanmaktadır. Acil durumlar için öncelikli hizmet seçeneğimiz mevcuttur.',
-  },
-  {
-    question: 'Fiyat teklifi nasıl alıyorum?',
-    answer: 'Telefon veya iletişim formu aracılığıyla bize ulaşmanız yeterlidir. Uzmanlarımız ihtiyaçlarınızı değerlendirerek ücretsiz fiyat teklifi sunar.',
-  },
-  {
-    question: 'Teknik destek için ne yapmalıyım?',
-    answer: `Telefon hattımız ${SITE_CONFIG.workingHours} saatlerinde açık. Bu saatlerin dışında WhatsApp'tan yazabilirsiniz; mesajınıza mesai başında dönüş yapıyoruz.`,
-  },
-]
 
 export default function HizmetlerPage() {
   return (
@@ -193,30 +182,8 @@ export default function HizmetlerPage() {
         </div>
       </section>
 
-      {/* SSS */}
-      <section className="py-16 sm:py-20 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Sık Sorulan Sorular</h2>
-            <p className="text-gray-600 text-lg">Merak ettiğiniz her şeyin cevabı burada</p>
-          </div>
-          <div className="space-y-4">
-            {faqItems.map((item, idx) => (
-              <details key={idx} className="bg-gray-50 rounded-2xl group">
-                <summary className="flex items-center justify-between p-6 cursor-pointer font-semibold text-gray-900 list-none">
-                  {item.question}
-                  <span className="ml-4 text-gray-400 group-open:rotate-180 transition-transform duration-200 flex-shrink-0">
-                    ▼
-                  </span>
-                </summary>
-                <div className="px-6 pb-6 text-gray-600 leading-relaxed">
-                  {item.answer}
-                </div>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* SSS — görünür içerik ve FAQPage yapısal verisi tek yerden */}
+      <SssBolumu />
 
       {/* CTA Banner */}
       <section className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-16 sm:py-20">
@@ -226,11 +193,15 @@ export default function HizmetlerPage() {
             Uzman ekibimiz en kısa sürede size ulaşsın. Ücretsiz keşif ve danışmanlık için hemen arayın.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <span
-              className="inline-block bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold text-lg select-none"
+            {/* Burası bir `<span>` idi — üstelik `select-none` ile. Yani
+                "Hemen arayın" diyen düğmedeki numara telefonda tıklanamıyor,
+                masaüstünde kopyalanamıyordu bile. Artık `tel:` bağlantısı. */}
+            <a
+              href={telHref(SITE_CONFIG.phone)}
+              className="btn-press inline-block bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-colors"
             >
               <Icon name="telefon" className="w-5 h-5 inline-block mr-2 align-text-bottom" />{SITE_CONFIG.phone}
-            </span>
+            </a>
             <Link
               href="/iletisim"
               className="inline-block border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white/10 transition-all duration-200"

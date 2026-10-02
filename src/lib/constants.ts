@@ -217,7 +217,18 @@ export const SITE_CONFIG = {
   // robots.txt'i, OG önizlemelerini ve mesafeli satış sözleşmesini localhost
   // adresiyle yayınlıyordu.
   url: getSiteUrl(),
-  phone: '+90 544 414 22 54',
+  // ── Grup geneli telefon ────────────────────────────────────────────────
+  //
+  // Diğer beş numaranın (iki marka × WhatsApp/tel + grup WhatsApp) ortam
+  // değişkeni varken bunun yoktu — oysa yasal künyede, yapısal veride ve
+  // grup iletişim/hizmetler sayfalarında görünen numara bu.
+  //
+  // DİKKAT: varsayılan değer Alb Su'nun hattı. Grup çağrılarının ALB Tarım
+  // hattına düşmesini istiyorsanız `NEXT_PUBLIC_TEL_GRUP` tanımlayın.
+  // `NEXT_PUBLIC_` ile başladığı için DERLEME anında gömülür: Cloudflare'de
+  // Settings → Build → Build variables bölümüne eklenmeli, çalışma zamanı
+  // sırrı olarak eklenirse tarayıcıya ulaşmaz.
+  phone: process.env.NEXT_PUBLIC_TEL_GRUP ?? '+90 544 414 22 54',
   email: 'info@bayirlioglu.com',
   address:
     'SAÇKAN KAVŞAĞI DOĞUSU SAVCI-ŞOK MARKET YANI, Yeşilyurt, Akdeniz Cd. NO:20/22, 33640 Anamur/Mersin',

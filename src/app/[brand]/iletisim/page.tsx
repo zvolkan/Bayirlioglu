@@ -1,14 +1,15 @@
 'use client'
 
 import { useParams } from 'next/navigation'
-import Link from 'next/link'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
-import { BRANDS } from '@/lib/constants'
+import { BRANDS, SITE_CONFIG } from '@/lib/constants'
 import { telefonGoster } from '@/lib/utils'
-import Icon from '@/components/ui/Icon'
+import { telHref } from '@/lib/tel'
+import Icon, { type IconName } from '@/components/ui/Icon'
 import { submitContactMessage } from '@/app/actions/forms'
 import type { BrandKey } from '@/lib/types'
 
@@ -81,11 +82,15 @@ export default function IletisimPage() {
       {/* Hero */}
       <section className="brand-surface py-16">
         <div className="container-main">
-          <nav className="text-sm text-white/50 mb-6">
-            <Link href={`/${brandKey}`} className="hover:text-white">{cfg.name}</Link>
-            <span className="mx-2">/</span>
-            <span className="text-white/80">İletişim</span>
-          </nav>
+          <Breadcrumb
+            koyu
+            className="mb-6"
+            adimlar={[
+              { label: 'Ana Sayfa', href: '/' },
+              { label: cfg.name, href: `/${brandKey}` },
+              { label: 'İletişim' },
+            ]}
+          />
           <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-400">İletişim</p>
           <h1 className="text-3xl sm:text-4xl font-black text-white mb-4">{cfg.name}&apos;e Ulaşın</h1>
           <p className="text-white/60 max-w-xl">Sorularınız, önerileriniz veya hizmet talepleriniz için buradayız.</p>
@@ -96,39 +101,57 @@ export default function IletisimPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* ── İletişim Bilgileri ── */}
           <div className="lg:col-span-1 space-y-5">
-            {[
+            {([
               {
                 icon: 'telefon' as const,
                 title: 'Telefon',
-                lines: [telefonGoster(cfg.telefon), 'Pzt–Cmt: 08:30–19:00'],
+                // Numara düz metindi; telefonda görülüp aranamıyordu.
+                lines: [telefonGoster(cfg.telefon), SITE_CONFIG.workingHours],
+                href: telHref(cfg.telefon),
               },
               {
                 icon: 'eposta' as const,
                 title: 'E-posta',
                 lines: [isAlbSu ? 'albsu@bayirlioglu.com' : 'albtarim@bayirlioglu.com'],
+                href: `mailto:${isAlbSu ? 'albsu@bayirlioglu.com' : 'albtarim@bayirlioglu.com'}`,
               },
               {
                 icon: 'konum' as const,
                 title: 'Adres',
-                lines: [
-                  'Saçkan Kavşağı Doğusu Savcı-Şok Market Yanı',
-                  'Yeşilyurt, Akdeniz Cd. No:20/22',
-                  '33640 Anamur / Mersin',
-                ],
+                // Adres burada ÜÇÜNCÜ kez elle yazılıydı (footer ve
+                // /iletisim'de de kopyaları var). Taşınma hâlinde birinin
+                // güncellenip ötekilerin unutulması kaçınılmazdı.
+                lines: [SITE_CONFIG.address],
+                href: SITE_CONFIG.mapsUrl,
               },
               {
                 icon: 'saat' as const,
                 title: 'Çalışma Saatleri',
-                lines: ['Pzt–Cmt: 08:30–19:00'],
+                lines: [SITE_CONFIG.workingHours],
               },
-            ].map((item) => (
+            ] as { icon: IconName; title: string; lines: string[]; href?: string }[]).map((item) => (
               <div key={item.title} className="bg-white rounded-2xl border border-gray-100 p-5 flex gap-4 hover-lift">
                 <div><Icon name={item.icon} className="w-6 h-6 text-brand-600" /></div>
                 <div>
                   <p className="font-bold text-gray-900 text-sm mb-1">{item.title}</p>
-                  {item.lines.map((line) => (
-                    <p key={line} className="text-gray-500 text-sm">{line}</p>
-                  ))}
+                  {item.lines.map((line, i) =>
+                    // Yalnızca İLK satır bağlantı oluyor: ikinci satır
+                    // çalışma saati, onu aranabilir yapmanın anlamı yok.
+                    item.href && i === 0 ? (
+                      <a
+                        key={line}
+                        href={item.href}
+                        {...(item.href.startsWith('http')
+                          ? { target: '_blank', rel: 'noopener noreferrer' }
+                          : {})}
+                        className="block text-gray-700 text-sm hover:text-brand-600 transition-colors"
+                      >
+                        {line}
+                      </a>
+                    ) : (
+                      <p key={line} className="text-gray-500 text-sm">{line}</p>
+                    ),
+                  )}
                 </div>
               </div>
             ))}

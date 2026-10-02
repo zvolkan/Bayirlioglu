@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import '@/styles/animations.css'
 import '@/styles/brand.css'
-import { BRAND, SITE_CONFIG, ACTIVE_BRAND_KEY, COMPANY_NAME, KURULUS_YILI } from '@/lib/constants'
+import { BRAND, SITE_CONFIG, ACTIVE_BRAND_KEY, COMPANY_NAME } from '@/lib/constants'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
@@ -15,6 +15,7 @@ import { brandFromPath, type ActiveBrand } from '@/lib/brand-path'
 import CookieConsent from '@/components/layout/CookieConsent'
 import { Toaster } from 'react-hot-toast'
 import { jsonLdScript } from '@/lib/sanitize'
+import { paylasimMetadata, yerelIsletmeVerisi, siteAramaVerisi } from '@/lib/seo'
 
 /**
  * DİKKAT — `latin-ext` şart.
@@ -56,10 +57,22 @@ export const metadata: Metadata = {
     // sattığı tek ürün grubu gübre; yanında zirai danışmanlık veriliyor.
     ? ['alb tarım', 'gübre', 'organik gübre', 'damla sulama gübresi', 'yaprak gübresi', 'zirai danışmanlık']
     : ['albsu', 'su arıtma', 'klima', 'su arıtma cihazı', 'filtre', 'yedek parça'],
-  openGraph: {
-    type: 'website', locale: 'tr_TR',
-    siteName: COMPANY_NAME, title: COMPANY_NAME, description: BRAND.description,
-  },
+  // Paylaşım görseli ve Twitter kartı `src/lib/seo.ts`ten geliyor.
+  //
+  // Daha önce `openGraph` burada elle yazılıydı ama `images` alanı YOKTU:
+  // metadataBase tam da OG görseli için eklenmiş, görselin kendisi hiç
+  // konmamıştı. Sitenin her paylaşımı görselsiz çıkıyordu. `twitter` bloğu
+  // ise hiç yoktu — X, `summary_large_image` olmadan küçük kenar görseli
+  // basıyor.
+  ...paylasimMetadata({
+    title: COMPANY_NAME,
+    description: BRAND.description,
+    url: SITE_CONFIG.url,
+  }),
+  // Kök sayfa kendi kanonik adresini bildirmiyordu. Site hem `/` hem
+  // `/alb-tarim` üzerinden benzer içerik sunduğu için bu alan boş kalınca
+  // hangisinin asıl olduğunu Google kendi seçiyordu.
+  alternates: { canonical: '/' },
   robots: { index: true, follow: true },
 }
 
@@ -99,26 +112,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             temizlediği için React hidrasyon uyumsuzluğu uyarısı veriyordu. */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: jsonLdScript({
-              '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: COMPANY_NAME,
-              // Kesin tescil yılı yok; arama motoru yapısal veride bir yıl istiyor.
-              foundingDate: String(KURULUS_YILI),
-              url: SITE_CONFIG.url,
-              email: SITE_CONFIG.email,
-              telephone: SITE_CONFIG.phone,
-              address: {
-                '@type': 'PostalAddress',
-                streetAddress: SITE_CONFIG.address,
-                addressLocality: 'Anamur',
-                addressRegion: 'Mersin',
-                addressCountry: 'TR',
-              },
-              sameAs: Object.values(SITE_CONFIG.socialMedia),
-            }),
-          }}
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(yerelIsletmeVerisi()) }}
+        />
+        {/* Arama sonucunda site bağlantısının altına arama kutusu koyabilmesi
+            için. Hedef adres gerçekten çalışan arama parametresi. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(siteAramaVerisi()) }}
         />
         {/* Yönetici paneli mağaza kabuğunu kullanmıyor.
             Bu ayrım olmadan panelde marka değiştirici, sepet, arama, yasal

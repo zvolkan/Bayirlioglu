@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 import { BRANDS } from '@/lib/constants'
 import type { BrandKey } from '@/lib/types'
 import Icon from '@/components/ui/Icon'
@@ -83,11 +84,15 @@ export default async function HakkimizdaPage({ params }: Props) {
       {/* Hero */}
       <section className="brand-surface py-20">
         <div className="container-main">
-          <nav className="text-sm text-white/50 mb-8">
-            <Link href={`/${brandKey}`} className="hover:text-white">{cfg.name}</Link>
-            <span className="mx-2">/</span>
-            <span className="text-white/80">Hakkımızda</span>
-          </nav>
+          <Breadcrumb
+            koyu
+            className="mb-8"
+            adimlar={[
+              { label: 'Ana Sayfa', href: '/' },
+              { label: cfg.name, href: `/${brandKey}` },
+              { label: 'Hakkımızda' },
+            ]}
+          />
           <div className="max-w-2xl">
             <p className="font-bold uppercase text-sm tracking-widest mb-3 text-brand-400">Biz Kimiz</p>
             <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight mb-6">

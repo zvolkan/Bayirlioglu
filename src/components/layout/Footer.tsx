@@ -206,15 +206,19 @@ export default function Footer() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
+                  {/* Adres ve harita adresi `SITE_CONFIG`ten.
+                      İkisi de burada elle yazılıydı: adresin üç, harita
+                      bağlantısının iki kopyası vardı. Dükkân taşınsa birinin
+                      güncellenip ötekilerin kalması kaçınılmazdı — üstelik
+                      yasal künyedeki adres ile footer'daki adres ayrışırsa
+                      Mesafeli Sözleşmeler Yönetmeliği açısından da sorun. */}
                   <a
-                    href="https://www.google.com/maps/place//data=!4m2!3m1!1s0x14dc3d918f947551:0x35f4224c2a7044c3?sa=X&ved=1t:8290&ictx=111"
+                    href={SITE_CONFIG.mapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-400 hover:text-white transition-colors text-sm leading-relaxed"
                   >
-                    Saçkan Kavşağı Doğusu Savcı-Şok Market Yanı,<br />
-                    Yeşilyurt, Akdeniz Cd. No:20/22,<br />
-                    33640 Anamur / Mersin
+                    {SITE_CONFIG.address}
                   </a>
                 </li>
                 <li className="flex items-start gap-3">
