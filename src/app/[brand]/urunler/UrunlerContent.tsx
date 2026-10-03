@@ -140,14 +140,33 @@ export default function UrunlerContent({
   const activePills = isIthal ? ithalTypePills : albTypePills
 
   // ── Ürün kartı marka etiketi ──────────────────────────────────────────────
+  //
+  // Etiket sırayla şuradan geliyor: ürünün kendi `productBrand` değeri
+  // (TİMAC AGRO, AO Smith, TRIASOFT…), yoksa kategori ağacında bir üstteki
+  // kategorinin adı.
+  //
+  // ── 'ALB Tarım' neden sabit yazılı DEĞİL ───────────────────────────────
+  //
+  // Burada yedek değer olarak doğrudan `'ALB Tarım'` yazıyordu. Kategori
+  // ağacı iki seviye derin olan HER ürün bu yedeğe düşüyor — marka ayrımı
+  // yapılmadığı için Alb Su ürünlerinin kartlarında da "ALB TARIM"
+  // görünüyordu: AO Smith Frezya'nın üstünde ALB TARIM yazıyordu.
+  //
+  // ALB Tarım tarafında bu etiket bilinçli: kendi ürünlerimizi ithal
+  // olanlardan ayırıyor. Alb Su tarafında karşılığı olan bir kendi markamız
+  // yok — oradaki gerçek markalar (AO Smith, TRIASOFT, OPAL) zaten
+  // `productBrand` alanında. Dolayısıyla Alb Su'da yedek etiket hiç
+  // gösterilmiyor; yanlış marka yazmaktansa boş bırakmak doğru.
   const productBrandLabels = useMemo(() => {
+    const ustMarkaYedegi = brandKey === 'alb-tarim' ? BRANDS['alb-tarim'].name : ''
+
     const label = (catSlug: string): string => {
       const cat = catBySlug.get(catSlug)
       if (!cat) return ''
       if (cat.parentId == null) return cat.name
       const parent = catById.get(cat.parentId)
       if (!parent) return cat.name
-      if (parent.parentId == null) return 'ALB Tarım'
+      if (parent.parentId == null) return ustMarkaYedegi
       return parent.name
     }
 
@@ -156,7 +175,7 @@ export default function UrunlerContent({
       map.set(p.slug, p.productBrand?.trim() || label(p.category.slug))
     })
     return map
-  }, [products, catBySlug, catById])
+  }, [products, catBySlug, catById, brandKey])
 
   // ── URL yönetimi ──────────────────────────────────────────────────────────
 
@@ -714,7 +733,11 @@ function ProductGrid({
         const disc = discount(product)
         const displayPrice = product.salePrice ?? product.price
         const primaryImg = product.images?.find((i) => i.isPrimary)?.url ?? ''
-        const brandLabel = brandLabels.get(product.slug) || product.category.name
+        // Yedeği `product.category.name` İDİ. Marka etiketi boş kalınca
+        // kategori adı yazılıyordu — kartın üstünde zaten o kategorinin
+        // başlığı duruyor, yani "EVİNİZ İÇİN" ikinci kez tekrarlanıyordu.
+        // Gösterilecek bir marka yoksa satır hiç basılmıyor.
+        const brandLabel = brandLabels.get(product.slug) ?? ''
         const isOutOfStock = product.stock === 0
 
         return (
@@ -764,11 +787,13 @@ function ProductGrid({
 
               {/* İçerik */}
               <div className="p-4 flex flex-col flex-1">
-                <p
-                  className={`text-[10px] font-bold uppercase tracking-widest ${accentTag} mb-1 truncate`}
-                >
-                  {brandLabel}
-                </p>
+                {brandLabel && (
+                  <p
+                    className={`text-[10px] font-bold uppercase tracking-widest ${accentTag} mb-1 truncate`}
+                  >
+                    {brandLabel}
+                  </p>
+                )}
                 <Link href={`/${brandKey}/urunler/${product.slug}`}>
                   <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2 group-hover:text-gray-700 transition-colors">
                     {product.name}
