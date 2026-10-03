@@ -32,7 +32,6 @@ export default function BrandHeroSection({ brandKey }: Props) {
   const isAlbSu = brandKey === 'alb-su-aritma'
 
   const [videoSrc, setVideoSrc]     = useState<string | null>(null)
-  const [videoReady, setVideoReady] = useState(false)
   const [videoError, setVideoError] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -66,12 +65,8 @@ export default function BrandHeroSection({ brandKey }: Props) {
       ? cfg.videoMobile
       : cfg.video
     setVideoSrc(src)
-    setVideoReady(false)
     setVideoError(false)
   }, [cfg.video, cfg.videoMobile])
-
-  // Video yüklendi → fade in
-  const handleVideoCanPlay = () => setVideoReady(true)
 
   const taglineLines = cfg.tagline.split('\n')
 
@@ -106,17 +101,29 @@ export default function BrandHeroSection({ brandKey }: Props) {
             muted
             loop
             playsInline
-            // `preload="none"`: tarayıcı videoyu ancak oynatma başlayınca
-            // indirmeye başlasın. Varsayılan davranış meta veriyi (bazı
-            // tarayıcılarda daha fazlasını) sayfa açılır açılmaz çekiyordu.
-            preload="none"
+            // ── `preload="none"` KALDIRILDI ─────────────────────────────
+            //
+            // `autoPlay` ile birlikte çelişkili bir çift: biri "indirme"
+            // diyor, diğeri "oynat". Chrome bu durumda yüklemeyi erteliyor,
+            // oynatma hiç başlamıyor, dolayısıyla `canplay` olayı da hiç
+            // tetiklenmiyordu. Aşağıdaki opacity kapısı o olaya bağlı
+            // olduğu için video sonsuza kadar görünmez kalıyordu —
+            // masaüstünde hero'da yalnızca gradyan görünmesinin sebebi bu.
+            //
+            // `metadata` otomatik oynatmanın başlaması için yeterli ve
+            // dosyanın tamamını peşinen indirmiyor. Asıl veri tasarrufu
+            // zaten yukarıda: "hareketi azalt" ve "veri tasarrufu"
+            // durumlarında video hiç yüklenmiyor, mobile ayrı ve küçük
+            // dosya veriliyor (1,8 MB).
+            preload="metadata"
+            // Poster, video hazır olana kadar görünmesi gereken kare.
+            // Oysa `<video>` elemanının KENDİSİ `opacity-0` ile başlıyordu;
+            // poster hiçbir zaman görünemiyordu. Artık opacity kapısı yok:
+            // poster videonun birinci karesi olduğu için geçiş zaten
+            // fark edilmiyor, araya fade koymaya gerek kalmıyor.
             poster={cfg.poster}
-            onCanPlay={handleVideoCanPlay}
             onError={() => setVideoError(true)}
-            className={[
-              'absolute inset-0 w-full h-full object-cover transition-opacity duration-1000',
-              videoReady ? 'opacity-100' : 'opacity-0',
-            ].join(' ')}
+            className="absolute inset-0 w-full h-full object-cover"
           >
             <source src={videoSrc} type="video/mp4" />
           </video>
