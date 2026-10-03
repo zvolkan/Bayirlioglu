@@ -92,6 +92,27 @@ export default function BrandHeroSection({ brandKey }: Props) {
         {/* Fallback gradient (video yokken veya hata varsa görünür) */}
         <div className={`absolute inset-0 bg-gradient-to-br ${heroBg}`} />
 
+        {/* ── Video oynatılmayacaksa: hareketsiz poster ────────────────────
+            "Hareketi azalt" tercihi açıkken ya da video yüklenemediğinde
+            arka plan tamamen boş bir degradeye düşüyordu. Oysa tercih
+            HAREKETE karşı; duran bir fotoğraf o tercihi birebir karşılıyor
+            ve bomboş bir degradeden çok daha iyi görünüyor.
+
+            Poster zaten videonun birinci karesi, yani hareket kapalıyken
+            görülen sahne, açıkken videonun başladığı sahneyle aynı.
+
+            Görsel yoksa (ör. Alb Su'nun posteri henüz eklenmedi) `<img>`
+            boş render edilir ve altındaki degrade görünür — kırık simge
+            çıkmaması için `alt` bilerek boş. */}
+        {cfg.poster && (!videoSrc || videoError) && (
+          <img
+            src={cfg.poster}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+
         {/* Video — kaynağı mobil (<768px) veya masaüstüne göre seçilir */}
         {!videoError && videoSrc && (
           <video
