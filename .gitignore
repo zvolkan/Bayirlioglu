@@ -42,3 +42,4 @@ rapor.json
 .open-next
 .dev.vars
 cloudflare-env.d.ts
+*.sql

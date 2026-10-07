@@ -7,8 +7,63 @@
 // src/lib/category-icon.ts ve src/components/ui/Icon.tsx).
 // Emoji her işletim sisteminde farklı çiziliyor ve marka rengini almıyordu.
 import { PrismaClient } from '@prisma/client'
+import { AO_SMITH_FILTRELERI } from './veri/ao-smith-filtreleri'
 
 const prisma = new PrismaClient()
+
+/**
+ * Etiket adından adres üretir — Türkçe harfler ASCII'ye çevrilerek.
+ *
+ * `upsertProduct` içindeki eski satır-içi hesap Türkçe harfleri OLDUĞU GİBİ
+ * bırakıyordu ("yedek kartuş" → "yedek-kartuş"); `sql/ao-smith-filtreleri.sql`
+ * ise ASCII üretiyor. İki taraf aynı etiket için farklı adres yazmasın diye
+ * tek bir kural burada. (Etiketler ada göre upsert edildiği için mevcut
+ * etiketlerin adresi değişmiyor; bu yalnızca YENİ etiketler için geçerli.)
+ */
+function etiketSlug(ad: string): string {
+  const tr: Record<string, string> = {
+    ı: 'i', İ: 'i', ğ: 'g', Ğ: 'g', ü: 'u', Ü: 'u',
+    ş: 's', Ş: 's', ö: 'o', Ö: 'o', ç: 'c', Ç: 'c',
+  }
+  return ad
+    .replace(/[ıİğĞüÜşŞöÖçÇ]/g, (h) => tr[h] ?? h)
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+/**
+ * Etiketi ADA ya da ADRESE göre bulur; ikisi de yoksa oluşturur.
+ *
+ * ── Neden `tag.upsert({ where: { name } })` yetmiyor ────────────────────────
+ *
+ * `tags` tablosunda `name` ve `slug` AYRI AYRI tekil. Ada göre upsert, yalnız
+ * ad tekilliğini karşılıyor; adres çakışması hata veriyor.
+ *
+ * Gerçek örnek: katalogda 'DAISY' adıyla, 'daisy' adresiyle bir etiket var.
+ * 'Daisy' eklemeye kalkınca ad eşleşmiyor (büyük/küçük harf farkı), upsert
+ * yeni kayıt deniyor ve `tags_slug_key` tekilliğini ihlal ediyor:
+ *
+ *   duplicate key value violates unique constraint "tags_slug_key"
+ *   DETAIL: Key (slug)=(daisy) already exists.
+ *
+ * Buradaki arama iki tarafa da bakıyor. Ayrıca var olan etiketin adını ve
+ * adresini DEĞİŞTİRMİYOR: 'DAISY' etiketini 'Daisy' diye yeniden
+ * adlandırmak, o etikete bağlı sayfanın adresini bozma riski taşır.
+ */
+async function etiketBul(ad: string) {
+  const slug = etiketSlug(ad)
+  // Önce ad, sonra adres. Hem adı hem adresi başka başka etiketlerde
+  // tutuluyorsa adı tutan daha doğru eşleşme olduğu için iki ayrı sorgu
+  // yapılıyor; tek bir `OR` sorgusu hangisinin döneceğini garanti etmiyor.
+  const mevcut =
+    (await prisma.tag.findUnique({ where: { name: ad } })) ??
+    (await prisma.tag.findUnique({ where: { slug } }))
+  if (mevcut) return mevcut
+  return prisma.tag.create({ data: { name: ad, slug } })
+}
 
 async function main() {
   console.log('🌱 Seed başlatıldı...')
@@ -466,12 +521,20 @@ async function main() {
     let product
 
     if (existing) {
-      // Kategori değişikliğini uygula
-      product = await prisma.product.update({
-        where: { slug: data.slug },
-        data: { categoryId: data.categoryId },
-      })
-      console.log(`  🔄 Kategori güncellendi: ${data.name}`)
+      // ── Var olan ürüne DOKUNULMUYOR ──────────────────────────────────────
+      //
+      // Buradaki eski davranış `categoryId`'yi bu dosyadaki değere geri
+      // çekiyordu. Bu, panelden yapılan kategori düzeltmelerini sessizce
+      // geri alıyor: su arıtma cihazları bu dosyada "su ısıtıcısı"
+      // kategorilerinde duruyor (ev-su-isitici / ticari-boiler) ve elle
+      // doğru kategoriye taşındıktan sonra `npm run db:seed` onları yanlış
+      // yere geri taşırdı.
+      //
+      // Seed'in işi boş bir veritabanını kurmak; var olan kataloğu yeniden
+      // düzenlemek değil. Bu dosyadaki kategoriler düzeltilene kadar
+      // (aşağıdaki NOT) doğru olan, var olanı olduğu gibi bırakmak.
+      product = existing
+      console.log(`  ⏭️  Var, dokunulmadı: ${data.name}`)
     } else {
       product = await prisma.product.create({
         data: {
@@ -513,15 +576,7 @@ async function main() {
 
     // Etiketler
     for (const tagName of data.tags) {
-      const tagSlug = tagName
-        .toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9ğüşıöçğüşıöç-]/g, '')
-      const tag = await prisma.tag.upsert({
-        where: { name: tagName },
-        update: {},
-        create: { name: tagName, slug: tagSlug },
-      })
+      const tag = await etiketBul(tagName)
       await prisma.productTag.upsert({
         where: { productId_tagId: { productId: product.id, tagId: tag.id } },
         update: {},
@@ -1116,10 +1171,84 @@ async function main() {
     tags: ['Kärcher', 'cam temizleme robotu', 'RCW 2', 'pencere', 'robot', 'kucuk-ev-aleti'],
   })
 
+  // ─── Albsu Ürünleri — Yedek Parça & Aksesuar › Filtre & Membran ─────────
+  //
+  // A.O. Smith kartuş ve membranları. Veri ayrı dosyada
+  // (prisma/veri/ao-smith-filtreleri.ts) — yirmi sekiz kaydı buraya elle
+  // yazmak dosyayı iki katına çıkarırdı ve fiyat listesi güncellendiğinde
+  // yirmi sekiz ayrı yerin bulunması gerekirdi.
+  //
+  // Bu döngü `upsertProduct` yardımcısını BİLEREK kullanmıyor: o yardımcı var
+  // olan bir ürünü bulduğunda yalnızca kategorisini güncelliyor, fiyatı ve
+  // açıklamayı olduğu gibi bırakıyor. Burada fiyat listesi değiştiğinde yeni
+  // fiyatın yazılması gerekiyor.
+  //
+  // Stok ve indirimli fiyat `update` dalında YOK: panelden girilen gerçek
+  // depo adedi ile kampanya fiyatı, seed'in tekrar çalıştırılmasıyla
+  // ezilmesin.
+
+  console.log('\n🧩 A.O. Smith kartuş ve membranları yükleniyor...')
+
+  for (const f of AO_SMITH_FILTRELERI) {
+    // Fiyat listesinden gelen ve her çalıştırmada tazelenmesi GEREKEN alanlar.
+    const listedenGelen = {
+      name: f.ad,
+      sku: f.sku,
+      description: f.aciklama,
+      shortDescription: f.kisaAciklama,
+      price: f.fiyat,
+      productBrand: 'A.O. Smith',
+      vatRate: 20,
+    }
+
+    const urun = await prisma.product.upsert({
+      where: { slug: f.slug },
+      // `categoryId` GÜNCELLEMEDE YOK. Panelden yapılan kategori düzeltmesini
+      // geri almasın — bu dosyadaki yanlış kategoriler yüzünden bir kez
+      // yaşandı. `isActive` ve `stockQuantity` de yok: elle pasife alınan ya
+      // da stoğu girilen bir ürün seed yüzünden geri açılmasın.
+      update: listedenGelen,
+      create: {
+        id: f.id,
+        slug: f.slug,
+        categoryId: catFiltre.id,
+        brandId: albSu.id,
+        unit: 'adet',
+        stockQuantity: f.stok,
+        isActive: true,
+        ...listedenGelen,
+      },
+    })
+
+    // Özellikler sil-yeniden yaz. `product_specifications` tablosunda
+    // (product_id, spec_name) için tekillik kısıtı yok; upsert edilemiyor ve
+    // basit `createMany` ikinci çalıştırmada her satırın kopyasını üretirdi.
+    await prisma.productSpec.deleteMany({ where: { productId: urun.id } })
+    await prisma.productSpec.createMany({
+      data: [
+        { productId: urun.id, specName: 'Ürün Kodu', specValue: f.kod, sortOrder: 0 },
+        { productId: urun.id, specName: 'Aşama', specValue: f.asama, sortOrder: 1 },
+        { productId: urun.id, specName: 'Tip', specValue: f.tip, sortOrder: 2 },
+        { productId: urun.id, specName: 'Uyumlu Cihazlar', specValue: f.uyumlu.join(', '), sortOrder: 3 },
+        { productId: urun.id, specName: 'Marka', specValue: 'A.O. Smith', sortOrder: 4 },
+      ],
+    })
+
+    for (const etiketAdi of f.etiketler) {
+      const etiket = await etiketBul(etiketAdi)
+      await prisma.productTag.upsert({
+        where: { productId_tagId: { productId: urun.id, tagId: etiket.id } },
+        update: {},
+        create: { productId: urun.id, tagId: etiket.id },
+      })
+    }
+
+    console.log(`  ✅ ${f.ad}`)
+  }
+
   // Kullanılmayan eski değişkenleri Prisma'nın şikayet etmemesi için void
   void catEvSuAritma
   void catEndustriyel
-  void catFiltre
 
   console.log('\n🎉 Seed tamamlandı!')
   const total = await prisma.product.count()
